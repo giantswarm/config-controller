@@ -140,6 +140,9 @@ func (g Generator) GenerateConfig() (string, string, error) {
 		path.Join(g.dir, defaultDir, appsSubDir, g.app, secretTemplateFile),
 		"",
 	)
+	if err != nil {
+		return "", "", microerror.Mask(err)
+	}
 
 	// 6.
 	secrets, err := renderTemplate(secretsTemplate, secretsContext)

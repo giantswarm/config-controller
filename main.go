@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microkit/command"
 	microserver "github.com/giantswarm/microkit/server"
 	"github.com/giantswarm/micrologger"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/giantswarm/config-controller/cmd/generate"

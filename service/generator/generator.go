@@ -258,7 +258,7 @@ func (g Generator) include(filename string, indentSpaces int) (string, error) {
 	}
 
 	obj := map[string]interface{}{}
-	err := yaml.Unmarshal([]byte(data), &obj)
+	err = yaml.Unmarshal([]byte(data), &obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

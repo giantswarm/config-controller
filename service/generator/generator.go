@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	"github.com/ghodss/yaml"
@@ -121,7 +122,7 @@ func (g Generator) GenerateConfig() (string, string, error) {
 	}
 
 	// 3.
-	configmap, err := renderTemplate(configmapTemplate, configmapContext)
+	configmap, err := g.renderTemplate(configmapTemplate, configmapContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
@@ -145,7 +146,7 @@ func (g Generator) GenerateConfig() (string, string, error) {
 	}
 
 	// 6.
-	secrets, err := renderTemplate(secretsTemplate, secretsContext)
+	secrets, err := g.renderTemplate(secretsTemplate, secretsContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
@@ -231,7 +232,7 @@ func applyPatch(base, patch string) (string, error) {
 	return string(outputBytes), nil
 }
 
-func renderTemplate(templateText string, context string) (string, error) {
+func (g Generator) renderTemplate(templateText string, context string) (string, error) {
 	c := map[string]interface{}{}
 	err := yaml.Unmarshal([]byte(context), &c)
 	if err != nil {
@@ -239,11 +240,43 @@ func renderTemplate(templateText string, context string) (string, error) {
 	}
 
 	out := bytes.NewBuffer([]byte{})
-	t := template.Must(template.New("values").Parse(templateText))
+	fMap := template.FuncMap{"include": g.include}
+	t := template.Must(template.New("values").Funcs(fMap).Parse(templateText))
 	err = t.Execute(out, c)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	return out.String(), nil
+}
+
+func (g Generator) include(filename string, indentSpaces int) (string, error) {
+	filepath := path.Join(g.dir, includeDir, filename)
+	data, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	obj := map[string]interface{}{}
+	err := yaml.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	data, err = yaml.Marshal(obj)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return indent(string(data), indentSpaces), nil
+}
+
+func indent(text string, spaces int) string {
+	lines := strings.Split(text, "\n")
+	prefix := strings.Repeat(" ", spaces)
+	out := []string{}
+	for _, l := range lines {
+		out = append(out, prefix+l)
+	}
+	return strings.Join(out, "\n")
 }

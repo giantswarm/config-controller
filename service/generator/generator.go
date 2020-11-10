@@ -13,12 +13,6 @@ import (
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
 )
 
-// TODO:
-// - Dependency tree
-// - Given a dir and app, version, installation, find all the files
-// - Be really vebose on how the config is merged
-// - Write a nice struct which basically solves the merge tree.
-
 const (
 	/*
 		- .yaml is a values source

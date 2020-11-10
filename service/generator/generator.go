@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"os"
 	"path"
@@ -61,10 +62,6 @@ const (
 	configmapTemplatePatchFile = "configmap-values.yaml.template.patch"
 )
 
-var (
-	funcMap = sprig.FuncMap()
-)
-
 type Filesystem interface {
 	Exists(string) bool
 	ReadFile(string) ([]byte, error)
@@ -72,26 +69,54 @@ type Filesystem interface {
 }
 
 type Config struct {
-	App          string
-	Fs           Filesystem
-	Installation string
-	Version      string
+	Fs Filesystem
 }
 
 type Generator struct {
-	app          string
-	fs           Filesystem
-	installation string
-	version      string
+	fs Filesystem
+
+	template *template.Template
 }
 
 func New(config *Config) (*Generator, error) {
 	g := Generator{
-		app:          config.App,
-		fs:           config.Fs,
-		installation: config.Installation,
-		version:      config.Version,
+		fs: config.Fs,
 	}
+
+	funcMap := sprig.FuncMap()
+	funcMap["include"] = g.include
+	g.template = template.New("main").Funcs(funcMap)
+
+	// Add include files as templates usable by calling
+	// `{{ template "name" . }}` in templateText.
+	files, err := g.fs.ReadDir(includeDir)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		baseName := path.Base(file.Name())
+		if strings.ContainsRune(baseName, '.') {
+			baseName = strings.SplitN(baseName, ".", 1)[0]
+		}
+
+		contents, err := g.fs.ReadFile(
+			path.Join(includeDir, file.Name()),
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		_, err = g.template.New(baseName).Funcs(funcMap).Parse(string(contents))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	return &g, nil
 }
 
@@ -106,11 +131,11 @@ func New(config *Config) (*Generator, error) {
 // 4. Get secrets context
 // 5. Get app-specific secrets template.
 // 6. Render app secrets template (result of 4.) with installation secrets (result of 5.)
-func (g Generator) GenerateConfig() (string, string, error) {
+func (g Generator) GenerateConfig(installation, app string) (string, string, error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
 		path.Join(defaultDir, defaultConfigFile),
-		path.Join(installationsDir, g.installation, installationConfigPatchFile),
+		path.Join(installationsDir, installation, installationConfigPatchFile),
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
@@ -118,8 +143,8 @@ func (g Generator) GenerateConfig() (string, string, error) {
 
 	// 2.
 	configmapTemplate, err := g.getWithPatchIfExists(
-		path.Join(defaultDir, appsSubDir, g.app, configmapTemplateFile),
-		path.Join(installationsDir, g.installation, appsSubDir, g.app, configmapTemplatePatchFile),
+		path.Join(defaultDir, appsSubDir, app, configmapTemplateFile),
+		path.Join(installationsDir, installation, appsSubDir, app, configmapTemplatePatchFile),
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
@@ -142,7 +167,7 @@ func (g Generator) GenerateConfig() (string, string, error) {
 
 	// 5.
 	secretsTemplate, err := g.getWithPatchIfExists(
-		path.Join(defaultDir, appsSubDir, g.app, secretTemplateFile),
+		path.Join(defaultDir, appsSubDir, app, secretTemplateFile),
 		"",
 	)
 	if err != nil {
@@ -243,41 +268,30 @@ func (g Generator) renderTemplate(templateText string, context string) (string, 
 		return "", microerror.Mask(err)
 	}
 
-	t := template.Must(template.New("main").Funcs(funcMap).Parse(templateText))
-
-	// Add include files as templates usable by calling
-	// `{{ template "name" . }}` in templateText.
-	files, err := g.fs.ReadDir(includeDir)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		baseName := path.Base(file.Name())
-		if strings.ContainsRune(baseName, '.') {
-			baseName = strings.SplitN(baseName, ".", 1)[0]
-		}
-
-		contents, err := g.fs.ReadFile(
-			path.Join(includeDir, file.Name()),
-		)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		_, err = t.New(baseName).Funcs(funcMap).Parse(string(contents))
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-	}
+	t := template.Must(g.template.Parse(templateText))
 
 	// render final template
 	out := bytes.NewBuffer([]byte{})
 	err = t.Execute(out, c)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return out.String(), nil
+}
+
+func (g Generator) include(templateName string, context interface{}) (string, error) {
+	funcMap := sprig.FuncMap()
+	funcMap["include"] = g.include
+
+	templateText := fmt.Sprintf("{{ template %q }}", templateName)
+
+	newTemplate := template.Must(
+		g.template.New(templateName).Funcs(funcMap).Parse(templateText),
+	)
+
+	out := bytes.NewBuffer([]byte{})
+	err := newTemplate.Execute(out, context)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

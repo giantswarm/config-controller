@@ -2,12 +2,12 @@ package generator
 
 import (
 	"bytes"
-	"io/ioutil"
+	"html/template"
 	"os"
 	"path"
 	"strings"
-	"text/template"
 
+	"github.com/Masterminds/sprig"
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
@@ -61,16 +61,26 @@ const (
 	configmapTemplatePatchFile = "configmap-values.yaml.template.patch"
 )
 
+var (
+	funcMap = sprig.FuncMap()
+)
+
+type Filesystem interface {
+	Exists(string) bool
+	ReadFile(string) ([]byte, error)
+	ReadDir(string) ([]os.FileInfo, error)
+}
+
 type Config struct {
 	App          string
-	Dir          string
+	Fs           Filesystem
 	Installation string
 	Version      string
 }
 
 type Generator struct {
 	app          string
-	dir          string
+	fs           Filesystem
 	installation string
 	version      string
 }
@@ -78,7 +88,7 @@ type Generator struct {
 func New(config *Config) (*Generator, error) {
 	g := Generator{
 		app:          config.App,
-		dir:          config.Dir,
+		fs:           config.Fs,
 		installation: config.Installation,
 		version:      config.Version,
 	}
@@ -98,18 +108,18 @@ func New(config *Config) (*Generator, error) {
 // 6. Render app secrets template (result of 4.) with installation secrets (result of 5.)
 func (g Generator) GenerateConfig() (string, string, error) {
 	// 1.
-	configmapContext, err := getWithPatchIfExists(
-		path.Join(g.dir, defaultDir, defaultConfigFile),
-		path.Join(g.dir, installationsDir, g.installation, installationConfigPatchFile),
+	configmapContext, err := g.getWithPatchIfExists(
+		path.Join(defaultDir, defaultConfigFile),
+		path.Join(installationsDir, g.installation, installationConfigPatchFile),
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
 	// 2.
-	configmapTemplate, err := getWithPatchIfExists(
-		path.Join(g.dir, defaultDir, appsSubDir, g.app, configmapTemplateFile),
-		path.Join(g.dir, installationsDir, g.installation, appsSubDir, g.app, configmapTemplatePatchFile),
+	configmapTemplate, err := g.getWithPatchIfExists(
+		path.Join(defaultDir, appsSubDir, g.app, configmapTemplateFile),
+		path.Join(installationsDir, g.installation, appsSubDir, g.app, configmapTemplatePatchFile),
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
@@ -122,8 +132,8 @@ func (g Generator) GenerateConfig() (string, string, error) {
 	}
 
 	// 4.
-	secretsContext, err := getWithPatchIfExists(
-		path.Join(g.dir, installationsDir, installationSecretFile),
+	secretsContext, err := g.getWithPatchIfExists(
+		path.Join(installationsDir, installationSecretFile),
 		"",
 	)
 	if err != nil {
@@ -131,8 +141,8 @@ func (g Generator) GenerateConfig() (string, string, error) {
 	}
 
 	// 5.
-	secretsTemplate, err := getWithPatchIfExists(
-		path.Join(g.dir, defaultDir, appsSubDir, g.app, secretTemplateFile),
+	secretsTemplate, err := g.getWithPatchIfExists(
+		path.Join(defaultDir, appsSubDir, g.app, secretTemplateFile),
 		"",
 	)
 	if err != nil {
@@ -151,24 +161,24 @@ func (g Generator) GenerateConfig() (string, string, error) {
 // getWithPatchIfExists provides contents of filepath overwritten by patch at
 // patchFilepath. File at patchFilepath may be non-existent, resulting in pure
 // file at filepath being returned.
-func getWithPatchIfExists(filepath, patchFilepath string) (string, error) {
-	var base string
+func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string, error) {
+	var err error
+
+	var base []byte
 	{
-		data, err := ioutil.ReadFile(filepath)
+		base, err = g.fs.ReadFile(filepath)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		base = string(data)
 	}
 
-	var patch string
-	if patchFilepath != "" {
-		data, err := ioutil.ReadFile(filepath)
-		// patch is not obligatory
-		if err != nil && !os.IsNotExist(err) {
+	// patch is not obligatory
+	var patch []byte
+	if patchFilepath != "" && g.fs.Exists(patchFilepath) {
+		patch, err = g.fs.ReadFile(patchFilepath)
+		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		patch = string(data)
 	}
 
 	result, err := applyPatch(base, patch)
@@ -178,11 +188,11 @@ func getWithPatchIfExists(filepath, patchFilepath string) (string, error) {
 	return result, nil
 }
 
-func applyPatch(base, patch string) (string, error) {
+func applyPatch(base, patch []byte) (string, error) {
 	var basePathSvc *pathmodifier.Service
 	{
 		c := pathmodifier.DefaultConfig()
-		c.InputBytes = []byte(base)
+		c.InputBytes = base
 		svc, err := pathmodifier.New(c)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -193,7 +203,7 @@ func applyPatch(base, patch string) (string, error) {
 	var patchPathSvc *pathmodifier.Service
 	{
 		c := pathmodifier.DefaultConfig()
-		c.InputBytes = []byte(patch)
+		c.InputBytes = patch
 		svc, err := pathmodifier.New(c)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -233,44 +243,44 @@ func (g Generator) renderTemplate(templateText string, context string) (string, 
 		return "", microerror.Mask(err)
 	}
 
+	t := template.Must(template.New("main").Funcs(funcMap).Parse(templateText))
+
+	// Add include files as templates usable by calling
+	// `{{ template "name" . }}` in templateText.
+	files, err := g.fs.ReadDir(includeDir)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		baseName := path.Base(file.Name())
+		if strings.ContainsRune(baseName, '.') {
+			baseName = strings.SplitN(baseName, ".", 1)[0]
+		}
+
+		contents, err := g.fs.ReadFile(
+			path.Join(includeDir, file.Name()),
+		)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		_, err = t.New(baseName).Funcs(funcMap).Parse(string(contents))
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
+	// render final template
 	out := bytes.NewBuffer([]byte{})
-	fMap := template.FuncMap{"include": g.include}
-	t := template.Must(template.New("values").Funcs(fMap).Parse(templateText))
 	err = t.Execute(out, c)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	return out.String(), nil
-}
-
-func (g Generator) include(filename string, indentSpaces int) (string, error) {
-	filepath := path.Join(g.dir, includeDir, filename)
-	data, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	obj := map[string]interface{}{}
-	err = yaml.Unmarshal([]byte(data), &obj)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	data, err = yaml.Marshal(obj)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return indent(string(data), indentSpaces), nil
-}
-
-func indent(text string, spaces int) string {
-	lines := strings.Split(text, "\n")
-	prefix := strings.Repeat(" ", spaces)
-	out := []string{}
-	for _, l := range lines {
-		out = append(out, prefix+l)
-	}
-	return strings.Join(out, "\n")
 }

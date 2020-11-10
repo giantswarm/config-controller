@@ -158,7 +158,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 
 	// 4.
 	secretsContext, err := g.getWithPatchIfExists(
-		path.Join(installationsDir, installationSecretFile),
+		path.Join(installationsDir, installation, installationSecretFile),
 		"",
 	)
 	if err != nil {

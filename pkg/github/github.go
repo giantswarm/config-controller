@@ -3,7 +3,7 @@ package github
 import (
 	"context"
 
-	"github.com/giantswarm/config-controller/service/internal/github/internal/graphql"
+	"github.com/giantswarm/config-controller/pkg/github/internal/graphql"
 	"github.com/giantswarm/microerror"
 )
 

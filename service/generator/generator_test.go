@@ -32,22 +32,55 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 		expectedSecret    string
 	}{
 		{
-			name:         "case 0 - templating and patches",
+			name:         "case 0 - basic templates and installation-level config.yaml patch",
 			app:          "operator",
 			installation: "puma",
 
 			configYaml: "universalValue: 42",
 			configmapTemplate: `
-			answer: "{{ .universalValue }}"
-			region: "{{ .provider.region }}"`,
+answer: "{{ .universalValue }}"
+region: "{{ .provider.region }}"`,
 			installationSecret: "key: password",
 			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
 
 			configYamlPatch: "provider: {kind: aws, region: us-east-1}",
 
 			expectedConfigmap: `
-			answer: "42"
-			region: "us-east-1"`,
+answer: "42"
+region: "us-east-1"`,
+			expectedSecret: `secretAccessKey: "password"`,
+		},
+
+		{
+			name:         "case 1 - include files from include/ directory",
+			app:          "operator",
+			installation: "puma",
+
+			configYaml: "universalValue: 42",
+			configmapTemplate: `
+answer: "{{ .universalValue }}"
+region: "{{ .provider.region }}"
+availableInstances:
+{{ include "instances.yaml" . | indent 2 }}`,
+			installationSecret: "key: password",
+			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
+
+			configYamlPatch: "provider: {kind: aws, region: us-east-1}",
+			includeFiles: map[string]string{
+				"instances.yaml": `
+- small
+- medium
+- large
+				`,
+			},
+
+			expectedConfigmap: `
+answer: "42"
+region: "us-east-1"
+availableInstances:
+  - small
+  - medium
+  - large`,
 			expectedSecret: `secretAccessKey: "password"`,
 		},
 	}
@@ -85,6 +118,8 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 				t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
 			}
 			if configmap != sanitize(tc.expectedConfigmap) {
+				fmt.Printf("KUBA: got:\n%q\n\n", configmap)
+				fmt.Printf("KUBA: expected:\n%q\n\n", sanitize(tc.expectedConfigmap))
 				t.Fatalf("configmap not expected, got: %s", configmap)
 			}
 			if secret != sanitize(tc.expectedSecret) {

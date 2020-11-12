@@ -83,6 +83,31 @@ availableInstances:
   - large`,
 			expectedSecret: `secretAccessKey: "password"`,
 		},
+
+		{
+			name:         "case 2 - overriding default app template with installation-specific app template",
+			app:          "operator",
+			installation: "puma",
+
+			configYaml: `
+universalValue: 42
+registry: docker.io`,
+			configmapTemplate: `
+answer: "{{ .universalValue }}"
+region: "{{ .provider.region }}"
+registry: "{{ .registry }}"`,
+			installationSecret: "key: password",
+			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
+
+			configYamlPatch:        "provider: {kind: aws, region: us-east-1}",
+			configmapTemplatePatch: "registry: azurecr.io",
+
+			expectedConfigmap: `
+answer: '42'
+region: 'us-east-1'
+registry: azurecr.io`,
+			expectedSecret: `secretAccessKey: "password"`,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -117,12 +142,10 @@ availableInstances:
 			if err != nil {
 				t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
 			}
-			if configmap != sanitize(tc.expectedConfigmap) {
-				fmt.Printf("KUBA: got:\n%q\n\n", configmap)
-				fmt.Printf("KUBA: expected:\n%q\n\n", sanitize(tc.expectedConfigmap))
+			if sanitize(configmap) != sanitize(tc.expectedConfigmap) {
 				t.Fatalf("configmap not expected, got: %s", configmap)
 			}
-			if secret != sanitize(tc.expectedSecret) {
+			if sanitize(secret) != sanitize(tc.expectedSecret) {
 				t.Fatalf("secret not expected, got: %s", secret)
 			}
 		})

@@ -3,9 +3,10 @@ package github
 import (
 	"context"
 
+	"github.com/giantswarm/microerror"
+
 	"github.com/giantswarm/config-controller/pkg/github/internal/gitrepo"
 	"github.com/giantswarm/config-controller/pkg/github/internal/graphql"
-	"github.com/giantswarm/microerror"
 )
 
 type Config struct {

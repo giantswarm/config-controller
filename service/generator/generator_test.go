@@ -7,7 +7,99 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/giantswarm/microerror"
 )
+
+func TestGenerator_GenerateConfig(t *testing.T) {
+	testCases := []struct {
+		name string
+
+		app          string
+		installation string
+
+		// mandatory
+		configYaml         string
+		configmapTemplate  string
+		installationSecret string
+		secretTemplate     string
+		// optional
+		configYamlPatch        string
+		configmapTemplatePatch string
+		includeFiles           map[string]string
+
+		expectedConfigmap string
+		expectedSecret    string
+	}{
+		{
+			name:         "case 0 - templating and patches",
+			app:          "operator",
+			installation: "puma",
+
+			configYaml: "universalValue: 42",
+			configmapTemplate: `
+			answer: "{{ .universalValue }}"
+			region: "{{ .provider.region }}"`,
+			installationSecret: "key: password",
+			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
+
+			configYamlPatch: "provider: {kind: aws, region: us-east-1}",
+
+			expectedConfigmap: `
+			answer: "42"
+			region: "us-east-1"`,
+			expectedSecret: `secretAccessKey: "password"`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := newMockFilesystem(
+				tc.installation, tc.app,
+				sanitize(tc.configYaml),
+				sanitize(tc.configmapTemplate),
+				sanitize(tc.installationSecret),
+				sanitize(tc.secretTemplate),
+			)
+			if tc.configYamlPatch != "" {
+				fs.AddConfigPatch(sanitize(tc.configYamlPatch))
+			}
+			if tc.configmapTemplatePatch != "" {
+				fs.AddConfigmapTemplatePatch(sanitize(tc.configmapTemplatePatch))
+			}
+			for name, contents := range tc.includeFiles {
+				fs.AddIncludeFile(name, sanitize(contents))
+			}
+
+			config := Config{
+				Fs: fs,
+			}
+
+			g, err := New(&config)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			configmap, secret, err := g.GenerateConfig(tc.installation, tc.app)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+			}
+			if configmap != sanitize(tc.expectedConfigmap) {
+				fmt.Printf("\n------------------\nKUBA: \nexpected: %q\ngot: %q\n------------------------\n", configmap, sanitize(tc.expectedConfigmap))
+				t.Fatalf("configmap not expected, got: %s", configmap)
+			}
+			if secret != sanitize(tc.expectedSecret) {
+				t.Fatalf("secret not expected, got: %s", secret)
+			}
+		})
+	}
+}
+
+func sanitize(in string) string {
+	return strings.TrimSpace(
+		strings.ReplaceAll(in, "\t", ""),
+	)
+}
 
 type mockFilesystem struct {
 	app          string
@@ -104,43 +196,4 @@ func (fs *mockFilesystem) ReadDir(_ string) ([]os.FileInfo, error) {
 		out = append(out, &mockFile{k})
 	}
 	return out, nil
-}
-
-func TestGenerator_GenerateConfig(t *testing.T) {
-	fs := newMockFilesystem("puma", "operator", configYaml, configmapTemplate, installationSecret, secretTemplate)
-	testCases := []struct {
-		name string
-
-		fs           Filesystem
-		app          string
-		installation string
-
-		expectedConfigmap string
-		expectedSecret    string
-	}{
-		{
-			name: "case 0",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			config := Config{
-				Fs: tc.fs,
-			}
-
-			g, err := New(&config)
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-
-			configmap, secret, err := g.GenerateConfig(tc.installation, tc.app)
-			if configmap != tc.expectedConfigmap {
-				t.Fatalf("configmap not expected, got: %s", configmap)
-			}
-			if secret != tc.expectedSecret {
-				t.Fatalf("secret not expected, got: %s", secret)
-			}
-		})
-	}
 }

@@ -83,40 +83,6 @@ func New(config *Config) (*Generator, error) {
 		fs: config.Fs,
 	}
 
-	funcMap := sprig.FuncMap()
-	funcMap["include"] = g.include
-	g.template = template.New("main").Funcs(funcMap)
-
-	// Add include files as templates usable by calling
-	// `{{ template "name" . }}` in templateText.
-	files, err := g.fs.ReadDir(includeDir)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		baseName := path.Base(file.Name())
-		if strings.ContainsRune(baseName, '.') {
-			baseName = strings.SplitN(baseName, ".", 1)[0]
-		}
-
-		contents, err := g.fs.ReadFile(
-			path.Join(includeDir, file.Name()),
-		)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		_, err = g.template.New(baseName).Funcs(funcMap).Parse(string(contents))
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	return &g, nil
 }
 
@@ -198,8 +164,12 @@ func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string,
 	}
 
 	// patch is not obligatory
+	if patchFilepath == "" || !g.fs.Exists(patchFilepath) {
+		return string(base), nil
+	}
+
 	var patch []byte
-	if patchFilepath != "" && g.fs.Exists(patchFilepath) {
+	{
 		patch, err = g.fs.ReadFile(patchFilepath)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -268,7 +238,15 @@ func (g Generator) renderTemplate(templateText string, context string) (string, 
 		return "", microerror.Mask(err)
 	}
 
-	t := template.Must(g.template.Parse(templateText))
+	funcMap := sprig.FuncMap()
+	funcMap["include"] = g.include
+
+	t := template.New("main").Funcs(funcMap)
+	err = g.addIncludeFilesToTemplate(t)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	t = template.Must(t.Parse(templateText))
 
 	// render final template
 	out := bytes.NewBuffer([]byte{})
@@ -280,18 +258,52 @@ func (g Generator) renderTemplate(templateText string, context string) (string, 
 	return out.String(), nil
 }
 
-func (g Generator) include(templateName string, context interface{}) (string, error) {
+func (g Generator) addIncludeFilesToTemplate(t *template.Template) error {
+	files, err := g.fs.ReadDir(includeDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	funcMap := sprig.FuncMap()
-	funcMap["include"] = g.include
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		baseName := path.Base(file.Name())
+		if strings.ContainsRune(baseName, '.') {
+			baseName = strings.SplitN(baseName, ".", 1)[0]
+		}
+
+		contents, err := g.fs.ReadFile(
+			path.Join(includeDir, file.Name()),
+		)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, err = t.New(baseName).Funcs(funcMap).Parse(string(contents))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func (g Generator) include(templateName string, context interface{}) (string, error) {
+	t := template.New("render-" + templateName).Funcs(sprig.FuncMap())
+	err := g.addIncludeFilesToTemplate(t)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
 
 	templateText := fmt.Sprintf("{{ template %q }}", templateName)
 
-	newTemplate := template.Must(
-		g.template.New(templateName).Funcs(funcMap).Parse(templateText),
-	)
+	t = template.Must(t.Parse(templateText))
 
 	out := bytes.NewBuffer([]byte{})
-	err := newTemplate.Execute(out, context)
+	err = t.Execute(out, context)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

@@ -85,7 +85,6 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 				t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
 			}
 			if configmap != sanitize(tc.expectedConfigmap) {
-				fmt.Printf("\n------------------\nKUBA: \nexpected: %q\ngot: %q\n------------------------\n", configmap, sanitize(tc.expectedConfigmap))
 				t.Fatalf("configmap not expected, got: %s", configmap)
 			}
 			if secret != sanitize(tc.expectedSecret) {

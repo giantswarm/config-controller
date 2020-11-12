@@ -61,7 +61,7 @@ region: "us-east-1"`,
 answer: "{{ .universalValue }}"
 region: "{{ .provider.region }}"
 availableInstances:
-{{ include "instances.yaml" . | indent 2 }}`,
+  {{- include "instances" . | nindent 2 }}`,
 			installationSecret: "key: password",
 			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
 

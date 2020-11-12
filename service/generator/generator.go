@@ -272,7 +272,8 @@ func (g Generator) addIncludeFilesToTemplate(t *template.Template) error {
 
 		baseName := path.Base(file.Name())
 		if strings.ContainsRune(baseName, '.') {
-			baseName = strings.SplitN(baseName, ".", 1)[0]
+			elements := strings.SplitN(baseName, ".", 2)
+			baseName = elements[0]
 		}
 
 		contents, err := g.fs.ReadFile(

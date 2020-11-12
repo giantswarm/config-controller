@@ -10,6 +10,8 @@ require (
 	github.com/giantswarm/microkit v0.2.1
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/giantswarm/operatorkit/v2 v2.0.0
+	github.com/go-git/go-billy/v5 v5.0.0
+	github.com/go-git/go-git/v5 v5.2.0
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/prometheus/client_golang v1.7.1
 	github.com/spf13/viper v1.6.2

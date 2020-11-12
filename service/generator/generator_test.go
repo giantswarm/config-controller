@@ -246,7 +246,7 @@ func (ff mockFile) Sys() interface{} {
 
 func (fs *mockFilesystem) ReadDir(_ string) ([]os.FileInfo, error) {
 	out := []os.FileInfo{}
-	for k, _ := range fs.files {
+	for k := range fs.files {
 		if !strings.HasPrefix(k, includeDir) {
 			continue
 		}

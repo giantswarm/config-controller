@@ -74,8 +74,6 @@ type Config struct {
 
 type Generator struct {
 	fs Filesystem
-
-	template *template.Template
 }
 
 func New(config *Config) (*Generator, error) {

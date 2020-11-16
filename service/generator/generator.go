@@ -38,7 +38,7 @@ const (
 					secrets.yaml
 					apps/
 						azure-operator/
-							configmap-values.yaml.template.patch
+							configmap-values.yaml.patch.template
 	*/
 
 	// global directories (at /)

@@ -23,22 +23,22 @@ const (
 
 		Folder structure:
 			default/
-			    config.yaml
-			    apps/
-			        aws-operator/
-				        ...
-				    azure-operator/
-				        configmap-values.yaml.template
-				        secret-values.yaml.template
+				config.yaml
+				apps/
+					aws-operator/
+						...
+					azure-operator/
+						configmap-values.yaml.template
+						secret-values.yaml.template
 			installations/
-			    ghost/
-				    ...
+				ghost/
+					...
 				godsmack/
-				    config.yaml.patch
+					config.yaml.patch
 					secrets.yaml
 					apps/
-					    azure-operator/
-						    configmap-values.yaml.template.patch
+						azure-operator/
+							configmap-values.yaml.template.patch
 	*/
 
 	// global directories (at /)

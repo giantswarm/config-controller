@@ -88,13 +88,15 @@ func New(config *Config) (*Generator, error) {
 // use by performing the following operations:
 // 1. Get configmap context and patch it with installation-specific overrides (if
 //    available)
-// 2. Get app-specific configmap template and patch it with installation-specific
-//    app overrides (if available)
-// 3. Render app configmap template (result of 2.) with context values (result
-//    of 1.)
-// 4. Get secrets context
-// 5. Get app-specific secrets template.
-// 6. Render app secrets template (result of 4.) with installation secrets (result of 5.)
+// 2. Get app-specific configmap template and render it with context (result of 1.)
+// 3. Get installation-specific configmap template patch and render it with
+//    context (result of 1.)
+// 4. Patch app-specific template (result of 2.) with and patch it with
+//    installation-specific (result of 3.) app overrides (if available)
+// 5. Get secrets context
+// 6. Get app-specific secrets template.
+// 7. Render app secrets template (result of 4.) with installation secrets
+//    (result of 5.)
 func (g Generator) GenerateConfig(installation, app string) (string, string, error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
@@ -114,6 +116,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 		return "", "", microerror.Mask(err)
 	}
 
+	// 3.
 	var configmapPatch string
 	{
 		filepath := path.Join(installationsDir, installation, appsSubDir, app, configmapTemplatePatchFile)
@@ -128,7 +131,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 		}
 	}
 
-	// 3.
+	// 4.
 	configmap, err := applyPatch(
 		[]byte(configmapBase),
 		[]byte(configmapPatch),
@@ -137,7 +140,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 		return "", "", microerror.Mask(err)
 	}
 
-	// 4.
+	// 5.
 	secretsContext, err := g.getWithPatchIfExists(
 		path.Join(installationsDir, installation, installationSecretFile),
 		"",
@@ -146,7 +149,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 		return "", "", microerror.Mask(err)
 	}
 
-	// 5.
+	// 6.
 	secretsTemplate, err := g.getWithPatchIfExists(
 		path.Join(defaultDir, appsSubDir, app, secretTemplateFile),
 		"",
@@ -155,7 +158,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 		return "", "", microerror.Mask(err)
 	}
 
-	// 6.
+	// 7.
 	secrets, err := g.renderTemplate(secretsTemplate, secretsContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)

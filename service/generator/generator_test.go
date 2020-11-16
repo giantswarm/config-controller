@@ -38,17 +38,17 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 
 			configYaml: "universalValue: 42",
 			configmapTemplate: `
-answer: "{{ .universalValue }}"
-region: "{{ .provider.region }}"`,
+answer: {{ .universalValue }}
+region: {{ .provider.region }}`,
 			installationSecret: "key: password",
-			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
+			secretTemplate:     `secretAccessKey: {{ .key }}`,
 
 			configYamlPatch: "provider: {kind: aws, region: us-east-1}",
 
 			expectedConfigmap: `
-answer: "42"
-region: "us-east-1"`,
-			expectedSecret: `secretAccessKey: "password"`,
+answer: 42
+region: us-east-1`,
+			expectedSecret: `secretAccessKey: password`,
 		},
 
 		{
@@ -58,30 +58,27 @@ region: "us-east-1"`,
 
 			configYaml: "universalValue: 42",
 			configmapTemplate: `
-answer: "{{ .universalValue }}"
-region: "{{ .provider.region }}"
+answer: {{ .universalValue }}
+region: {{ .provider.region }}
 availableInstances:
-  {{- include "instances" . | nindent 2 }}`,
+{{- include "instances" . | nindent 2 }}
+`,
 			installationSecret: "key: password",
-			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
+			secretTemplate:     `secretAccessKey: {{ .key }}`,
 
 			configYamlPatch: "provider: {kind: aws, region: us-east-1}",
 			includeFiles: map[string]string{
-				"instances.yaml": `
-- small
-- medium
-- large
-				`,
+				"instances.yaml": "- small\n- medium\n- large",
 			},
 
 			expectedConfigmap: `
-answer: "42"
-region: "us-east-1"
+answer: 42
 availableInstances:
-  - small
-  - medium
-  - large`,
-			expectedSecret: `secretAccessKey: "password"`,
+- small
+- medium
+- large
+region: us-east-1`,
+			expectedSecret: `secretAccessKey: password`,
 		},
 
 		{
@@ -93,20 +90,47 @@ availableInstances:
 universalValue: 42
 registry: docker.io`,
 			configmapTemplate: `
-answer: "{{ .universalValue }}"
-region: "{{ .provider.region }}"
-registry: "{{ .registry }}"`,
+answer: {{ .universalValue }}
+region: {{ .provider.region }}
+registry: {{ .registry }}`,
 			installationSecret: "key: password",
-			secretTemplate:     `secretAccessKey: "{{ .key }}"`,
+			secretTemplate:     `secretAccessKey: {{ .key }}`,
 
 			configYamlPatch:        "provider: {kind: aws, region: us-east-1}",
 			configmapTemplatePatch: "registry: azurecr.io",
 
 			expectedConfigmap: `
-answer: '42'
-region: 'us-east-1'
+answer: 42
+region: us-east-1
 registry: azurecr.io`,
-			expectedSecret: `secretAccessKey: "password"`,
+			expectedSecret: `secretAccessKey: password`,
+		},
+
+		{
+			name:         "case 3 - template integers",
+			app:          "operator",
+			installation: "puma",
+
+			configYaml: "universalValue: 42",
+			configmapTemplate: `
+answer: {{ .universalValue }}
+region: {{ .provider.region }}`,
+			installationSecret: "key: 123456",
+			secretTemplate:     `secretAccessKey: {{ .key }}`,
+
+			configYamlPatch: "provider: {kind: aws, region: us-east-1}",
+			configmapTemplatePatch: `answer: 5
+exampleInt: 33
+exampleFloat: 13.2
+`,
+
+			expectedConfigmap: `
+answer: 5
+exampleFloat: 13.2
+exampleInt: 33
+region: us-east-1
+`,
+			expectedSecret: `secretAccessKey: 123456`,
 		},
 	}
 

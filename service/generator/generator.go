@@ -59,7 +59,7 @@ const (
 	secretTemplateFile    = "secret-values.yaml.template"
 
 	// installation app-level config
-	configmapTemplatePatchFile = "configmap-values.yaml.template.patch"
+	configmapTemplatePatchFile = "configmap-values.yaml.patch.template"
 )
 
 type Filesystem interface {
@@ -106,16 +106,33 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 	}
 
 	// 2.
-	configmapTemplate, err := g.getWithPatchIfExists(
+	configmapBase, err := g.getRenderedTemplate(
 		path.Join(defaultDir, appsSubDir, app, configmapTemplateFile),
-		path.Join(installationsDir, installation, appsSubDir, app, configmapTemplatePatchFile),
+		configmapContext,
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
+	var configmapPatch string
+	{
+		filepath := path.Join(installationsDir, installation, appsSubDir, app, configmapTemplatePatchFile)
+		if g.fs.Exists(filepath) {
+			patch, err := g.getRenderedTemplate(filepath, configmapContext)
+			if err != nil {
+				return "", "", microerror.Mask(err)
+			}
+			configmapPatch = patch
+		} else {
+			configmapPatch = ""
+		}
+	}
+
 	// 3.
-	configmap, err := g.renderTemplate(configmapTemplate, configmapContext)
+	configmap, err := applyPatch(
+		[]byte(configmapBase),
+		[]byte(configmapPatch),
+	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
@@ -178,6 +195,20 @@ func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string,
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+	return result, nil
+}
+
+func (g Generator) getRenderedTemplate(filepath, context string) (string, error) {
+	templateBytes, err := g.fs.ReadFile(filepath)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	result, err := g.renderTemplate(string(templateBytes), context)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
 	return result, nil
 }
 

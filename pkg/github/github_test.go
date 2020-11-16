@@ -13,11 +13,8 @@ func Test_getLatestTag(t *testing.T) {
 		expectedTag string
 	}{
 		{
-			name: "case 0: nil",
-			inputTags: []string{
-				"",
-				"non-version-tag",
-			},
+			name:        "case 0: nil",
+			inputTags:   nil,
 			expectedTag: "",
 		},
 		{
@@ -29,7 +26,22 @@ func Test_getLatestTag(t *testing.T) {
 			expectedTag: "",
 		},
 		{
-			name: "case 2: major",
+			name: "case 2: ignore pre-releases",
+			inputTags: []string{
+				"v1.0.0-pre-release",
+			},
+			expectedTag: "",
+		},
+		{
+			name: "case 3: ignore pre-releases",
+			inputTags: []string{
+				"v2.0.0-pre-release",
+				"v1.0.0",
+			},
+			expectedTag: "v1.0.0",
+		},
+		{
+			name: "case 4: major",
 			inputTags: []string{
 				"v2.0.0",
 				"v1.2.3",
@@ -38,7 +50,7 @@ func Test_getLatestTag(t *testing.T) {
 			expectedTag: "v2.0.0",
 		},
 		{
-			name: "case 3: minor",
+			name: "case 5: minor",
 			inputTags: []string{
 				"v2.5.9",
 				"non-version-tag",
@@ -48,7 +60,7 @@ func Test_getLatestTag(t *testing.T) {
 			expectedTag: "v2.10.3",
 		},
 		{
-			name: "case 4: patch",
+			name: "case 6: patch",
 			inputTags: []string{
 				"non-version-tag",
 				"v2.10.300",

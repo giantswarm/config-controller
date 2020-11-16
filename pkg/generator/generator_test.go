@@ -153,6 +153,47 @@ answer: 42
 exampleObj: 43`,
 			expectedSecret: `secretAccessKey: 123456`,
 		},
+
+		{
+			name:         "case 5 - complex indent with include",
+			app:          "operator",
+			installation: "puma",
+
+			configYaml: "universalValue: 42",
+			configmapTemplate: `
+answer: {{ .universalValue }}
+level1:
+  {{- include "level1" . | nindent 2 }}
+  level2:
+    {{- include "level2" . | nindent 4 }}
+    level3:
+      {{- include "level3" . | nindent 6 }}
+    {{- include "level2-2" . | nindent 4 }}
+  {{- include "level1-2" . | nindent 2 }}
+`,
+			installationSecret: "key: 123456",
+			secretTemplate:     `secretAccessKey: {{ .key }}`,
+
+			includeFiles: map[string]string{
+				"level1.yaml":   "firstLevel: true",
+				"level2.yaml":   "secondLevel: true",
+				"level3.yaml":   "thirdLevel: true",
+				"level2-2.yaml": "backOnSecond: true",
+				"level1-2.yaml": "backOnFirst: true",
+			},
+			expectedConfigmap: `
+answer: 42
+level1:
+  backOnFirst: true
+  firstLevel: true
+  level2:
+    backOnSecond: true
+    level3:
+      thirdLevel: true
+    secondLevel: true
+`,
+			expectedSecret: `secretAccessKey: 123456`,
+		},
 	}
 
 	for _, tc := range testCases {

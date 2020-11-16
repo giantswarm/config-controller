@@ -1,8 +1,9 @@
 package github
 
 import (
-	"github.com/giantswarm/config-controller/pkg/github/internal/gitrepo"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/config-controller/pkg/github/internal/gitrepo"
 )
 
 // executionFailedError should never be matched against and therefore there is

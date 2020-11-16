@@ -9,6 +9,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/config-controller/pkg/github/internal/gitrepo"
 	"github.com/giantswarm/config-controller/pkg/github/internal/graphql"
 )
 
@@ -18,6 +19,7 @@ type Config struct {
 
 type GitHub struct {
 	graphQLClient *graphql.Client
+	repo          *gitrepo.Repo
 }
 
 func New(config Config) (*GitHub, error) {
@@ -41,8 +43,21 @@ func New(config Config) (*GitHub, error) {
 		}
 	}
 
+	var repo *gitrepo.Repo
+	{
+		c := gitrepo.Config{
+			GitHubToken: config.Token,
+		}
+
+		repo, err = gitrepo.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	g := &GitHub{
 		graphQLClient: graphQLClient,
+		repo:          repo,
 	}
 
 	return g, nil
@@ -61,6 +76,16 @@ func (g *GitHub) GetLatestTag(ctx context.Context, owner, name, major string) (s
 	}
 
 	return latest, nil
+}
+
+func (g *GitHub) GetFiles(ctx context.Context, owner, name, tag string) (Store, error) {
+	url := "https://github.com/" + owner + "/" + name + ".git"
+	store, err := g.repo.ShallowClone(ctx, url, tag)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return store, nil
 }
 
 // getTags returns a list of tags for the given owner/name. Only tags containing

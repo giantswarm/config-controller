@@ -132,6 +132,31 @@ region: us-east-1
 `,
 			expectedSecret: `secretAccessKey: 123456`,
 		},
+
+		{
+			name:         "case 4 - templating in included files",
+			app:          "operator",
+			installation: "puma",
+
+			configYaml: "universalValue: 42\nextraValue: 43",
+			configmapTemplate: `
+answer: {{ .universalValue }}
+{{ include "templated-include" . }}
+`,
+			installationSecret: "key: 123456",
+			secretTemplate:     `secretAccessKey: {{ .key }}`,
+
+			includeFiles: map[string]string{
+				"templated-include.yaml": "exampleObj: {{ .extraValue }}",
+			},
+			expectedConfigmap: `
+answer: 5
+exampleFloat: 13.2
+exampleInt: 33
+region: us-east-1
+`,
+			expectedSecret: `secretAccessKey: 123456`,
+		},
 	}
 
 	for _, tc := range testCases {

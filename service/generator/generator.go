@@ -77,6 +77,9 @@ type Generator struct {
 }
 
 func New(config *Config) (*Generator, error) {
+	if config.Fs == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Fs must not be empty", config)
+	}
 	g := Generator{
 		fs: config.Fs,
 	}
@@ -331,7 +334,7 @@ func (g Generator) include(templateName string, context interface{}) (string, er
 		return "", microerror.Mask(err)
 	}
 
-	templateText := fmt.Sprintf("{{ template %q }}", templateName)
+	templateText := fmt.Sprintf("{{ template %q . }}", templateName)
 
 	t = template.Must(t.Parse(templateText))
 

@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -249,15 +248,10 @@ func (fs *mockFilesystem) AddIncludeFile(filepath, contents string) {
 	fs.files[p] = []byte(contents)
 }
 
-func (fs *mockFilesystem) Exists(filepath string) bool {
-	_, ok := fs.files[filepath]
-	return ok
-}
-
 func (fs *mockFilesystem) ReadFile(filepath string) ([]byte, error) {
 	v, ok := fs.files[filepath]
 	if !ok {
-		return []byte{}, fmt.Errorf("file does not exist")
+		return []byte{}, microerror.Maskf(notFoundError, "%q not found", filepath)
 	}
 	return v, nil
 }

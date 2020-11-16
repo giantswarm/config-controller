@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"os"
 	"path"
 	"strings"
 
@@ -94,7 +93,7 @@ func New(config *Config) (*Generator, error) {
 // 6. Get app-specific secrets template.
 // 7. Render app secrets template (result of 4.) with installation secrets
 //    (result of 5.)
-func (g Generator) GenerateConfig(installation, app string) (string, string, error) {
+func (g Generator) GenerateConfig(installation, app string) (configmap string, secrets string, err error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
 		path.Join(defaultDir, defaultConfigFile),
@@ -117,19 +116,18 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 	var configmapPatch string
 	{
 		filepath := path.Join(installationsDir, installation, appsSubDir, app, configmapTemplatePatchFile)
-		if g.fs.Exists(filepath) {
-			patch, err := g.getRenderedTemplate(filepath, configmapContext)
-			if err != nil {
-				return "", "", microerror.Mask(err)
-			}
-			configmapPatch = patch
-		} else {
+		patch, err := g.getRenderedTemplate(filepath, configmapContext)
+		if err != nil && IsNotFound(err) {
 			configmapPatch = ""
+		} else if err != nil {
+			return "", "", microerror.Mask(err)
+		} else {
+			configmapPatch = patch
 		}
 	}
 
 	// 4.
-	configmap, err := applyPatch(
+	configmap, err = applyPatch(
 		[]byte(configmapBase),
 		[]byte(configmapPatch),
 	)
@@ -156,7 +154,7 @@ func (g Generator) GenerateConfig(installation, app string) (string, string, err
 	}
 
 	// 7.
-	secrets, err := g.renderTemplate(secretsTemplate, secretsContext)
+	secrets, err = g.renderTemplate(secretsTemplate, secretsContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
@@ -179,7 +177,7 @@ func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string,
 	}
 
 	// patch is not obligatory
-	if patchFilepath == "" || !g.fs.Exists(patchFilepath) {
+	if patchFilepath == "" {
 		return string(base), nil
 	}
 
@@ -187,6 +185,9 @@ func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string,
 	{
 		patch, err = g.fs.ReadFile(patchFilepath)
 		if err != nil {
+			if IsNotFound(err) {
+				return string(base), nil
+			}
 			return "", microerror.Mask(err)
 		}
 	}

@@ -150,11 +150,8 @@ answer: {{ .universalValue }}
 				"templated-include.yaml": "exampleObj: {{ .extraValue }}",
 			},
 			expectedConfigmap: `
-answer: 5
-exampleFloat: 13.2
-exampleInt: 33
-region: us-east-1
-`,
+answer: 42
+exampleObj: 43`,
 			expectedSecret: `secretAccessKey: 123456`,
 		},
 	}

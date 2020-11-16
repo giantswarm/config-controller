@@ -12,17 +12,6 @@ type Store struct {
 	fs billy.Filesystem
 }
 
-func (s *Store) Exists(path string) (bool, error) {
-	_, err := s.fs.Stat(path)
-	if os.IsNotExist(err) {
-		return false, nil
-	} else if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return true, nil
-}
-
 func (s *Store) ReadDir(dirpath string) ([]os.FileInfo, error) {
 	stat, err := s.fs.Stat(dirpath)
 	if os.IsNotExist(err) {

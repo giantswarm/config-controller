@@ -62,12 +62,6 @@ const (
 	configmapTemplatePatchFile = "configmap-values.yaml.patch.template"
 )
 
-type Filesystem interface {
-	Exists(string) bool
-	ReadFile(string) ([]byte, error)
-	ReadDir(string) ([]os.FileInfo, error)
-}
-
 type Config struct {
 	Fs Filesystem
 }

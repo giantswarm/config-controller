@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -20,159 +21,52 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 		installation string
 	}{
 		{
-			name:     "case 0 - basic templates and installation-level config.yaml patch",
+			name:     "case 0 - basic config with config.yaml.patch",
 			caseFile: "test/case0.yaml",
 
 			app:          "operator",
 			installation: "puma",
 		},
 
-		/*
-					{
-						name:         "case 1 - include files from include/ directory",
-						app:          "operator",
-						installation: "puma",
+		{
+			name:     "case 1 - include files in templates",
+			caseFile: "test/case1.yaml",
 
-						configYaml: "universalValue: 42",
-						configmapTemplate: `
-			answer: {{ .universalValue }}
-			region: {{ .provider.region }}
-			availableInstances:
-			{{- include "instances" . | nindent 2 }}
-			`,
-						installationSecret: "key: password",
-						secretTemplate:     `secretAccessKey: {{ .key }}`,
+			app:          "operator",
+			installation: "puma",
+		},
 
-						configYamlPatch: "provider: {kind: aws, region: us-east-1}",
-						includeFiles: map[string]string{
-							"instances.yaml": "- small\n- medium\n- large",
-						},
+		{
+			name:     "case 2 - override global value for one installation",
+			caseFile: "test/case2.yaml",
 
-						expectedConfigmap: `
-			answer: 42
-			availableInstances:
-			- small
-			- medium
-			- large
-			region: us-east-1`,
-						expectedSecret: `secretAccessKey: password`,
-					},
+			app:          "operator",
+			installation: "puma",
+		},
 
-					{
-						name:         "case 2 - overriding default app template with installation-specific app template",
-						app:          "operator",
-						installation: "puma",
+		{
+			name:     "case 3 - keep non-string values after templating/patching",
+			caseFile: "test/case3.yaml",
 
-						configYaml: `
-			universalValue: 42
-			registry: docker.io`,
-						configmapTemplate: `
-			answer: {{ .universalValue }}
-			region: {{ .provider.region }}
-			registry: {{ .registry }}`,
-						installationSecret: "key: password",
-						secretTemplate:     `secretAccessKey: {{ .key }}`,
+			app:          "operator",
+			installation: "puma",
+		},
 
-						configYamlPatch:        "provider: {kind: aws, region: us-east-1}",
-						configmapTemplatePatch: "registry: azurecr.io",
+		{
+			name:     "case 4 - allow templating in included files ",
+			caseFile: "test/case4.yaml",
 
-						expectedConfigmap: `
-			answer: 42
-			region: us-east-1
-			registry: azurecr.io`,
-						expectedSecret: `secretAccessKey: password`,
-					},
+			app:          "operator",
+			installation: "puma",
+		},
 
-					{
-						name:         "case 3 - template integers",
-						app:          "operator",
-						installation: "puma",
+		{
+			name:     "case 5 - test indentation when including files",
+			caseFile: "test/case5.yaml",
 
-						configYaml: "universalValue: 42",
-						configmapTemplate: `
-			answer: {{ .universalValue }}
-			region: {{ .provider.region }}`,
-						installationSecret: "key: 123456",
-						secretTemplate:     `secretAccessKey: {{ .key }}`,
-
-						configYamlPatch: "provider: {kind: aws, region: us-east-1}",
-						configmapTemplatePatch: `answer: 5
-			exampleInt: 33
-			exampleFloat: 13.2
-			`,
-
-						expectedConfigmap: `
-			answer: 5
-			exampleFloat: 13.2
-			exampleInt: 33
-			region: us-east-1
-			`,
-						expectedSecret: `secretAccessKey: 123456`,
-					},
-
-					{
-						name:         "case 4 - templating in included files",
-						app:          "operator",
-						installation: "puma",
-
-						configYaml: "universalValue: 42\nextraValue: 43",
-						configmapTemplate: `
-			answer: {{ .universalValue }}
-			{{ include "templated-include" . }}
-			`,
-						installationSecret: "key: 123456",
-						secretTemplate:     `secretAccessKey: {{ .key }}`,
-
-						includeFiles: map[string]string{
-							"templated-include.yaml": "exampleObj: {{ .extraValue }}",
-						},
-						expectedConfigmap: `
-			answer: 42
-			exampleObj: 43`,
-						expectedSecret: `secretAccessKey: 123456`,
-					},
-
-					{
-						name:         "case 5 - complex indent with include",
-						app:          "operator",
-						installation: "puma",
-
-						configYaml: "universalValue: 42",
-						configmapTemplate: `
-			answer: {{ .universalValue }}
-			level1:
-			  {{- include "level1" . | nindent 2 }}
-			  level2:
-			    {{- include "level2" . | nindent 4 }}
-			    level3:
-			      {{- include "level3" . | nindent 6 }}
-			    {{- include "level2-2" . | nindent 4 }}
-			  {{- include "level1-2" . | nindent 2 }}
-			`,
-						installationSecret: "key: 123456",
-						secretTemplate:     `secretAccessKey: {{ .key }}`,
-
-						includeFiles: map[string]string{
-							"level1.yaml":   "firstLevel: true",
-							"level2.yaml":   "secondLevel: true",
-							"level3.yaml":   "thirdLevel: true",
-							"level2-2.yaml": "backOnSecond: true",
-							"level1-2.yaml": "backOnFirst: true",
-						},
-						expectedConfigmap: `
-			answer: 42
-			level1:
-			  backOnFirst: true
-			  firstLevel: true
-			  level2:
-			    backOnSecond: true
-			    level3:
-			      thirdLevel: true
-			    secondLevel: true
-			`,
-						expectedSecret: `secretAccessKey: 123456`,
-					},
-		*/
+			app:          "operator",
+			installation: "puma",
+		},
 	}
 
 	for _, tc := range testCases {

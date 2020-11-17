@@ -62,13 +62,14 @@ func New(config *Config) (*Generator, error) {
 // use by performing the following operations:
 // 1. Get configmap context and patch it with installation-specific overrides (if
 //    available)
-// 2. Get app-specific configmap template and render it with context (result of 1.)
-// 3. Get installation-specific configmap template patch and render it with
-//    context (result of 1.)
-// 4. Patch app-specific template (result of 2.) with and patch it with
-//    installation-specific (result of 3.) app overrides (if available)
-// 5. Get secrets context
-// 6. Get app-specific secrets template.
+// 2. Get global configmap template for the app and render it with context
+//    (result of 1.)
+// 3. Get installation-specific configmap template for the app patch and render
+//    it with context (result of 1.)
+// 4. Patch global template (result of 2.) with installation-specific (result
+//    of 3.) app overrides (if available)
+// 5. Get global secrets context
+// 6. Get installation-specific secrets template for the app (if available).
 // 7. Render app secrets template (result of 4.) with installation secrets
 //    (result of 5.)
 func (g Generator) GenerateConfig(installation, app string) (configmap string, secrets string, err error) {

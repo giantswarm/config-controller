@@ -256,36 +256,27 @@ func newMockFilesystem(installation, app, globalConfig, appConfigmapTemplate, in
 		app:          app,
 		installation: installation,
 		files: map[string][]byte{
-			path.Join(defaultDir, defaultConfigFile):                          []byte(globalConfig),
-			path.Join(defaultDir, appsSubDir, app, configmapTemplateFile):     []byte(appConfigmapTemplate),
-			path.Join(installationsDir, installation, installationSecretFile): []byte(installationSecret),
-			path.Join(defaultDir, appsSubDir, app, secretTemplateFile):        []byte(appSecretTemplate),
+			"default/config.yaml": []byte(globalConfig),
+			"default/apps/" + app + "/configmap-values.yaml.template": []byte(appConfigmapTemplate),
+			"installations/" + installation + "/secrets.yaml":         []byte(installationSecret),
+			"default/apps/" + app + "secret-values.yaml.template":     []byte(appSecretTemplate),
 		},
 	}
 	return &fs
 }
 
 func (fs *mockFilesystem) AddConfigPatch(patch string) {
-	p := path.Join(installationsDir, fs.installation, installationConfigPatchFile)
+	p := "installations/" + fs.installation + "/config.yaml.patch"
 	fs.files[p] = []byte(patch)
 }
 
 func (fs *mockFilesystem) AddConfigmapTemplatePatch(patch string) {
-	p := path.Join(
-		installationsDir,
-		fs.installation,
-		appsSubDir,
-		fs.app,
-		configmapTemplatePatchFile,
-	)
+	p := "installations/" + fs.installation + "/apps/" + fs.app + "/configmap-values.yaml.patch.template"
 	fs.files[p] = []byte(patch)
 }
 
 func (fs *mockFilesystem) AddIncludeFile(filepath, contents string) {
-	p := path.Join(
-		includeDir,
-		filepath,
-	)
+	p := path.Join("include", filepath)
 	fs.files[p] = []byte(contents)
 }
 
@@ -328,7 +319,7 @@ func (ff mockFile) Sys() interface{} {
 func (fs *mockFilesystem) ReadDir(_ string) ([]os.FileInfo, error) {
 	out := []os.FileInfo{}
 	for k := range fs.files {
-		if !strings.HasPrefix(k, includeDir) {
+		if !strings.HasPrefix(k, "include") {
 			continue
 		}
 		out = append(out, &mockFile{k})

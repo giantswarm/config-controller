@@ -13,53 +13,31 @@ import (
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
 )
 
-const (
-	/*
-		- .yaml is a values source
-		- .yaml.patch overrides values source
-		- .yaml.template is a template
-		- .yaml.template.patch overrides template
+/*
+	- .yaml is a values source
+	- .yaml.patch overrides values source
+	- .yaml.template is a template
+	- .yaml.template.patch overrides template
 
-		Folder structure:
-			default/
-				config.yaml
-				apps/
-					aws-operator/
-						...
-					azure-operator/
-						configmap-values.yaml.template
-						secret-values.yaml.template
-			installations/
-				ghost/
+	Folder structure:
+		default/
+			config.yaml
+			apps/
+				aws-operator/
 					...
-				godsmack/
-					config.yaml.patch
-					secrets.yaml
-					apps/
-						azure-operator/
-							configmap-values.yaml.patch.template
-	*/
-
-	// global directories (at /)
-	defaultDir       = "default"
-	includeDir       = "include"
-	installationsDir = "installations"
-
-	// both in /defaultDir and /installationsDir/<installation>
-	appsSubDir = "apps"
-
-	// installation-level config
-	defaultConfigFile           = "config.yaml"
-	installationConfigPatchFile = defaultConfigFile + ".patch"
-	installationSecretFile      = "secrets.yaml"
-
-	// default app-level config
-	configmapTemplateFile = "configmap-values.yaml.template"
-	secretTemplateFile    = "secret-values.yaml.template"
-
-	// installation app-level config
-	configmapTemplatePatchFile = "configmap-values.yaml.patch.template"
-)
+				azure-operator/
+					configmap-values.yaml.template
+					secret-values.yaml.template
+		installations/
+			ghost/
+				...
+			godsmack/
+				config.yaml.patch
+				secrets.yaml
+				apps/
+					azure-operator/
+						configmap-values.yaml.patch.template
+*/
 
 type Config struct {
 	Fs Filesystem
@@ -96,8 +74,8 @@ func New(config *Config) (*Generator, error) {
 func (g Generator) GenerateConfig(installation, app string) (configmap string, secrets string, err error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
-		path.Join(defaultDir, defaultConfigFile),
-		path.Join(installationsDir, installation, installationConfigPatchFile),
+		"default/config.yaml",
+		"installations/"+installation+"/config.yaml.patch",
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
@@ -105,7 +83,7 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 
 	// 2.
 	configmapBase, err := g.getRenderedTemplate(
-		path.Join(defaultDir, appsSubDir, app, configmapTemplateFile),
+		"default/apps/"+app+"/configmap-values.yaml.template",
 		configmapContext,
 	)
 	if err != nil {
@@ -115,7 +93,7 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 	// 3.
 	var configmapPatch string
 	{
-		filepath := path.Join(installationsDir, installation, appsSubDir, app, configmapTemplatePatchFile)
+		filepath := "installations/" + installation + "/apps/" + app + "/configmap-values.yaml.patch.template"
 		patch, err := g.getRenderedTemplate(filepath, configmapContext)
 		if err != nil && IsNotFound(err) {
 			configmapPatch = ""
@@ -137,7 +115,7 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 
 	// 5.
 	secretsContext, err := g.getWithPatchIfExists(
-		path.Join(installationsDir, installation, installationSecretFile),
+		"installations/"+installation+"/secrets.yaml",
 		"",
 	)
 	if err != nil {
@@ -146,7 +124,7 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 
 	// 6.
 	secretsTemplate, err := g.getWithPatchIfExists(
-		path.Join(defaultDir, appsSubDir, app, secretTemplateFile),
+		"default/apps/"+app+"/secret-values.yaml.template",
 		"",
 	)
 	if err != nil {
@@ -289,7 +267,7 @@ func (g Generator) renderTemplate(templateText string, context string) (string, 
 }
 
 func (g Generator) addIncludeFilesToTemplate(t *template.Template) error {
-	files, err := g.fs.ReadDir(includeDir)
+	files, err := g.fs.ReadDir("include")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -307,7 +285,7 @@ func (g Generator) addIncludeFilesToTemplate(t *template.Template) error {
 		}
 
 		contents, err := g.fs.ReadFile(
-			path.Join(includeDir, file.Name()),
+			path.Join("include", file.Name()),
 		)
 		if err != nil {
 			return microerror.Mask(err)

@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -22,7 +21,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 	}{
 		{
 			name:     "case 0 - basic config with config.yaml.patch",
-			caseFile: "test/case0.yaml",
+			caseFile: "testdata/case0.yaml",
 
 			app:          "operator",
 			installation: "puma",
@@ -30,7 +29,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 
 		{
 			name:     "case 1 - include files in templates",
-			caseFile: "test/case1.yaml",
+			caseFile: "testdata/case1.yaml",
 
 			app:          "operator",
 			installation: "puma",
@@ -38,7 +37,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 
 		{
 			name:     "case 2 - override global value for one installation",
-			caseFile: "test/case2.yaml",
+			caseFile: "testdata/case2.yaml",
 
 			app:          "operator",
 			installation: "puma",
@@ -46,7 +45,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 
 		{
 			name:     "case 3 - keep non-string values after templating/patching",
-			caseFile: "test/case3.yaml",
+			caseFile: "testdata/case3.yaml",
 
 			app:          "operator",
 			installation: "puma",
@@ -54,7 +53,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 
 		{
 			name:     "case 4 - allow templating in included files ",
-			caseFile: "test/case4.yaml",
+			caseFile: "testdata/case4.yaml",
 
 			app:          "operator",
 			installation: "puma",
@@ -62,7 +61,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 
 		{
 			name:     "case 5 - test indentation when including files",
-			caseFile: "test/case5.yaml",
+			caseFile: "testdata/case5.yaml",
 
 			app:          "operator",
 			installation: "puma",

@@ -69,9 +69,8 @@ func New(config *Config) (*Generator, error) {
 // 4. Patch global template (result of 2.) with installation-specific (result
 //    of 3.) app overrides (if available)
 // 5. Get global secrets context
-// 6. Get installation-specific secrets template for the app (if available).
-// 7. Render app secrets template (result of 4.) with installation secrets
-//    (result of 5.)
+// 6. Get installation-specific secrets template for the app (if available) and
+//    render it with installation secrets context (result of 5.)
 func (g Generator) GenerateConfig(installation, app string) (configmap string, secrets string, err error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
@@ -96,7 +95,7 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 	{
 		filepath := "installations/" + installation + "/apps/" + app + "/configmap-values.yaml.patch.template"
 		patch, err := g.getRenderedTemplate(filepath, configmapContext)
-		if err != nil && IsNotFound(err) {
+		if IsNotFound(err) {
 			configmapPatch = ""
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
@@ -128,11 +127,12 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 		"default/apps/"+app+"/secret-values.yaml.template",
 		"",
 	)
-	if err != nil {
+	if IsNotFound(err) {
+		return configmap, "", nil
+	} else if err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
-	// 7.
 	secrets, err = g.renderTemplate(secretsTemplate, secretsContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)

@@ -66,6 +66,14 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 			app:          "operator",
 			installation: "puma",
 		},
+
+		{
+			name:     "case 6 - test app with no secrets (configmap only)",
+			caseFile: "testdata/case5.yaml",
+
+			app:          "operator",
+			installation: "puma",
+		},
 	}
 
 	for _, tc := range testCases {

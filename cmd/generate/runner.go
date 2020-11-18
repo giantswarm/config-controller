@@ -37,7 +37,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(r.stdout, "Creating vault client using opsctl\n")
 
-	vaultClient, err := creaeteVaultClientUsingOpsctl(ctx, r.flag.GitHubToken, r.flag.Installation)
+	vaultClient, err := createVaultClientUsingOpsctl(ctx, r.flag.GitHubToken, r.flag.Installation)
 	if err != nil {
 		return microerror.Mask(err)
 	}

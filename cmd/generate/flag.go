@@ -15,7 +15,7 @@ const (
 	flagGithubToken   = "github-token"
 	flagInstallation  = "installation"
 
-	envConfigControllerGithubToken = "CONFIG_CONTROLLER_GITHUB_TOKEN"
+	envConfigControllerGithubToken = "CONFIG_CONTROLLER_GITHUB_TOKEN" //nolint:gosec
 )
 
 type flag struct {

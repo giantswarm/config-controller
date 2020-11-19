@@ -41,7 +41,7 @@ func newVaultClient(config vaultClientConfig) (*vaultapi.Client, error) {
 func createVaultClientUsingOpsctl(ctx context.Context, gitHubToken, installation string) (*vaultapi.Client, error) {
 	cmdArgs := []string{os.Getenv("SHELL"), "-c", "opsctl create vaultconfig -i " + installation + " -o json"}
 
-	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
+	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...) //nolint:gosec
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), "OPSCTL_GITHUB_TOKEN="+gitHubToken)
 	out, err := cmd.Output()

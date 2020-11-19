@@ -60,17 +60,17 @@ func New(config *Config) (*Generator, error) {
 
 // GenerateConfig creates final configmap values and secret values for helm to
 // use by performing the following operations:
-// 1. Get configmap context and patch it with installation-specific overrides (if
-//    available)
-// 2. Get global configmap template for the app and render it with context
-//    (result of 1.)
+// 1. Get configmap template data and patch it with installation-specific
+//    overrides (if available)
+// 2. Get global configmap template for the app and render it with template
+//    data (result of 1.)
 // 3. Get installation-specific configmap template for the app patch and render
-//    it with context (result of 1.)
+//    it with template data (result of 1.)
 // 4. Patch global template (result of 2.) with installation-specific (result
 //    of 3.) app overrides (if available)
-// 5. Get global secrets context
+// 5. Get global secrets template data
 // 6. Get installation-specific secrets template for the app (if available) and
-//    render it with installation secrets context (result of 5.)
+//    render it with installation secrets template data (result of 5.)
 func (g Generator) GenerateConfig(installation, app string) (configmap string, secrets string, err error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
@@ -178,13 +178,13 @@ func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string,
 	return result, nil
 }
 
-func (g Generator) getRenderedTemplate(filepath, context string) (string, error) {
+func (g Generator) getRenderedTemplate(filepath, templateData string) (string, error) {
 	templateBytes, err := g.fs.ReadFile(filepath)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	result, err := g.renderTemplate(string(templateBytes), context)
+	result, err := g.renderTemplate(string(templateBytes), templateData)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -240,9 +240,9 @@ func applyPatch(base, patch []byte) (string, error) {
 	return string(outputBytes), nil
 }
 
-func (g Generator) renderTemplate(templateText string, context string) (string, error) {
+func (g Generator) renderTemplate(templateText string, templateData string) (string, error) {
 	c := map[string]interface{}{}
-	err := yaml.Unmarshal([]byte(context), &c)
+	err := yaml.Unmarshal([]byte(templateData), &c)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -301,7 +301,7 @@ func (g Generator) addIncludeFilesToTemplate(t *template.Template) error {
 	return nil
 }
 
-func (g Generator) include(templateName string, context interface{}) (string, error) {
+func (g Generator) include(templateName string, templateData interface{}) (string, error) {
 	t := template.New("render-" + templateName).Funcs(sprig.FuncMap())
 	err := g.addIncludeFilesToTemplate(t)
 	if err != nil {
@@ -313,7 +313,7 @@ func (g Generator) include(templateName string, context interface{}) (string, er
 	t = template.Must(t.Parse(templateText))
 
 	out := bytes.NewBuffer([]byte{})
-	err = t.Execute(out, context)
+	err = t.Execute(out, templateData)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

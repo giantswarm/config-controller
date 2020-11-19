@@ -10,6 +10,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/config-controller/pkg/decrypter"
+	"github.com/giantswarm/config-controller/pkg/generator"
+	"github.com/giantswarm/config-controller/pkg/github"
+)
+
+const (
+	owner = "giantswarm"
+	repo  = "config"
 )
 
 type runner struct {
@@ -36,6 +43,45 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	gh, err := github.New(github.Config{
+		Token: r.flag.GitHubToken,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	var store generator.Filesystem
+	if r.flag.ConfigVersion != "" {
+		tag, err := gh.GetLatestTag(ctx, owner, repo, r.flag.ConfigVersion)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		store, err = gh.GetFilesByTag(ctx, owner, repo, tag)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else if r.flag.Branch != "" {
+		store, err = gh.GetFilesByBranch(ctx, owner, repo, r.flag.Branch)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	gen, err := generator.New(&generator.Config{
+		Fs: store,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	configmap, secrets, err := gen.GenerateConfig(r.flag.Installation, r.flag.App)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// TODO KUBA: clean up below
+
 	fmt.Fprintf(r.stdout, "Creating vault client using opsctl\n")
 
 	vaultClient, err := createVaultClientUsingOpsctl(ctx, r.flag.GitHubToken, r.flag.Installation)

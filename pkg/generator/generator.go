@@ -2,10 +2,8 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"path"
-	"strings"
 
 	"github.com/Masterminds/sprig"
 	"github.com/ghodss/yaml"
@@ -250,12 +248,10 @@ func (g Generator) renderTemplate(templateText string, templateData string) (str
 	funcMap := sprig.FuncMap()
 	funcMap["include"] = g.include
 
-	t := template.New("main").Funcs(funcMap)
-	err = g.addIncludeFilesToTemplate(t)
+	t, err := template.New("main").Funcs(funcMap).Parse(templateText)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	t = template.Must(t.Parse(templateText))
 
 	// render final template
 	out := bytes.NewBuffer([]byte{})
@@ -267,50 +263,16 @@ func (g Generator) renderTemplate(templateText string, templateData string) (str
 	return out.String(), nil
 }
 
-func (g Generator) addIncludeFilesToTemplate(t *template.Template) error {
-	files, err := g.fs.ReadDir("include")
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	funcMap := sprig.FuncMap()
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		baseName := path.Base(file.Name())
-		if strings.ContainsRune(baseName, '.') {
-			elements := strings.SplitN(baseName, ".", 2)
-			baseName = elements[0]
-		}
-
-		contents, err := g.fs.ReadFile(
-			path.Join("include", file.Name()),
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		_, err = t.New(baseName).Funcs(funcMap).Parse(string(contents))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	return nil
-}
-
 func (g Generator) include(templateName string, templateData interface{}) (string, error) {
-	t := template.New("render-" + templateName).Funcs(sprig.FuncMap())
-	err := g.addIncludeFilesToTemplate(t)
+	contents, err := g.fs.ReadFile(path.Join("include", templateName+".yaml"))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	templateText := fmt.Sprintf("{{ template %q . }}", templateName)
-
-	t = template.Must(t.Parse(templateText))
+	t, err := template.New(templateName).Funcs(sprig.FuncMap()).Parse(string(contents))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
 
 	out := bytes.NewBuffer([]byte{})
 	err = t.Execute(out, templateData)

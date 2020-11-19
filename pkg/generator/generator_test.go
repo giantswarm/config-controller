@@ -123,7 +123,7 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 		tempDirPath: temporaryDirectory,
 	}
 	for _, p := range []string{"default", "installations", "include"} {
-		if err := os.Mkdir(path.Join(temporaryDirectory, p), 0777); err != nil {
+		if err := os.MkdirAll(path.Join(temporaryDirectory, p), 0777); err != nil {
 			panic(err)
 		}
 	}

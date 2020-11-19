@@ -45,7 +45,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var decrypter *decrypt.Decrypter
 	{
-		c := decrypt.Config{
+		c := decrypt.DecrypterConfig{
 			VaultClient: vaultClient,
 		}
 

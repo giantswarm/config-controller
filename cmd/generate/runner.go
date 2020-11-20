@@ -44,13 +44,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	gh, err := github.New(github.Config{
-		Token: r.flag.GitHubToken,
-	})
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	var decryptTraverser *decrypt.YAMLTraverser
 	{
 		vaultClient, err := createVaultClientUsingOpsctl(ctx, r.flag.GitHubToken, r.flag.Installation)
@@ -79,25 +72,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var store generator.Filesystem
 	var ref string
-	if r.flag.ConfigVersion != "" {
-		tag, err := gh.GetLatestTag(ctx, owner, repo, r.flag.ConfigVersion)
+	{
+		gh, err := github.New(github.Config{
+			Token: r.flag.GitHubToken,
+		})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		store, err = gh.GetFilesByTag(ctx, owner, repo, tag)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		if r.flag.ConfigVersion != "" {
+			tag, err := gh.GetLatestTag(ctx, owner, repo, r.flag.ConfigVersion)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-		ref = tag
-	} else if r.flag.Branch != "" {
-		store, err = gh.GetFilesByBranch(ctx, owner, repo, r.flag.Branch)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+			store, err = gh.GetFilesByTag(ctx, owner, repo, tag)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-		ref = r.flag.Branch
+			ref = tag
+		} else if r.flag.Branch != "" {
+			store, err = gh.GetFilesByBranch(ctx, owner, repo, r.flag.Branch)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			ref = r.flag.Branch
+		}
 	}
 
 	gen, err := generator.New(&generator.Config{

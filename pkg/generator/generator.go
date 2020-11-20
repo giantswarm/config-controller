@@ -299,7 +299,7 @@ func (g Generator) renderTemplate(templateText string, templateData string) (str
 }
 
 func (g Generator) include(templateName string, templateData interface{}) (string, error) {
-	contents, err := g.fs.ReadFile(path.Join("include", templateName+".yaml"))
+	contents, err := g.fs.ReadFile(path.Join("include", templateName+".yaml.template"))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

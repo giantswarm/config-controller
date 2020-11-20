@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/github"
 )
@@ -50,6 +51,32 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
+	var decryptTraverser *decrypt.YAMLTraverser
+	{
+		vaultClient, err := createVaultClientUsingOpsctl(ctx, r.flag.GitHubToken, r.flag.Installation)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		c := decrypt.VaultDecrypterConfig{
+			VaultClient: vaultClient,
+		}
+
+		decrypter, err := decrypt.NewVaultDecrypter(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		decryptTraverser, err = decrypt.NewYAMLTraverser(
+			decrypt.YAMLTraverserConfig{
+				Decrypter: decrypter,
+			},
+		)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var store generator.Filesystem
 	var ref string
 	if r.flag.ConfigVersion != "" {
@@ -74,13 +101,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	gen, err := generator.New(&generator.Config{
-		Fs: store,
+		Fs:               store,
+		DecryptTraverser: decryptTraverser,
 	})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	configmap, secrets, err := gen.GenerateConfig(r.flag.Installation, r.flag.App, ref)
+	configmap, secrets, err := gen.GenerateConfig(ctx, r.flag.Installation, r.flag.App, ref)
 	if err != nil {
 		return microerror.Mask(err)
 	}

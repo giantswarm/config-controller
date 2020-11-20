@@ -49,7 +49,7 @@ func (r *Repo) ShallowClone(ctx context.Context, url string, ref plumbing.Refere
 	_, err := git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
 		Auth:          auth,
 		URL:           url,
-		ReferenceName: plumbing.NewTagReferenceName(tag),
+		ReferenceName: ref,
 		SingleBranch:  true,
 		Depth:         1,
 	})

@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-func TestGenerator_GenerateConfig(t *testing.T) {
+func TestGenerator_GenerateRawConfig(t *testing.T) {
 	testCases := []struct {
 		name     string
 		caseFile string
@@ -92,7 +92,7 @@ func TestGenerator_GenerateConfig(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 
-			configmap, secret, err := g.GenerateConfig(tc.installation, tc.app)
+			configmap, secret, err := g.GenerateRawConfig(tc.installation, tc.app)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
 			}

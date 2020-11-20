@@ -2,13 +2,17 @@ package generator
 
 import (
 	"bytes"
+	"encoding/base64"
 	"html/template"
 	"path"
+	"strings"
 
 	"github.com/Masterminds/sprig"
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 /*
@@ -69,7 +73,7 @@ func New(config *Config) (*Generator, error) {
 // 5. Get global secrets template data
 // 6. Get installation-specific secrets template for the app (if available) and
 //    render it with installation secrets template data (result of 5.)
-func (g Generator) GenerateConfig(installation, app string) (configmap string, secrets string, err error) {
+func (g Generator) GenerateRawConfig(installation, app string) (configmap string, secrets string, err error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
 		"default/config.yaml",
@@ -134,6 +138,37 @@ func (g Generator) GenerateConfig(installation, app string) (configmap string, s
 	secrets, err = g.renderTemplate(secretsTemplate, secretsContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)
+	}
+
+	return configmap, secrets, nil
+}
+
+func (g Generator) GenerateConfig(installation, app, ref string) (configmap *corev1.ConfigMap, secrets *corev1.Secret, err error) {
+	cm, s, err := g.GenerateRawConfig(installation, app)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	name := app + "-" + strings.ReplaceAll(ref, ".", "-")
+	meta := metav1.ObjectMeta{
+		Name:      name,
+		Namespace: "giantswarm",
+	}
+
+	configmap = &corev1.ConfigMap{
+		ObjectMeta: meta,
+		Data: map[string]string{
+			"configmap-values.yaml": cm,
+		},
+	}
+
+	s64 := base64.StdEncoding.EncodeToString([]byte(s))
+
+	secrets = &corev1.Secret{
+		ObjectMeta: meta,
+		Data: map[string][]byte{
+			"secret-values.yaml": []byte(s64),
+		},
 	}
 
 	return configmap, secrets, nil

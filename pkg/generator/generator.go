@@ -5,6 +5,7 @@ import (
 	"context"
 	"html/template"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/Masterminds/sprig"
@@ -40,6 +41,11 @@ import (
 					azure-operator/
 						configmap-values.yaml.patch.template
 */
+
+var (
+	multipleDashPattern     = regexp.MustCompile("-{2,}")
+	invalidCharacterPattern = regexp.MustCompile("[^a-z0-9]+")
+)
 
 type Config struct {
 	Fs               Filesystem
@@ -167,7 +173,7 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, ref st
 		return nil, nil, microerror.Mask(err)
 	}
 
-	name := app + "-" + strings.ReplaceAll(ref, ".", "-")
+	name := generateResourceName(app, ref)
 	meta := metav1.ObjectMeta{
 		Name:      name,
 		Namespace: "giantswarm",
@@ -340,4 +346,15 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 	}
 
 	return out.String(), nil
+}
+
+func generateResourceName(elements ...string) string {
+	name := strings.Join(elements, "-")
+	name = string(invalidCharacterPattern.ReplaceAll([]byte(name), []byte("-")))
+	name = string(multipleDashPattern.ReplaceAll([]byte(name), []byte("-")))
+	name = strings.ToLower(strings.Trim(name, "-"))
+	if len(name) > 63 {
+		name = name[:63]
+	}
+	return name
 }

@@ -156,6 +156,10 @@ func (g Generator) GenerateConfig(installation, app, ref string) (configmap *cor
 	}
 
 	configmap = &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
 		ObjectMeta: meta,
 		Data: map[string]string{
 			"configmap-values.yaml": cm,
@@ -165,6 +169,10 @@ func (g Generator) GenerateConfig(installation, app, ref string) (configmap *cor
 	s64 := base64.StdEncoding.EncodeToString([]byte(s))
 
 	secrets = &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
 		ObjectMeta: meta,
 		Data: map[string][]byte{
 			"secret-values.yaml": []byte(s64),

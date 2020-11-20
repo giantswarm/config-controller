@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"encoding/base64"
 	"html/template"
 	"path"
 	"strings"
@@ -166,8 +165,6 @@ func (g Generator) GenerateConfig(installation, app, ref string) (configmap *cor
 		},
 	}
 
-	s64 := base64.StdEncoding.EncodeToString([]byte(s))
-
 	secrets = &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
@@ -175,7 +172,7 @@ func (g Generator) GenerateConfig(installation, app, ref string) (configmap *cor
 		},
 		ObjectMeta: meta,
 		Data: map[string][]byte{
-			"secret-values.yaml": []byte(s64),
+			"secret-values.yaml": []byte(s),
 		},
 	}
 

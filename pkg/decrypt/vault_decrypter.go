@@ -22,7 +22,7 @@ type VaultDecrypter struct {
 
 var _ Decrypter = &VaultDecrypter{}
 
-func New(config VaultDecrypterConfig) (*VaultDecrypter, error) {
+func NewVaultDecrypter(config VaultDecrypterConfig) (*VaultDecrypter, error) {
 	if config.VaultClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}

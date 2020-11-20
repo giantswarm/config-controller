@@ -107,6 +107,57 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 	}
 }
 
+func TestGenerator_generateResourceName(t *testing.T) {
+	testCases := []struct {
+		caseName string
+
+		app string
+		ref string
+
+		expectedName string
+	}{
+		{
+			caseName:     "case 0 - generate regular name",
+			app:          "kvm-operator",
+			ref:          "v1.2.3",
+			expectedName: "kvm-operator-v1-2-3",
+		},
+		{
+			caseName:     "case 1 - replace unsupported weird symbols",
+			app:          "kvm-operator +=*&^%$#!||\\//<>",
+			ref:          "v1.2.3",
+			expectedName: "kvm-operator-v1-2-3",
+		},
+		{
+			caseName:     "case 2 - trim dashes",
+			app:          "-----kvm-operator",
+			ref:          "v1.2.3----",
+			expectedName: "kvm-operator-v1-2-3",
+		},
+		{
+			caseName:     "case 3 - replace multiple dashes in a row",
+			app:          "aws-operator",
+			ref:          "this--is---a---branch----ref",
+			expectedName: "aws-operator-this-is-a-branch-ref",
+		},
+		{
+			caseName:     "case 4 - truncate long names to 63 characters",
+			app:          "aws-operator-abcdefghijklmnopqrstuvwxyz0123456789",
+			ref:          "abcdefghijklmnopqrstuvwxyz0123456789",
+			expectedName: "aws-operator-abcdefghijklmnopqrstuvwxyz0123456789-abcdefghijklm",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.caseName, func(t *testing.T) {
+			generatedName := generateResourceName(tc.app, tc.ref)
+			if generatedName != tc.expectedName {
+				t.Fatalf("Wrong test result, expected %q got: %q", tc.expectedName, generatedName)
+			}
+		})
+	}
+}
+
 type mockFilesystem struct {
 	tempDirPath string
 

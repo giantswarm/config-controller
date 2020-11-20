@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"context"
 	"html/template"
 	"path"
 	"strings"
@@ -41,11 +42,13 @@ import (
 */
 
 type Config struct {
-	Fs Filesystem
+	Fs               Filesystem
+	DecryptTraverser DecryptTraverser
 }
 
 type Generator struct {
-	fs Filesystem
+	fs               Filesystem
+	decryptTraverser DecryptTraverser
 }
 
 func New(config *Config) (*Generator, error) {
@@ -53,7 +56,8 @@ func New(config *Config) (*Generator, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Fs must not be empty", config)
 	}
 	g := Generator{
-		fs: config.Fs,
+		fs:               config.Fs,
+		decryptTraverser: config.DecryptTraverser,
 	}
 
 	return &g, nil
@@ -70,11 +74,13 @@ func New(config *Config) (*Generator, error) {
 // 4. Patch global template (result of 2.) with installation-specific (result
 //    of 3.) app overrides (if available)
 // 5. Get global secrets template data
-// 6. Get installation-specific secrets template for the app (if available) and
+// 6. Decrypt global secrets if DecryptTraverser has been provided.
+// 7. Get installation-specific secrets template for the app (if available) and
 //    render it with installation secrets template data (result of 5.)
-func (g Generator) GenerateRawConfig(installation, app string) (configmap string, secrets string, err error) {
+func (g Generator) GenerateRawConfig(ctx context.Context, installation, app string) (configmap string, secrets string, err error) {
 	// 1.
 	configmapContext, err := g.getWithPatchIfExists(
+		ctx,
 		"default/config.yaml",
 		"installations/"+installation+"/config.yaml.patch",
 	)
@@ -84,6 +90,7 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 
 	// 2.
 	configmapBase, err := g.getRenderedTemplate(
+		ctx,
 		"default/apps/"+app+"/configmap-values.yaml.template",
 		configmapContext,
 	)
@@ -95,7 +102,7 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 	var configmapPatch string
 	{
 		filepath := "installations/" + installation + "/apps/" + app + "/configmap-values.yaml.patch.template"
-		patch, err := g.getRenderedTemplate(filepath, configmapContext)
+		patch, err := g.getRenderedTemplate(ctx, filepath, configmapContext)
 		if IsNotFound(err) {
 			configmapPatch = ""
 		} else if err != nil {
@@ -107,6 +114,7 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 
 	// 4.
 	configmap, err = applyPatch(
+		ctx,
 		[]byte(configmapBase),
 		[]byte(configmapPatch),
 	)
@@ -116,6 +124,7 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 
 	// 5.
 	secretsContext, err := g.getWithPatchIfExists(
+		ctx,
 		"installations/"+installation+"/secrets.yaml",
 		"",
 	)
@@ -124,7 +133,17 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 	}
 
 	// 6.
+	if g.decryptTraverser != nil {
+		decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(secretsContext))
+		if err != nil {
+			return "", "", microerror.Mask(err)
+		}
+		secretsContext = string(decryptedBytes)
+	}
+
+	// 7.
 	secretsTemplate, err := g.getWithPatchIfExists(
+		ctx,
 		"default/apps/"+app+"/secret-values.yaml.template",
 		"",
 	)
@@ -134,7 +153,7 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 		return "", "", microerror.Mask(err)
 	}
 
-	secrets, err = g.renderTemplate(secretsTemplate, secretsContext)
+	secrets, err = g.renderTemplate(ctx, secretsTemplate, secretsContext)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
@@ -142,8 +161,8 @@ func (g Generator) GenerateRawConfig(installation, app string) (configmap string
 	return configmap, secrets, nil
 }
 
-func (g Generator) GenerateConfig(installation, app, ref string) (configmap *corev1.ConfigMap, secrets *corev1.Secret, err error) {
-	cm, s, err := g.GenerateRawConfig(installation, app)
+func (g Generator) GenerateConfig(ctx context.Context, installation, app, ref string) (configmap *corev1.ConfigMap, secrets *corev1.Secret, err error) {
+	cm, s, err := g.GenerateRawConfig(ctx, installation, app)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
@@ -182,7 +201,7 @@ func (g Generator) GenerateConfig(installation, app, ref string) (configmap *cor
 // getWithPatchIfExists provides contents of filepath overwritten by patch at
 // patchFilepath. File at patchFilepath may be non-existent, resulting in pure
 // file at filepath being returned.
-func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string, error) {
+func (g Generator) getWithPatchIfExists(ctx context.Context, filepath, patchFilepath string) (string, error) {
 	var err error
 
 	var base []byte
@@ -209,20 +228,20 @@ func (g Generator) getWithPatchIfExists(filepath, patchFilepath string) (string,
 		}
 	}
 
-	result, err := applyPatch(base, patch)
+	result, err := applyPatch(ctx, base, patch)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 	return result, nil
 }
 
-func (g Generator) getRenderedTemplate(filepath, templateData string) (string, error) {
+func (g Generator) getRenderedTemplate(ctx context.Context, filepath, templateData string) (string, error) {
 	templateBytes, err := g.fs.ReadFile(filepath)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	result, err := g.renderTemplate(string(templateBytes), templateData)
+	result, err := g.renderTemplate(ctx, string(templateBytes), templateData)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -230,7 +249,7 @@ func (g Generator) getRenderedTemplate(filepath, templateData string) (string, e
 	return result, nil
 }
 
-func applyPatch(base, patch []byte) (string, error) {
+func applyPatch(ctx context.Context, base, patch []byte) (string, error) {
 	var basePathSvc *pathmodifier.Service
 	{
 		c := pathmodifier.DefaultConfig()
@@ -278,7 +297,7 @@ func applyPatch(base, patch []byte) (string, error) {
 	return string(outputBytes), nil
 }
 
-func (g Generator) renderTemplate(templateText string, templateData string) (string, error) {
+func (g Generator) renderTemplate(ctx context.Context, templateText string, templateData string) (string, error) {
 	c := map[string]interface{}{}
 	err := yaml.Unmarshal([]byte(templateData), &c)
 	if err != nil {

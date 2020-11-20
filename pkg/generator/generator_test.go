@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"path"
@@ -92,7 +93,7 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 
-			configmap, secret, err := g.GenerateRawConfig(tc.installation, tc.app)
+			configmap, secret, err := g.GenerateRawConfig(context.Background(), tc.installation, tc.app)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
 			}

@@ -26,73 +26,80 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 			name:     "case 0 - basic config with config.yaml.patch",
 			caseFile: "testdata/case0.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 1 - include files in templates",
 			caseFile: "testdata/case1.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 2 - override global value for one installation",
 			caseFile: "testdata/case2.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 3 - keep non-string values after templating/patching",
 			caseFile: "testdata/case3.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 4 - allow templating in included files ",
 			caseFile: "testdata/case4.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 5 - test indentation when including files",
 			caseFile: "testdata/case5.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 6 - test app with no secrets (configmap only)",
 			caseFile: "testdata/case6.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 7 - patch configmap and secret",
 			caseFile: "testdata/case7.yaml",
 
-			app:          "operator",
-			installation: "puma",
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &noopTraverser{},
 		},
 
 		{
 			name:     "case 8 - decrypt secret data",
 			caseFile: "testdata/case8.yaml",
 
-			app:          "operator",
-			installation: "puma",
-
+			app:              "operator",
+			installation:     "puma",
 			decryptTraverser: &mapStringTraverser{},
 		},
 	}
@@ -107,9 +114,9 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 
 			fs := newMockFilesystem(tmpDir, tc.caseFile)
 
-			config := Config{Fs: fs}
-			if tc.decryptTraverser != nil {
-				config.DecryptTraverser = tc.decryptTraverser
+			config := Config{
+				Fs:               fs,
+				DecryptTraverser: tc.decryptTraverser,
 			}
 			g, err := New(&config)
 			if err != nil {
@@ -254,9 +261,15 @@ func (fs *mockFilesystem) ReadDir(dirpath string) ([]os.FileInfo, error) {
 	return ioutil.ReadDir(p)
 }
 
+type noopTraverser struct{}
+
+func (t noopTraverser) Traverse(ctx context.Context, encrypted []byte) ([]byte, error) {
+	return encrypted, nil
+}
+
 type mapStringTraverser struct{}
 
-func (ms mapStringTraverser) Traverse(ctx context.Context, encrypted []byte) ([]byte, error) {
+func (t mapStringTraverser) Traverse(ctx context.Context, encrypted []byte) ([]byte, error) {
 	encryptedMap := map[string]string{}
 	err := yaml.Unmarshal(encrypted, &encryptedMap)
 	if err != nil {

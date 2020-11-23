@@ -62,6 +62,9 @@ func New(config *Config) (*Generator, error) {
 	if config.Fs == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Fs must not be empty", config)
 	}
+	if config.DecryptTraverser == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.DecryptTraverser must not be empty", config)
+	}
 	g := Generator{
 		fs:               config.Fs,
 		decryptTraverser: config.DecryptTraverser,
@@ -79,12 +82,11 @@ func New(config *Config) (*Generator, error) {
 // 3. Get installation-specific configmap patch for the app template (if available)
 // 4. Patch global template (result of 2.) with installation-specific (result
 //    of 3.) app overrides
-// 5. Get installation-specific secret template data and decrypt it if
-//    DecryptTraverser has been provided
+// 5. Get installation-specific secret template data and decrypt it
 // 6. Get global secret template for the app (if available) and render it with
 //    installation secret template data (result of 5.)
 // 7. Get installation-specific secret template patch (if available) and
-//    decrypt it if DecryptTraverser has been provided
+//    decrypt it
 // 8. Patch secret template (result of 6.) with decrypted patch values (result
 //    of 7.)
 func (g Generator) GenerateRawConfig(ctx context.Context, installation, app string) (configmap string, secret string, err error) {
@@ -142,13 +144,11 @@ func (g Generator) GenerateRawConfig(ctx context.Context, installation, app stri
 		return "", "", microerror.Mask(err)
 	}
 
-	if g.decryptTraverser != nil {
-		decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(secretContext))
-		if err != nil {
-			return "", "", microerror.Mask(err)
-		}
-		secretContext = string(decryptedBytes)
+	decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(secretContext))
+	if err != nil {
+		return "", "", microerror.Mask(err)
 	}
+	secretContext = string(decryptedBytes)
 
 	// 6.
 	secretTemplate, err := g.getWithPatchIfExists(
@@ -177,14 +177,11 @@ func (g Generator) GenerateRawConfig(ctx context.Context, installation, app stri
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
 		} else {
-			if g.decryptTraverser != nil {
-				decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(patch))
-				if err != nil {
-					return "", "", microerror.Mask(err)
-				}
-				patch = string(decryptedBytes)
+			decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(patch))
+			if err != nil {
+				return "", "", microerror.Mask(err)
 			}
-			secretPatch = patch
+			secretPatch = string(decryptedBytes)
 		}
 	}
 

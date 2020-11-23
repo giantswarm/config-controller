@@ -70,19 +70,20 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 
 		{
 			name:     "case 6 - test app with no secrets (configmap only)",
-			caseFile: "testdata/case5.yaml",
+			caseFile: "testdata/case6.yaml",
 
 			app:          "operator",
 			installation: "puma",
 		},
 
 		{
-			name:     "case 6 - test app with no secrets (configmap only)",
-			caseFile: "testdata/case6.yaml",
+			name:     "case 7 - patch configmap and secret",
+			caseFile: "testdata/case7.yaml",
 
 			app:          "operator",
 			installation: "puma",
 		},
+
 		{
 			name:     "case 7 - patch configmap and secret",
 			caseFile: "testdata/case7.yaml",

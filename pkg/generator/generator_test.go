@@ -19,6 +19,8 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 
 		app          string
 		installation string
+
+		decryptTraverser DecryptTraverser
 	}{
 		{
 			name:     "case 0 - basic config with config.yaml.patch",
@@ -85,11 +87,13 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 		},
 
 		{
-			name:     "case 7 - patch configmap and secret",
-			caseFile: "testdata/case7.yaml",
+			name:     "case 8 - decrypt secret data",
+			caseFile: "testdata/case8.yaml",
 
 			app:          "operator",
 			installation: "puma",
+
+			decryptTraverser: &mapStringTraverser{},
 		},
 	}
 
@@ -102,8 +106,11 @@ func TestGenerator_GenerateRawConfig(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			fs := newMockFilesystem(tmpDir, tc.caseFile)
-			config := Config{Fs: fs}
 
+			config := Config{Fs: fs}
+			if tc.decryptTraverser != nil {
+				config.DecryptTraverser = tc.decryptTraverser
+			}
 			g, err := New(&config)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
@@ -245,4 +252,24 @@ func (fs *mockFilesystem) ReadFile(filepath string) ([]byte, error) {
 func (fs *mockFilesystem) ReadDir(dirpath string) ([]os.FileInfo, error) {
 	p := path.Join(fs.tempDirPath, dirpath)
 	return ioutil.ReadDir(p)
+}
+
+type mapStringTraverser struct{}
+
+func (ms mapStringTraverser) Traverse(ctx context.Context, encrypted []byte) ([]byte, error) {
+	encryptedMap := map[string]string{}
+	err := yaml.Unmarshal(encrypted, &encryptedMap)
+	if err != nil {
+		return []byte{}, microerror.Mask(err)
+	}
+
+	decryptedMap := map[string]string{}
+	for k, v := range encryptedMap {
+		decryptedMap[k] = "decrypted-" + v
+	}
+	decrypted, err := yaml.Marshal(decryptedMap)
+	if err != nil {
+		return []byte{}, microerror.Mask(err)
+	}
+	return decrypted, nil
 }

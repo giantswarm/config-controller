@@ -176,16 +176,16 @@ func (g Generator) GenerateRawConfig(ctx context.Context, installation, app stri
 			secretPatch = ""
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
-		}
-
-		if g.decryptTraverser != nil {
-			decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(patch))
-			if err != nil {
-				return "", "", microerror.Mask(err)
+		} else {
+			if g.decryptTraverser != nil {
+				decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(patch))
+				if err != nil {
+					return "", "", microerror.Mask(err)
+				}
+				patch = string(decryptedBytes)
 			}
-			patch = string(decryptedBytes)
+			secretPatch = patch
 		}
-		secretPatch = patch
 	}
 
 	// 8.

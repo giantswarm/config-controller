@@ -15,6 +15,8 @@ const (
 	flagGithubToken   = "github-token"
 	flagInstallation  = "installation"
 
+	flagLocalGenerator = "local-generator"
+
 	envConfigControllerGithubToken = "CONFIG_CONTROLLER_GITHUB_TOKEN" //nolint:gosec
 )
 
@@ -24,6 +26,8 @@ type flag struct {
 	ConfigVersion string
 	GitHubToken   string
 	Installation  string
+
+	LocalGenerator bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -32,13 +36,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ConfigVersion, flagConfigVersion, "", `Major part of the configuration version to use for generation (e.g. "v2").`)
 	cmd.Flags().StringVar(&f.Installation, flagInstallation, "", `Installation codename (e.g. "gauss").`)
 	cmd.Flags().StringVar(&f.GitHubToken, flagGithubToken, "", fmt.Sprintf(`GitHub token to use for "opsctl create vaultconfig" calls. Defaults to the value of %s env var.`, envConfigControllerGithubToken))
+	cmd.Flags().BoolVar(&f.LocalGenerator, flagLocalGenerator, false, `Use local filesystem as source of configuration.`)
 }
 
 func (f *flag) Validate() error {
 	if f.App == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagApp)
 	}
-	if f.ConfigVersion == "" && f.Branch == "" {
+	if f.ConfigVersion == "" && f.Branch == "" && !f.LocalGenerator {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagConfigVersion)
 	}
 	if f.GitHubToken == "" {

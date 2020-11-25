@@ -45,6 +45,9 @@ func (f *flag) Validate() error {
 	if f.App == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagApp)
 	}
+	if f.ConfigVersion != "" && f.Branch != "" {
+		return microerror.Maskf(invalidFlagError, "--%s can not be used with --%s", flagConfigVersion, flagBranch)
+	}
 	if f.ConfigVersion == "" && f.Branch == "" && !f.LocalGenerator {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagConfigVersion)
 	}

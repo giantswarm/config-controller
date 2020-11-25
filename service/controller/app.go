@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/config-controller/pkg/project"
-	"github.com/giantswarm/config-controller/service/controller/resource/test"
+	"github.com/giantswarm/config-controller/service/controller/resource/values"
 )
 
 type AppConfig struct {
@@ -63,21 +63,21 @@ func NewApp(config AppConfig) (*App, error) {
 func newAppResources(config AppConfig) ([]resource.Interface, error) {
 	var err error
 
-	var testResource resource.Interface
+	var valuesResource resource.Interface
 	{
-		c := test.Config{
+		c := values.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 		}
 
-		testResource, err = test.New(c)
+		valuesResource, err = values.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	resources := []resource.Interface{
-		testResource,
+		valuesResource,
 	}
 
 	{

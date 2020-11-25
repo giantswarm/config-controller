@@ -201,7 +201,7 @@ func (g Generator) GenerateRawConfig(ctx context.Context, installation, app stri
 	return configmap, secret, nil
 }
 
-func (g Generator) GenerateConfig(ctx context.Context, installation, app, ref string) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
+func (g Generator) GenerateConfig(ctx context.Context, installation, app, namespace, ref string) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
 	cm, s, err := g.GenerateRawConfig(ctx, installation, app)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
@@ -210,7 +210,14 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, ref st
 	name := generateResourceName(app, ref)
 	meta := metav1.ObjectMeta{
 		Name:      name,
-		Namespace: "giantswarm",
+		Namespace: namespace,
+		Labels: map[string]string{
+			"app.kubernetes.io/managed-by": "Helm",
+		},
+		Annotations: map[string]string{
+			"meta.helm.sh/release-name":      name,
+			"meta.helm.sh/release-namespace": namespace,
+		},
 	}
 
 	configmap = &corev1.ConfigMap{

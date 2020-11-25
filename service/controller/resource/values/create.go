@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
+	"github.com/giantswarm/config-controller/pkg/generator/key"
 	"github.com/giantswarm/config-controller/pkg/project"
-	"github.com/giantswarm/config-controller/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -29,8 +29,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	configmap.Labels[key.ManagedByLabel] = project.Name()
-	secret.Labels[key.ManagedByLabel] = project.Name()
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("generated app %#q config version %#q", app.Spec.Name, configVersion))
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating configmap %s/%s", configmap.Namespace, configmap.Name))

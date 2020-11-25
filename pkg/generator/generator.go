@@ -14,6 +14,9 @@ import (
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/config-controller/pkg/generator/key"
+	"github.com/giantswarm/config-controller/pkg/project"
 )
 
 /*
@@ -207,16 +210,18 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, namesp
 		return nil, nil, microerror.Mask(err)
 	}
 
-	name := generateResourceName(app, ref)
+	name := GenerateResourceName(app, ref)
 	meta := metav1.ObjectMeta{
 		Name:      name,
 		Namespace: namespace,
 		Labels: map[string]string{
-			"app.kubernetes.io/managed-by": "Helm",
+			key.KubernetesManagedByLabel: "Helm",
+			key.GiantswarmManagedByLabel: project.Name(),
 		},
 		Annotations: map[string]string{
-			"meta.helm.sh/release-name":      name,
-			"meta.helm.sh/release-namespace": namespace,
+			key.ReleaseNameAnnotation:      name,
+			key.ReleaseNamespaceAnnotation: namespace,
+			key.ConfigVersionAnnotation:    ref,
 		},
 	}
 
@@ -389,7 +394,7 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 	return out.String(), nil
 }
 
-func generateResourceName(elements ...string) string {
+func GenerateResourceName(elements ...string) string {
 	name := strings.Join(elements, "-")
 	name = string(invalidCharacterPattern.ReplaceAll([]byte(name), []byte("-")))
 	name = string(multipleDashPattern.ReplaceAll([]byte(name), []byte("-")))

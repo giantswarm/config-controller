@@ -1,8 +1,9 @@
 package label
 
 import (
-	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller"
+
+	"github.com/giantswarm/config-controller/pkg/project"
 )
 
 const (

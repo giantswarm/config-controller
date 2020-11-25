@@ -9,7 +9,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/config-controller/pkg/generator/key"
-	"github.com/giantswarm/config-controller/pkg/project"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -18,9 +17,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	configVersion, ok := app.GetAnnotations()[key.ConfigVersionAnnotation]
+	configVersion, ok := app.GetAnnotations()[key.ConfigVersion]
 	if !ok {
-		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, key.ConfigVersionAnnotation))
+		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, key.ConfigVersion))
 		return nil
 	}
 

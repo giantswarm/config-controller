@@ -217,6 +217,7 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, namesp
 		Labels: map[string]string{
 			key.KubernetesManagedByLabel: "Helm",
 			key.GiantswarmManagedByLabel: project.Name(),
+			key.ConfigVersionAnnotation:  ref,
 		},
 		Annotations: map[string]string{
 			key.ReleaseNameAnnotation:      name,

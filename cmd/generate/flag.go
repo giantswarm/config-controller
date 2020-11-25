@@ -46,6 +46,9 @@ func (f *flag) Validate() error {
 	if f.ConfigVersion == "" && f.Branch == "" && !f.LocalGenerator {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagConfigVersion)
 	}
+	if (f.ConfigVersion != "" || f.Branch != "") && f.LocalGenerator {
+		return microerror.Maskf(invalidFlagError, "--%s and --%s can not be used with --%s", flagConfigVersion, flagBranch, flagLocalGenerator)
+	}
 	if f.GitHubToken == "" {
 		f.GitHubToken = os.Getenv(envConfigControllerGithubToken)
 	}

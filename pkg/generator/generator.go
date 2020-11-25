@@ -211,6 +211,13 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, ref st
 	meta := metav1.ObjectMeta{
 		Name:      name,
 		Namespace: "giantswarm",
+		Labels: map[string]string{
+			"app.kubernetes.io/managed-by": "Helm",
+		},
+		Annotations: map[string]string{
+			"meta.helm.sh/release-name":      name,
+			"meta.helm.sh/release-namespace": "giantswarm",
+		},
 	}
 
 	configmap = &corev1.ConfigMap{

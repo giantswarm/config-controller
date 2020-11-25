@@ -24,7 +24,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("generating app %#q config version %#q", app.Spec.Name, configVersion))
-	configmap, secret, err := r.GenerateConfig(ctx, key.Owner, r.installation, app.Spec.Namespace, app.Spec.Name, configVersion)
+	configmap, secret, err := r.GenerateConfig(ctx, key.Owner, r.installation, app.Namespace, app.Spec.Name, configVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}

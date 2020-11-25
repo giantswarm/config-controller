@@ -14,4 +14,5 @@ const (
 
 var (
 	ConfigVersion = project.Name() + ".giantswarm.io/config-version"
+	AppLabel      = project.Name() + ".giantswarm.io/app"
 )

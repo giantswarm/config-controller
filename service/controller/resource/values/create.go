@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/config-controller/service/controller/key"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/config-controller/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -20,7 +21,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	// TODO Check if configVersion is branch or tag
+	configmap, secret, err := r.GenerateConfig(ctx)
 
 	return nil
 }

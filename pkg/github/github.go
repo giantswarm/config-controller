@@ -63,6 +63,14 @@ func New(config Config) (*GitHub, error) {
 	return g, nil
 }
 
+func (g *GitHub) ResolvesToTag(ctx context.Context, owner, name, ref string) (bool, error) {
+	tags, err := g.getTags(ctx, owner, name, ref)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+	return len(tags) > 0, nil
+}
+
 func (g *GitHub) GetLatestTag(ctx context.Context, owner, name, major string) (string, error) {
 	tags, err := g.getTags(ctx, owner, name, major)
 	if err != nil {

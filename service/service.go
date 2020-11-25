@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
 
@@ -51,6 +52,15 @@ func New(config Config) (*Service, error) {
 		serviceAddress = config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
 	} else {
 		serviceAddress = ""
+	}
+	if config.Flag.Service.Installation == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Installation must not be empty")
+	}
+	if config.Flag.Service.GitHubToken == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.GitHubToken must not be empty")
+	}
+	if config.Flag.Service.Vault == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Vault must not be empty")
 	}
 
 	// Dependencies.
@@ -97,12 +107,26 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var vaultClient *vaultapi.Client
+	{
+		c := vaultapi.Config{
+			Address: config.Flag.Service.Vault,
+		}
+		vaultClient, err = vaultapi.NewClient(&c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var appController *controller.App
 	{
-
 		c := controller.AppConfig{
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
+
+			VaultClient:  vaultClient,
+			GitHubToken:  config.Flag.Service.GitHubToken,
+			Installation: config.Flag.Service.Installation,
 		}
 
 		appController, err = controller.NewApp(c)

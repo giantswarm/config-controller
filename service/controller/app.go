@@ -13,11 +13,16 @@ import (
 
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/resource/values"
+	vaultapi "github.com/hashicorp/vault/api"
 )
 
 type AppConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
+
+	VaultClient  *vaultapi.Client
+	GitHubToken  string
+	Installation string
 }
 
 type App struct {
@@ -68,6 +73,10 @@ func newAppResources(config AppConfig) ([]resource.Interface, error) {
 		c := values.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
+
+			VaultClient:  nil,
+			GitHubToken:  "",
+			Installation: "",
 		}
 
 		valuesResource, err = values.New(c)

@@ -128,6 +128,10 @@ func mainE(ctx context.Context) error {
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CrtFile, "", "Certificate file path to use to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.KeyFile, "", "Key file path to use to authenticate with Kubernetes.")
 
+	daemonCommand.PersistentFlags().String(f.Service.Installation, "", `Installation codename (e.g. "geckon")`)
+	daemonCommand.PersistentFlags().String(f.Service.GitHubToken, "", "Token used to pull repositories from GitHub")
+	daemonCommand.PersistentFlags().String(f.Service.Vault, "", "Vault server address")
+
 	newCommand.CobraCommand().SilenceErrors = true
 	newCommand.CobraCommand().SilenceUsage = true
 

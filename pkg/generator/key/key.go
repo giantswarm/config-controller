@@ -13,5 +13,5 @@ const (
 )
 
 var (
-	ConfigVersionAnnotation = project.Name() + ".giantswarm.io/config-version"
+	ConfigVersion = project.Name() + ".giantswarm.io/config-version"
 )

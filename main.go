@@ -131,7 +131,7 @@ func mainE(ctx context.Context) error {
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CrtFile, "", "Certificate file path to use to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.KeyFile, "", "Key file path to use to authenticate with Kubernetes.")
 
-	daemonCommand.PersistentFlags().String(f.Service.Vault.Host, "", "Vault server address")
+	daemonCommand.PersistentFlags().String(f.Service.Vault.Address, "", "Vault server address")
 
 	newCommand.CobraCommand().SilenceErrors = true
 	newCommand.CobraCommand().SilenceUsage = true

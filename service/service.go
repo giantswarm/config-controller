@@ -59,8 +59,8 @@ func New(config Config) (*Service, error) {
 	if config.Flag.Service.GitHub.Token == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.GitHub.Token must not be empty")
 	}
-	if config.Flag.Service.Vault.Host == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Vault.Host must not be empty")
+	if config.Flag.Service.Vault.Address == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Vault.Address must not be empty")
 	}
 
 	// Dependencies.
@@ -110,7 +110,7 @@ func New(config Config) (*Service, error) {
 	var vaultClient *vaultapi.Client
 	{
 		c := vaultapi.Config{
-			Address: config.Viper.GetString(config.Flag.Service.Vault.Host),
+			Address: config.Viper.GetString(config.Flag.Service.Vault.Address),
 		}
 		vaultClient, err = vaultapi.NewClient(&c)
 		if err != nil {

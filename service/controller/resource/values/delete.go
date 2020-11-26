@@ -48,7 +48,6 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted "+appAndVersion)
 
 	// TODO: Do we need to clear .spec.Config in App CR?
-	// TODO: Do we need finalizers?
 
 	return nil
 }

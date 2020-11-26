@@ -63,7 +63,5 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated App CR %#q with configmap and secret details", app.Name))
 
-	// TODO: Do we need a config-controller finalizer?
-
 	return nil
 }

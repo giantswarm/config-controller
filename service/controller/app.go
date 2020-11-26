@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/giantswarm/config-controller/pkg/label"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/resource/values"
 	vaultapi "github.com/hashicorp/vault/api"
@@ -23,6 +24,7 @@ type AppConfig struct {
 	VaultClient  *vaultapi.Client
 	GitHubToken  string
 	Installation string
+	UniqueApp    bool
 }
 
 type App struct {
@@ -46,6 +48,7 @@ func NewApp(config AppConfig) (*App, error) {
 				return new(v1alpha1.App)
 			},
 			Resources: resources,
+			Selector:  label.AppVersionSelector(config.UniqueApp),
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-app-controller.

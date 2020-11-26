@@ -127,6 +127,7 @@ func New(config Config) (*Service, error) {
 			VaultClient:  vaultClient,
 			GitHubToken:  config.Flag.Service.GitHubToken,
 			Installation: config.Flag.Service.Installation,
+			UniqueApp:    config.Viper.GetBool(config.Flag.Service.App.Unique),
 		}
 
 		appController, err = controller.NewApp(c)

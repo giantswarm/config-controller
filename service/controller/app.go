@@ -21,10 +21,10 @@ type AppConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	VaultClient  *vaultapi.Client
 	GitHubToken  string
 	Installation string
 	UniqueApp    bool
+	VaultClient  *vaultapi.Client
 }
 
 type App struct {
@@ -77,9 +77,9 @@ func newAppResources(config AppConfig) ([]resource.Interface, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			VaultClient:  nil,
-			GitHubToken:  "",
-			Installation: "",
+			VaultClient:  config.VaultClient,
+			GitHubToken:  config.GitHubToken,
+			Installation: config.Installation,
 		}
 
 		valuesResource, err = values.New(c)

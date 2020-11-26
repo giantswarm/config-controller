@@ -53,14 +53,14 @@ func New(config Config) (*Service, error) {
 	} else {
 		serviceAddress = ""
 	}
-	if config.Flag.Service.Installation == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Installation must not be empty")
+	if config.Flag.Service.Installation.Name == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Installation.Name must not be empty")
 	}
-	if config.Flag.Service.GitHubToken == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.GitHubToken must not be empty")
+	if config.Flag.Service.GitHub.Token == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.GitHub.Token must not be empty")
 	}
-	if config.Flag.Service.Vault == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Vault must not be empty")
+	if config.Flag.Service.Vault.Host == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Vault.Host must not be empty")
 	}
 
 	// Dependencies.
@@ -110,7 +110,7 @@ func New(config Config) (*Service, error) {
 	var vaultClient *vaultapi.Client
 	{
 		c := vaultapi.Config{
-			Address: config.Flag.Service.Vault,
+			Address: config.Viper.GetString(config.Flag.Service.Vault.Host),
 		}
 		vaultClient, err = vaultapi.NewClient(&c)
 		if err != nil {
@@ -124,10 +124,10 @@ func New(config Config) (*Service, error) {
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
-			VaultClient:  vaultClient,
-			GitHubToken:  config.Flag.Service.GitHubToken,
-			Installation: config.Flag.Service.Installation,
+			GitHubToken:  config.Viper.GetString(config.Flag.Service.GitHub.Token),
+			Installation: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			UniqueApp:    config.Viper.GetBool(config.Flag.Service.App.Unique),
+			VaultClient:  vaultClient,
 		}
 
 		appController, err = controller.NewApp(c)

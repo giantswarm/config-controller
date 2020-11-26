@@ -11,10 +11,11 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	vaultapi "github.com/hashicorp/vault/api"
+
 	"github.com/giantswarm/config-controller/pkg/label"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/resource/values"
-	vaultapi "github.com/hashicorp/vault/api"
 )
 
 type AppConfig struct {

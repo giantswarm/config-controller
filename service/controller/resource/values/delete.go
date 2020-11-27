@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,9 +47,15 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted secret for "+appAndVersion)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted "+appAndVersion)
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("clearing %s configmap and secret details", appAndVersion))
+	app.Spec.Config = v1alpha1.AppSpecConfig{}
+	err = r.k8sClient.CtrlClient().Update(ctx, &app)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("cleared %s configmap and secret details", appAndVersion))
 
-	// TODO: Do we need to clear .spec.Config in App CR?
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted "+appAndVersion)
 
 	return nil
 }

@@ -58,7 +58,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		Namespace: secret.Namespace,
 		Name:      secret.Name,
 	}
-	err = r.k8sClient.CtrlClient().Update(ctx, secret)
+	err = r.k8sClient.CtrlClient().Update(ctx, &app)
 	if err != nil {
 		return microerror.Mask(err)
 	}

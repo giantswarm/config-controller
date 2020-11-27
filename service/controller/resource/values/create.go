@@ -58,7 +58,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		Name:      secret.Name,
 	}
 	err = r.k8sClient.CtrlClient().Update(context.Background(), secret)
-	if err == nil {
+	if err != nil {
 		return microerror.Mask(err)
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated App CR %#q with configmap and secret details", app.Name))

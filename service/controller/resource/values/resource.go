@@ -91,7 +91,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) GenerateConfig(ctx context.Context, owner, installation, namespace, app, configVersion string) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
+func (r *Resource) generateConfig(ctx context.Context, owner, installation, namespace, app, configVersion string) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
 	var store generator.Filesystem
 	var ref string
 	{

@@ -109,10 +109,9 @@ func New(config Config) (*Service, error) {
 
 	var vaultClient *vaultapi.Client
 	{
-		c := vaultapi.Config{
-			Address: config.Viper.GetString(config.Flag.Service.Vault.Address),
-		}
-		vaultClient, err = vaultapi.NewClient(&c)
+		c := vaultapi.DefaultConfig()
+		c.Address = config.Viper.GetString(config.Flag.Service.Vault.Address)
+		vaultClient, err = vaultapi.NewClient(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

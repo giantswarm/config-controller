@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	Name = "values"
+	Name       = "values"
+	ConfigRepo = "config"
 )
 
 type Config struct {
@@ -111,18 +112,18 @@ func (r *Resource) GenerateConfig(ctx context.Context, owner, installation, name
 		}
 
 		if isTag {
-			tag, err := gh.GetLatestTag(ctx, owner, app, configVersion)
+			tag, err := gh.GetLatestTag(ctx, owner, ConfigRepo, configVersion)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
 
-			store, err = gh.GetFilesByTag(ctx, owner, app, tag)
+			store, err = gh.GetFilesByTag(ctx, owner, ConfigRepo, tag)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
 			ref = tag
 		} else {
-			store, err = gh.GetFilesByBranch(ctx, owner, app, configVersion)
+			store, err = gh.GetFilesByBranch(ctx, owner, ConfigRepo, configVersion)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}

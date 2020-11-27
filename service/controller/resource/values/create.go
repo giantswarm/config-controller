@@ -9,10 +9,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/config-controller/pkg/generator/key"
+	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	app, err := ToAppCR(obj)
+	app, err := controllerkey.ToAppCR(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -24,7 +25,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("generating app %#q config version %#q", app.Spec.Name, configVersion))
-	configmap, secret, err := r.generateConfig(ctx, key.Owner, r.installation, app.Namespace, app.Spec.Name, configVersion)
+	configmap, secret, err := r.generateConfig(ctx, r.installation, app.Namespace, app.Spec.Name, configVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}

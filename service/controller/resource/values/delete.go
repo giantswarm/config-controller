@@ -9,10 +9,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/config-controller/pkg/generator/key"
+	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
 )
 
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
-	app, err := ToAppCR(obj)
+	app, err := controllerkey.ToAppCR(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}

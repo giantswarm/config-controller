@@ -3,7 +3,6 @@ package values
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
+	"github.com/giantswarm/config-controller/pkg/generator/key"
 	"github.com/giantswarm/config-controller/pkg/github"
 )
 
@@ -91,7 +91,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) generateConfig(ctx context.Context, owner, installation, namespace, app, configVersion string) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
+func (r *Resource) generateConfig(ctx context.Context, installation, namespace, app, configVersion string) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
 	var store generator.Filesystem
 	var ref string
 	{
@@ -106,24 +106,24 @@ func (r *Resource) generateConfig(ctx context.Context, owner, installation, name
 			return nil, nil, microerror.Maskf(executionFailedError, "configVersion must be defined")
 		}
 
-		isTag, err := gh.ResolvesToTag(ctx, owner, app, configVersion)
+		isTag, err := gh.ResolvesToTag(ctx, key.Owner, app, configVersion)
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
 
 		if isTag {
-			tag, err := gh.GetLatestTag(ctx, owner, ConfigRepo, configVersion)
+			tag, err := gh.GetLatestTag(ctx, key.Owner, ConfigRepo, configVersion)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
 
-			store, err = gh.GetFilesByTag(ctx, owner, ConfigRepo, tag)
+			store, err = gh.GetFilesByTag(ctx, key.Owner, ConfigRepo, tag)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
 			ref = tag
 		} else {
-			store, err = gh.GetFilesByBranch(ctx, owner, ConfigRepo, configVersion)
+			store, err = gh.GetFilesByBranch(ctx, key.Owner, ConfigRepo, configVersion)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
@@ -145,19 +145,4 @@ func (r *Resource) generateConfig(ctx context.Context, owner, installation, name
 	}
 
 	return configmap, secret, nil
-}
-
-func ToAppCR(v interface{}) (v1alpha1.App, error) {
-	if v == nil {
-		return v1alpha1.App{}, microerror.Maskf(wrongTypeError, "expected non-nil, got %#v", v)
-	}
-
-	p, ok := v.(*v1alpha1.App)
-	if !ok {
-		return v1alpha1.App{}, microerror.Maskf(wrongTypeError, "expected %T, got %T", p, v)
-	}
-
-	c := p.DeepCopy()
-
-	return *c, nil
 }

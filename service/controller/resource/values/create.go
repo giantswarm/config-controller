@@ -31,7 +31,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("generated app %#q config version %#q", app.Spec.Name, configVersion))
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating configmap %s/%s", configmap.Namespace, configmap.Name))
-	err = r.k8sClient.CtrlClient().Create(context.Background(), configmap)
+	err = r.k8sClient.CtrlClient().Create(ctx, configmap)
 	if apierrors.IsAlreadyExists(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("configmap %s/%s already exists", configmap.Namespace, configmap.Name))
 	} else if err != nil {
@@ -40,7 +40,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created configmap %s/%s", configmap.Namespace, configmap.Name))
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating secret %s/%s", secret.Namespace, secret.Name))
-	err = r.k8sClient.CtrlClient().Create(context.Background(), secret)
+	err = r.k8sClient.CtrlClient().Create(ctx, secret)
 	if apierrors.IsAlreadyExists(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("secret %s/%s already exists", secret.Namespace, secret.Name))
 	} else if err != nil {
@@ -57,7 +57,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		Namespace: secret.Namespace,
 		Name:      secret.Name,
 	}
-	err = r.k8sClient.CtrlClient().Update(context.Background(), secret)
+	err = r.k8sClient.CtrlClient().Update(ctx, secret)
 	if err != nil {
 		return microerror.Mask(err)
 	}

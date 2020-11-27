@@ -53,15 +53,6 @@ func New(config Config) (*Service, error) {
 	} else {
 		serviceAddress = ""
 	}
-	if config.Flag.Service.Installation.Name == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Installation.Name must not be empty")
-	}
-	if config.Flag.Service.GitHub.Token == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.GitHub.Token must not be empty")
-	}
-	if config.Flag.Service.Vault.Address == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag.Service.Vault.Address must not be empty")
-	}
 
 	// Dependencies.
 	if config.Logger == nil {

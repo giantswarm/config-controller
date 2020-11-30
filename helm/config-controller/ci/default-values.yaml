@@ -9,6 +9,3 @@ Installation:
       ConfigController:
         GitHub:
           Token: ""
-      SilenceOperator:
-        Github:
-          Token: ""

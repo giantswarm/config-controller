@@ -41,6 +41,12 @@ spec:
           items:
           - key: secret.yaml
             path: secret.yaml
+      - name: certs
+        hostPath:
+          path: /etc/ssl/certs/ca-certificates.crt
+      - name: ssl-certs
+        hostPath:
+          path: /etc/ssl/certs/
       serviceAccountName: {{ include "resource.default.name"  . }}
       securityContext:
         runAsUser: {{ .Values.pod.user.id }}
@@ -61,11 +67,22 @@ spec:
         - daemon
         - --config.dirs=/var/run/{{ include "name" . }}/configmap/,/var/run/{{ include "name" . }}/secret/
         - --config.files=config,secret
+        - --service.vault.token=$(VAULT_TOKEN)
         volumeMounts:
         - name: {{ include "name" . }}-configmap
           mountPath: /var/run/{{ include "name" . }}/configmap/
         - name: {{ include "name" . }}-secret
           mountPath: /var/run/{{ include "name" . }}/secret/
+        - name: certs
+          mountPath: /etc/ssl/certs/ca-certificate.crt
+        - name: ssl-certs
+          mountPath: /etc/ssl/certs/
+        env:
+        - name: VAULT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: {{ include "resource.default.name" . }}-vault-token
         livenessProbe:
           httpGet:
             path: /healthz

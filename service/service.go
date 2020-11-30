@@ -106,6 +106,7 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+		vaultClient.SetToken(config.Viper.GetString(config.Flag.Service.Vault.Token))
 	}
 
 	var appController *controller.App

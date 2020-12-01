@@ -26,11 +26,10 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	appAndVersion := fmt.Sprintf("App %#q, config version %#q", app.Spec.Name, configVersion)
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting "+appAndVersion)
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting App %#q, config version %#q", app.Spec.Name, configVersion))
 
 	if app.Spec.Config.ConfigMap.Name != "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting configmap for "+appAndVersion)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting configmap for App %#q, config version %#q", app.Spec.Name, configVersion))
 		cm := &corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      app.Spec.Config.ConfigMap.Name,
@@ -41,11 +40,11 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted configmap for "+appAndVersion)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion))
 	}
 
 	if app.Spec.Config.Secret.Name != "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting secret for "+appAndVersion)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting secret for App %#q, config version %#q", app.Spec.Name, configVersion))
 		secret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      app.Spec.Config.ConfigMap.Name,
@@ -56,18 +55,18 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted secret for "+appAndVersion)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion))
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("clearing %s configmap and secret details", appAndVersion))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("clearing App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion))
 	app.Spec.Config = v1alpha1.AppSpecConfig{}
 	err = r.k8sClient.CtrlClient().Update(ctx, &app)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("cleared %s configmap and secret details", appAndVersion))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("cleared App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion))
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted "+appAndVersion)
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted App %#q, config version %#q", app.Spec.Name, configVersion))
 
 	return nil
 }

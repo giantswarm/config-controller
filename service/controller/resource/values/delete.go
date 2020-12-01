@@ -21,7 +21,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	configVersion, ok := app.GetAnnotations()[key.ConfigVersion]
 	if !ok {
-		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, key.ConfigVersion))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, key.ConfigVersion))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
 		return nil
 	}
 

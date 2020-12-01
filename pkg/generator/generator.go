@@ -73,7 +73,7 @@ func New(config *Config) (*Generator, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.DecryptTraverser must not be empty", config)
 	}
 	if config.ProjectVersion == "" {
-		config.ProjectVersion = project.AppControlPlaneVersion()
+		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectVersion must not be empty", config)
 	}
 	g := Generator{
 		fs:               config.Fs,

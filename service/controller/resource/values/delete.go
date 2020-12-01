@@ -2,7 +2,6 @@ package values
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -22,15 +21,15 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	configVersion, ok := app.GetAnnotations()[annotation.ConfigMajorVersion]
 	if !ok {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, annotation.ConfigMajorVersion))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigMajorVersion)
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting App %#q, config version %#q", app.Spec.Name, configVersion))
+	r.logger.Debugf(ctx, "deleting App %#q, config version %#q", app.Spec.Name, configVersion)
 
 	if app.Spec.Config.ConfigMap.Name != "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting configmap for App %#q, config version %#q", app.Spec.Name, configVersion))
+		r.logger.Debugf(ctx, "deleting configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
 		cm := &corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      app.Spec.Config.ConfigMap.Name,
@@ -41,11 +40,11 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		if client.IgnoreNotFound(err) != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion))
+		r.logger.Debugf(ctx, "deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
 	}
 
 	if app.Spec.Config.Secret.Name != "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting secret for App %#q, config version %#q", app.Spec.Name, configVersion))
+		r.logger.Debugf(ctx, "deleting secret for App %#q, config version %#q", app.Spec.Name, configVersion)
 		secret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      app.Spec.Config.ConfigMap.Name,
@@ -56,18 +55,18 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		if client.IgnoreNotFound(err) != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion))
+		r.logger.Debugf(ctx, "deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("clearing App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion))
+	r.logger.Debugf(ctx, "clearing App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
 	app.Spec.Config = v1alpha1.AppSpecConfig{}
 	err = r.k8sClient.CtrlClient().Update(ctx, &app)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("cleared App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion))
+	r.logger.Debugf(ctx, "cleared App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted App %#q, config version %#q", app.Spec.Name, configVersion))
+	r.logger.Debugf(ctx, "deleted App %#q, config version %#q", app.Spec.Name, configVersion)
 
 	return nil
 }

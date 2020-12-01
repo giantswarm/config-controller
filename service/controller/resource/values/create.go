@@ -2,7 +2,6 @@ package values
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -20,37 +19,37 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	configVersion, ok := app.GetAnnotations()[annotation.ConfigMajorVersion]
 	if !ok {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, annotation.ConfigMajorVersion))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigMajorVersion)
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("generating app %#q config version %#q", app.Spec.Name, configVersion))
+	r.logger.Debugf(ctx, "generating app %#q config version %#q", app.Spec.Name, configVersion)
 	configmap, secret, err := r.generateConfig(ctx, r.installation, app.Namespace, app.Spec.Name, configVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("generated app %#q config version %#q", app.Spec.Name, configVersion))
+	r.logger.Debugf(ctx, "generated app %#q config version %#q", app.Spec.Name, configVersion)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating configmap %s/%s", configmap.Namespace, configmap.Name))
+	r.logger.Debugf(ctx, "creating configmap %s/%s", configmap.Namespace, configmap.Name)
 	err = r.k8sClient.CtrlClient().Create(ctx, configmap)
 	if apierrors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("configmap %s/%s already exists", configmap.Namespace, configmap.Name))
+		r.logger.Debugf(ctx, "configmap %s/%s already exists", configmap.Namespace, configmap.Name)
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created configmap %s/%s", configmap.Namespace, configmap.Name))
+	r.logger.Debugf(ctx, "created configmap %s/%s", configmap.Namespace, configmap.Name)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating secret %s/%s", secret.Namespace, secret.Name))
+	r.logger.Debugf(ctx, "creating secret %s/%s", secret.Namespace, secret.Name)
 	err = r.k8sClient.CtrlClient().Create(ctx, secret)
 	if apierrors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("secret %s/%s already exists", secret.Namespace, secret.Name))
+		r.logger.Debugf(ctx, "secret %s/%s already exists", secret.Namespace, secret.Name)
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created secret %s/%s", secret.Namespace, secret.Name))
+	r.logger.Debugf(ctx, "created secret %s/%s", secret.Namespace, secret.Name)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating App CR %#q with configmap and secret details", app.Name))
+	r.logger.Debugf(ctx, "updating App CR %#q with configmap and secret details", app.Name)
 	app.Spec.Config.ConfigMap = v1alpha1.AppSpecConfigConfigMap{
 		Namespace: configmap.Namespace,
 		Name:      configmap.Name,
@@ -63,7 +62,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated App CR %#q with configmap and secret details", app.Name))
+	r.logger.Debugf(ctx, "updated App CR %#q with configmap and secret details", app.Name)
 
 	return nil
 }

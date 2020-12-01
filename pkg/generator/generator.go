@@ -10,6 +10,8 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/ghodss/yaml"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
 	corev1 "k8s.io/api/core/v1"
@@ -54,11 +56,13 @@ var (
 type Config struct {
 	Fs               Filesystem
 	DecryptTraverser DecryptTraverser
+	ProjectVersion   string
 }
 
 type Generator struct {
 	fs               Filesystem
 	decryptTraverser DecryptTraverser
+	projectVersion   string
 }
 
 func New(config *Config) (*Generator, error) {
@@ -68,9 +72,13 @@ func New(config *Config) (*Generator, error) {
 	if config.DecryptTraverser == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.DecryptTraverser must not be empty", config)
 	}
+	if config.ProjectVersion == "" {
+		config.ProjectVersion = project.AppControlPlaneVersion()
+	}
 	g := Generator{
 		fs:               config.Fs,
 		decryptTraverser: config.DecryptTraverser,
+		projectVersion:   config.ProjectVersion,
 	}
 
 	return &g, nil
@@ -215,15 +223,16 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, namesp
 		Name:      name,
 		Namespace: namespace,
 		Labels: map[string]string{
-			key.KubernetesManagedByLabel: "Helm",
-			key.GiantswarmManagedByLabel: project.Name(),
-			key.ConfigVersion:            ref,
-			key.AppLabel:                 name,
+			annotation.ConfigMajorVersion: ref,
+			key.KubernetesManagedByLabel:  "Helm",
+			label.AppKubernetesName:       project.Name(),
+			label.ConfigControllerVersion: g.projectVersion,
+			label.ManagedBy:               project.Name(),
 		},
 		Annotations: map[string]string{
+			annotation.ConfigMajorVersion:  ref,
 			key.ReleaseNameAnnotation:      name,
 			key.ReleaseNamespaceAnnotation: namespace,
-			key.ConfigVersion:              ref,
 		},
 	}
 

@@ -24,9 +24,10 @@ type Config struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	VaultClient  *vaultapi.Client
-	GitHubToken  string
-	Installation string
+	GitHubToken    string
+	Installation   string
+	ProjectVersion string
+	VaultClient    *vaultapi.Client
 }
 
 type Resource struct {
@@ -36,6 +37,7 @@ type Resource struct {
 	decryptTraverser *decrypt.YAMLTraverser
 	gitHubToken      string
 	installation     string
+	projectVersion   string
 }
 
 func New(config Config) (*Resource, error) {
@@ -82,6 +84,7 @@ func New(config Config) (*Resource, error) {
 		decryptTraverser: decryptTraverser,
 		gitHubToken:      config.GitHubToken,
 		installation:     config.Installation,
+		projectVersion:   config.ProjectVersion,
 	}
 
 	return r, nil
@@ -134,6 +137,7 @@ func (r *Resource) generateConfig(ctx context.Context, installation, namespace, 
 	gen, err := generator.New(&generator.Config{
 		Fs:               store,
 		DecryptTraverser: r.decryptTraverser,
+		ProjectVersion:   r.projectVersion,
 	})
 	if err != nil {
 		return nil, nil, microerror.Mask(err)

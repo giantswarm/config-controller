@@ -78,9 +78,10 @@ func newAppResources(config AppConfig) ([]resource.Interface, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			VaultClient:  config.VaultClient,
-			GitHubToken:  config.GitHubToken,
-			Installation: config.Installation,
+			VaultClient:    config.VaultClient,
+			GitHubToken:    config.GitHubToken,
+			Installation:   config.Installation,
+			ProjectVersion: label.GetProjectVersion(config.UniqueApp),
 		}
 
 		valuesResource, err = values.New(c)

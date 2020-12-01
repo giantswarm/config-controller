@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/giantswarm/config-controller/pkg/generator/key"
 	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
 )
 
@@ -18,9 +18,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	configVersion, ok := app.GetAnnotations()[key.ConfigVersion]
+	configVersion, ok := app.GetAnnotations()[annotation.ConfigMajorVersion]
 	if !ok {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, key.ConfigVersion))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("App CR %q is missing %q annotation", app.Name, annotation.ConfigMajorVersion))
 		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
 		return nil
 	}

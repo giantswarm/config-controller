@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
 )
@@ -37,7 +38,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			},
 		}
 		err = r.k8sClient.CtrlClient().Delete(ctx, cm)
-		if err != nil {
+		if client.IgnoreNotFound(err) != nil {
 			return microerror.Mask(err)
 		}
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion))
@@ -52,7 +53,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			},
 		}
 		err = r.k8sClient.CtrlClient().Delete(ctx, secret)
-		if err != nil {
+		if client.IgnoreNotFound(err) != nil {
 			return microerror.Mask(err)
 		}
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion))

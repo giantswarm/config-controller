@@ -13,8 +13,8 @@ workflows:
           app_namespace: "giantswarm"
           app_collection_repo: "test-app-collection"
           #unique: "true"
-          requires:
-            - push-config-controller-to-app-catalog
+          #requires:
+          #  - push-config-controller-to-app-catalog
           #filters:
           #  branches:
           #    ignore: /.*/

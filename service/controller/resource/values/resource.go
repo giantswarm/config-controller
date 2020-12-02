@@ -114,19 +114,14 @@ func (r *Resource) generateConfig(ctx context.Context, installation, namespace, 
 			return nil, nil, microerror.Maskf(executionFailedError, "configVersion must be defined")
 		}
 
-		var isTag bool
 		var tagReference string
 		matches := tagConfigVersionPattern.FindAllStringSubmatch(configVersion, -1)
 		if len(matches) > 0 {
 			// translate configVersion: `<major>.x.x` to tagReference: `v<major>`
 			tagReference = "v" + matches[0][1]
-			isTag, err = gh.ResolvesToTag(ctx, key.Owner, app, tagReference)
-			if err != nil {
-				return nil, nil, microerror.Mask(err)
-			}
 		}
 
-		if isTag {
+		if tagReference != "" {
 			tag, err := gh.GetLatestTag(ctx, key.Owner, ConfigRepo, tagReference)
 			if err != nil {
 				return nil, nil, microerror.Mask(err)

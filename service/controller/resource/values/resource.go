@@ -13,7 +13,7 @@ import (
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/generator/key"
 	"github.com/giantswarm/config-controller/pkg/github"
-	servicekey "github.com/giantswarm/config-controller/service/controller/key"
+	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
 )
 
 const (
@@ -110,7 +110,7 @@ func (r *Resource) generateConfig(ctx context.Context, installation, namespace, 
 			return nil, nil, microerror.Maskf(executionFailedError, "configVersion must be defined")
 		}
 
-		tagReference := servicekey.TryVersionToTag(configVersion)
+		tagReference := controllerkey.TryVersionToTag(configVersion)
 		if tagReference != "" {
 			tag, err := gh.GetLatestTag(ctx, key.Owner, ConfigRepo, tagReference)
 			if err != nil {

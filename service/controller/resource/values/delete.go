@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/config-controller/pkg/generator"
 	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
 )
 
@@ -25,8 +26,34 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
-	configmap := app.Spec.Config.ConfigMap
-	secret := app.Spec.Config.Secret
+
+	cm := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      app.Spec.Config.ConfigMap.Name,
+			Namespace: app.Spec.Config.ConfigMap.Namespace,
+		},
+	}
+	secret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      app.Spec.Config.Secret.Name,
+			Namespace: app.Spec.Config.Secret.Namespace,
+		},
+	}
+	if cm.Name == "" || secret.Name == "" {
+		ref := configVersion
+		if tagRef := controllerkey.TryVersionToTag(configVersion); tagRef != "" {
+			ref = tagRef
+		}
+		name := generator.GenerateResourceName(app.Spec.Name, ref)
+		if cm.Name == "" {
+			cm.Name = name
+			cm.Namespace = app.Namespace
+		}
+		if secret.Name == "" {
+			secret.Name = name
+			secret.Namespace = app.Namespace
+		}
+	}
 
 	r.logger.Debugf(ctx, "deleting App %#q, config version %#q", app.Spec.Name, configVersion)
 
@@ -38,35 +65,19 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.Debugf(ctx, "cleared App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
 
-	if configmap.Name != "" {
-		r.logger.Debugf(ctx, "deleting configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
-		cm := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      configmap.Name,
-				Namespace: configmap.Namespace,
-			},
-		}
-		err = r.k8sClient.CtrlClient().Delete(ctx, cm)
-		if client.IgnoreNotFound(err) != nil {
-			return microerror.Mask(err)
-		}
-		r.logger.Debugf(ctx, "deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
+	r.logger.Debugf(ctx, "deleting configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
+	err = r.k8sClient.CtrlClient().Delete(ctx, cm)
+	if client.IgnoreNotFound(err) != nil {
+		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
 
-	if secret.Name != "" {
-		r.logger.Debugf(ctx, "deleting secret for App %#q, config version %#q", app.Spec.Name, configVersion)
-		secret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      secret.Name,
-				Namespace: secret.Namespace,
-			},
-		}
-		err = r.k8sClient.CtrlClient().Delete(ctx, secret)
-		if client.IgnoreNotFound(err) != nil {
-			return microerror.Mask(err)
-		}
-		r.logger.Debugf(ctx, "deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion)
+	r.logger.Debugf(ctx, "deleting secret for App %#q, config version %#q", app.Spec.Name, configVersion)
+	err = r.k8sClient.CtrlClient().Delete(ctx, secret)
+	if client.IgnoreNotFound(err) != nil {
+		return microerror.Mask(err)
 	}
+	r.logger.Debugf(ctx, "deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion)
 
 	r.logger.Debugf(ctx, "deleted App %#q, config version %#q", app.Spec.Name, configVersion)
 

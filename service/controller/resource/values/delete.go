@@ -25,15 +25,25 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
+	configmap := app.Spec.Config.ConfigMap
+	secret := app.Spec.Config.Secret
 
 	r.logger.Debugf(ctx, "deleting App %#q, config version %#q", app.Spec.Name, configVersion)
 
-	if app.Spec.Config.ConfigMap.Name != "" {
+	r.logger.Debugf(ctx, "clearing App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
+	app.Spec.Config = v1alpha1.AppSpecConfig{}
+	err = r.k8sClient.CtrlClient().Update(ctx, &app)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	r.logger.Debugf(ctx, "cleared App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
+
+	if configmap.Name != "" {
 		r.logger.Debugf(ctx, "deleting configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
 		cm := &corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      app.Spec.Config.ConfigMap.Name,
-				Namespace: app.Spec.Config.ConfigMap.Namespace,
+				Name:      configmap.Name,
+				Namespace: configmap.Namespace,
 			},
 		}
 		err = r.k8sClient.CtrlClient().Delete(ctx, cm)
@@ -43,12 +53,12 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		r.logger.Debugf(ctx, "deleted configmap for App %#q, config version %#q", app.Spec.Name, configVersion)
 	}
 
-	if app.Spec.Config.Secret.Name != "" {
+	if secret.Name != "" {
 		r.logger.Debugf(ctx, "deleting secret for App %#q, config version %#q", app.Spec.Name, configVersion)
 		secret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      app.Spec.Config.ConfigMap.Name,
-				Namespace: app.Spec.Config.ConfigMap.Namespace,
+				Name:      secret.Name,
+				Namespace: secret.Namespace,
 			},
 		}
 		err = r.k8sClient.CtrlClient().Delete(ctx, secret)
@@ -57,14 +67,6 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		}
 		r.logger.Debugf(ctx, "deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion)
 	}
-
-	r.logger.Debugf(ctx, "clearing App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
-	app.Spec.Config = v1alpha1.AppSpecConfig{}
-	err = r.k8sClient.CtrlClient().Update(ctx, &app)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	r.logger.Debugf(ctx, "cleared App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
 
 	r.logger.Debugf(ctx, "deleted App %#q, config version %#q", app.Spec.Name, configVersion)
 

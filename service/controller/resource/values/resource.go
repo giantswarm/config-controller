@@ -2,7 +2,6 @@ package values
 
 import (
 	"context"
-	"regexp"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -14,15 +13,12 @@ import (
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/generator/key"
 	"github.com/giantswarm/config-controller/pkg/github"
+	servicekey "github.com/giantswarm/config-controller/service/controller/key"
 )
 
 const (
 	Name       = "values"
 	ConfigRepo = "config"
-)
-
-var (
-	tagConfigVersionPattern = regexp.MustCompile(`^(\d+)\.x\.x$`)
 )
 
 type Config struct {
@@ -114,13 +110,7 @@ func (r *Resource) generateConfig(ctx context.Context, installation, namespace, 
 			return nil, nil, microerror.Maskf(executionFailedError, "configVersion must be defined")
 		}
 
-		var tagReference string
-		matches := tagConfigVersionPattern.FindAllStringSubmatch(configVersion, -1)
-		if len(matches) > 0 {
-			// translate configVersion: `<major>.x.x` to tagReference: `v<major>`
-			tagReference = "v" + matches[0][1]
-		}
-
+		tagReference := servicekey.TryVersionToTag(configVersion)
 		if tagReference != "" {
 			tag, err := gh.GetLatestTag(ctx, key.Owner, ConfigRepo, tagReference)
 			if err != nil {

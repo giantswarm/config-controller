@@ -19,9 +19,9 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	configVersion, ok := app.GetAnnotations()[annotation.ConfigMajorVersion]
+	configVersion, ok := app.GetAnnotations()[annotation.ConfigVersion]
 	if !ok {
-		r.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigMajorVersion)
+		r.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigVersion)
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}

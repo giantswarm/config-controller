@@ -223,14 +223,13 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, namesp
 		Name:      name,
 		Namespace: namespace,
 		Labels: map[string]string{
-			annotation.ConfigMajorVersion: ref,
 			key.KubernetesManagedByLabel:  "Helm",
 			label.AppKubernetesName:       project.Name(),
 			label.ConfigControllerVersion: g.projectVersion,
 			label.ManagedBy:               project.Name(),
 		},
 		Annotations: map[string]string{
-			annotation.ConfigMajorVersion:  ref,
+			annotation.ConfigVersion:       ref,
 			key.ReleaseNameAnnotation:      name,
 			key.ReleaseNamespaceAnnotation: namespace,
 		},

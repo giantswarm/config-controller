@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@dev:refactor-push-to-app-collection
+  architect: giantswarm/architect@dev:set-config-version
 
 workflows:
   build:

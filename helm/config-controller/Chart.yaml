@@ -4,5 +4,3 @@ description: "Chart holding config-controller."
 home: "https://github.com/giantswarm/config-controller"
 name: "config-controller"
 version: "[[ .Version ]]"
-annotations:
-  config.giantswarm.io/version: "30.1.x"

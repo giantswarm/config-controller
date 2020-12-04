@@ -6,7 +6,6 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
@@ -18,18 +17,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if app.GetDeletionTimestamp() != nil {
-		r.logger.Debugf(ctx, "App CR %q is has deletion timestamp", app.Name)
-		r.logger.Debugf(ctx, "cancelling resource")
-		resourcecanceledcontext.SetCanceled(ctx)
-		return nil
-	}
-
 	configVersion, ok := app.GetAnnotations()[annotation.ConfigVersion]
 	if !ok {
 		r.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigVersion)
 		r.logger.Debugf(ctx, "cancelling resource")
-		resourcecanceledcontext.SetCanceled(ctx)
 		return nil
 	}
 

@@ -56,16 +56,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.Debugf(ctx, "ensured secret %s/%s", secret.Namespace, secret.Name)
 
-	configmapReference = v1alpha1.AppSpecConfigConfigMap{
+	configmapReference := v1alpha1.AppSpecConfigConfigMap{
 		Namespace: configmap.Namespace,
 		Name:      configmap.Name,
 	}
-	secretReference = v1alpha1.AppSpecConfigSecret{
+	secretReference := v1alpha1.AppSpecConfigSecret{
 		Namespace: secret.Namespace,
 		Name:      secret.Name,
 	}
 	if !reflect.DeepEqual(app.Spec.Config.ConfigMap, configmapReference) || !reflect.DeepEqual(app.Spec.Config.Secret, secretReference) {
 		r.logger.Debugf(ctx, "updating App CR %#q with configmap and secret details", app.Name)
+		app.Spec.Config.ConfigMap = configmapReference
+		app.Spec.Config.Secret = secretReference
 		err = r.k8sClient.CtrlClient().Update(ctx, &app)
 		if err != nil {
 			return microerror.Mask(err)

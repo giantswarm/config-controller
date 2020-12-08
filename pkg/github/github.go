@@ -6,20 +6,25 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/config-controller/pkg/github/internal/cache"
 	"github.com/giantswarm/config-controller/pkg/github/internal/gitrepo"
 	"github.com/giantswarm/config-controller/pkg/github/internal/graphql"
 )
 
 type Config struct {
-	Token string
+	Token           string
+	CacheExpiration time.Duration
 }
 
 type GitHub struct {
 	graphQLClient *graphql.Client
 	repo          *gitrepo.Repo
+	tagCache      *cache.TagCache
+	storeCache    *cache.StoreCache
 }
 
 func New(config Config) (*GitHub, error) {
@@ -58,42 +63,65 @@ func New(config Config) (*GitHub, error) {
 	g := &GitHub{
 		graphQLClient: graphQLClient,
 		repo:          repo,
+		tagCache:      cache.NewTagCache(config.CacheExpiration),
+		storeCache:    cache.NewStoreCache(config.CacheExpiration),
 	}
 
 	return g, nil
 }
 
 func (g *GitHub) GetLatestTag(ctx context.Context, owner, name, major string) (string, error) {
+	latest, cached := g.tagCache.Get(owner, name, major)
+	if cached {
+		return latest, nil
+	}
+
 	tags, err := g.getTags(ctx, owner, name, major)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	latest := getLatestTag(tags)
+	latest = getLatestTag(tags)
 
 	if latest == "" {
 		return "", microerror.Maskf(executionFailedError, "did not find tag for `%s/%s` for major %#q", owner, name, major)
 	}
 
+	g.tagCache.Set(owner, name, major, latest)
+
 	return latest, nil
 }
 
 func (g *GitHub) GetFilesByTag(ctx context.Context, owner, name, tag string) (Store, error) {
+	store, cached := g.storeCache.Get(owner, name, tag)
+	if cached {
+		return store, nil
+	}
+
 	url := "https://github.com/" + owner + "/" + name + ".git"
 	store, err := g.repo.ShallowCloneTag(ctx, url, tag)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
+	g.storeCache.Set(owner, name, tag, store)
+
 	return store, nil
 }
 
 func (g *GitHub) GetFilesByBranch(ctx context.Context, owner, name, branch string) (Store, error) {
+	store, cached := g.storeCache.Get(owner, name, branch)
+	if cached {
+		return store, nil
+	}
+
 	url := "https://github.com/" + owner + "/" + name + ".git"
 	store, err := g.repo.ShallowCloneBranch(ctx, url, branch)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
+	g.storeCache.Set(owner, name, branch, store)
 
 	return store, nil
 }

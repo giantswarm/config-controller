@@ -122,6 +122,7 @@ func mainE(ctx context.Context) error {
 	daemonCommand := newCommand.DaemonCommand().CobraCommand()
 
 	daemonCommand.PersistentFlags().Bool(f.Service.App.Unique, false, "Whether the operator is deployed as a unique app.")
+	daemonCommand.PersistentFlags().String(f.Service.Cache.Expiration, "60s", "Cache expiration time.")
 	daemonCommand.PersistentFlags().String(f.Service.GitHub.Token, "", "Token used to pull repositories from GitHub")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Name, "", `Installation codename (e.g. "geckon")`)
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.Address, "http://127.0.0.1:6443", "Address used to connect to Kubernetes. When empty in-cluster config is created.")

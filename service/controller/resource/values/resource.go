@@ -2,6 +2,7 @@ package values
 
 import (
 	"context"
+	"time"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -25,16 +26,18 @@ type Config struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	GitHubToken    string
-	Installation   string
-	ProjectVersion string
-	VaultClient    *vaultapi.Client
+	CacheExpiration time.Duration
+	GitHubToken     string
+	Installation    string
+	ProjectVersion  string
+	VaultClient     *vaultapi.Client
 }
 
 type Resource struct {
 	k8sClient k8sclient.Interface
 	logger    micrologger.Logger
 
+	cacheExpiration  time.Duration
 	decryptTraverser *decrypt.YAMLTraverser
 	gitHubToken      string
 	installation     string
@@ -82,6 +85,7 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		k8sClient:        config.K8sClient,
 		logger:           config.Logger,
+		cacheExpiration:  config.CacheExpiration,
 		decryptTraverser: decryptTraverser,
 		gitHubToken:      config.GitHubToken,
 		installation:     config.Installation,
@@ -100,7 +104,8 @@ func (r *Resource) generateConfig(ctx context.Context, installation, namespace, 
 	var ref string
 	{
 		gh, err := github.New(github.Config{
-			Token: r.gitHubToken,
+			Token:           r.gitHubToken,
+			CacheExpiration: r.cacheExpiration,
 		})
 		if err != nil {
 			return nil, nil, microerror.Mask(err)

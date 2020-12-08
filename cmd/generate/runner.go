@@ -75,7 +75,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var ref string
 	{
 		gh, err := github.New(github.Config{
-			Token: r.flag.GitHubToken,
+			Token:           r.flag.GitHubToken,
+			CacheExpiration: 0,
 		})
 		if err != nil {
 			return microerror.Mask(err)

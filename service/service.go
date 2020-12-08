@@ -115,10 +115,11 @@ func New(config Config) (*Service, error) {
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
-			GitHubToken:  config.Viper.GetString(config.Flag.Service.GitHub.Token),
-			Installation: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			UniqueApp:    config.Viper.GetBool(config.Flag.Service.App.Unique),
-			VaultClient:  vaultClient,
+			CacheExpiration: config.Viper.GetDuration(config.Flag.Service.Cache.Expiration),
+			GitHubToken:     config.Viper.GetString(config.Flag.Service.GitHub.Token),
+			Installation:    config.Viper.GetString(config.Flag.Service.Installation.Name),
+			UniqueApp:       config.Viper.GetBool(config.Flag.Service.App.Unique),
+			VaultClient:     vaultClient,
 		}
 
 		appController, err = controller.NewApp(c)

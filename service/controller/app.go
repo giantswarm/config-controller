@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -22,10 +24,11 @@ type AppConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	GitHubToken  string
-	Installation string
-	UniqueApp    bool
-	VaultClient  *vaultapi.Client
+	CacheExpiration time.Duration
+	GitHubToken     string
+	Installation    string
+	UniqueApp       bool
+	VaultClient     *vaultapi.Client
 }
 
 type App struct {
@@ -78,10 +81,11 @@ func newAppResources(config AppConfig) ([]resource.Interface, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			VaultClient:    config.VaultClient,
-			GitHubToken:    config.GitHubToken,
-			Installation:   config.Installation,
-			ProjectVersion: label.GetProjectVersion(config.UniqueApp),
+			CacheExpiration: config.CacheExpiration,
+			GitHubToken:     config.GitHubToken,
+			Installation:    config.Installation,
+			ProjectVersion:  label.GetProjectVersion(config.UniqueApp),
+			VaultClient:     config.VaultClient,
 		}
 
 		valuesResource, err = values.New(c)

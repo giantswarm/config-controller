@@ -22,7 +22,7 @@ const (
 	// PauseAnnotation stops app-operator from reconciling App CR too soon.
 	// Once config has been generated, this annotation should be removed by
 	// config-controller.
-	PauseAnnotation = "config-controller.giantswarm.io/pause"
+	PauseAnnotation = "app-operator.giantswarm.io/pause"
 )
 
 type Config struct {

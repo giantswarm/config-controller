@@ -21,6 +21,15 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	configVersion, ok := app.GetAnnotations()[annotation.ConfigVersion]
 	if !ok {
 		h.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigVersion)
+		if _, ok := app.GetAnnotations()[PauseAnnotation]; ok {
+			h.logger.Debugf(ctx, "clearing %q annotation from App CR %#q", PauseAnnotation, app.Name)
+			app.SetAnnotations(removeAnnotation(app.GetAnnotations(), PauseAnnotation))
+			err = h.k8sClient.CtrlClient().Update(ctx, &app)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			h.logger.Debugf(ctx, "cleared %q annotation from App CR %#q", PauseAnnotation, app.Name)
+		}
 		h.logger.Debugf(ctx, "cancelling handler")
 		return nil
 	}

@@ -33,9 +33,10 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	bootOnce          sync.Once
-	appController     *controller.App
-	operatorCollector *collector.Set
+	bootOnce                  sync.Once
+	appController             *controller.App
+	appCatalogEntryController *controller.AppCatalogEntry
+	operatorCollector         *collector.Set
 }
 
 // New creates a new configured service object.
@@ -127,6 +128,19 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var appCatalogEntryController *controller.AppCatalogEntry
+	{
+		c := controller.AppCatalogEntryConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+		}
+
+		appCatalogEntryController, err = controller.NewAppCatalogEntry(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorCollector *collector.Set
 	{
 		c := collector.SetConfig{
@@ -159,9 +173,10 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		Version: versionService,
 
-		bootOnce:          sync.Once{},
-		appController:     appController,
-		operatorCollector: operatorCollector,
+		bootOnce:                  sync.Once{},
+		appController:             appController,
+		appCatalogEntryController: appCatalogEntryController,
+		operatorCollector:         operatorCollector,
 	}
 
 	return s, nil

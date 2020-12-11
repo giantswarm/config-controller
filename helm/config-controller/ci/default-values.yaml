@@ -1,14 +1,5 @@
----
 Installation:
   V1:
-    Name: ""
-    Auth:
-      Vault:
-        Address: ""
-    Secret:
-      ConfigController:
-        GitHub:
-          Token: ""
     GiantSwarm:
       AppOperator:
         PauseAnnotation: ""

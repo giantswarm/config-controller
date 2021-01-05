@@ -22,7 +22,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if !ok {
 		h.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigVersion)
 		if _, ok := app.GetAnnotations()[PauseAnnotation]; ok {
-			h.removeAnnotation(&app, PauseAnnotation)
+			h.removeAnnotation(ctx, &app, PauseAnnotation)
 		}
 		h.logger.Debugf(ctx, "cancelling handler")
 		return nil

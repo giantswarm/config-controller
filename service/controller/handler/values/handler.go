@@ -153,10 +153,10 @@ func (h *Handler) generateConfig(ctx context.Context, installation, namespace, a
 	return configmap, secret, nil
 }
 
-func (h *Handler) removeAnnotation(app *v1alpha1.App, annotation string) error {
+func (h *Handler) removeAnnotation(ctx context.Context, app *v1alpha1.App, annotation string) error {
 	h.logger.Debugf(ctx, "clearing %q annotation from App CR %#q", annotation, app.Name)
 	app.SetAnnotations(removeAnnotation(app.GetAnnotations(), annotation))
-	err = h.k8sClient.CtrlClient().Update(ctx, &app)
+	err := h.k8sClient.CtrlClient().Update(ctx, app)
 	if err != nil {
 		return microerror.Mask(err)
 	}

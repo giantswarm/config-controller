@@ -24,7 +24,7 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	if !ok {
 		h.logger.Debugf(ctx, "App CR %q is missing %q annotation", app.Name, annotation.ConfigVersion)
 		if _, ok := app.GetAnnotations()[PauseAnnotation]; ok {
-			h.removeAnnotation(&app, PauseAnnotation)
+			h.removeAnnotation(ctx, &app, PauseAnnotation)
 		}
 		h.logger.Debugf(ctx, "cancelling handler")
 		return nil
@@ -81,7 +81,7 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 	h.logger.Debugf(ctx, "deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion)
 
-	h.removeAnnotation(&app, PauseAnnotation)
+	h.removeAnnotation(ctx, &app, PauseAnnotation)
 
 	h.logger.Debugf(ctx, "deleted App %#q, config version %#q", app.Spec.Name, configVersion)
 

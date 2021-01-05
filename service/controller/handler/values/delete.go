@@ -59,7 +59,6 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	h.logger.Debugf(ctx, "deleting App %#q, config version %#q", app.Spec.Name, configVersion)
-
 	h.logger.Debugf(ctx, "clearing App %#q, config version %#q configmap and secret details", app.Spec.Name, configVersion)
 	app.Spec.Config = v1alpha1.AppSpecConfig{}
 	err = h.k8sClient.CtrlClient().Update(ctx, &app)
@@ -81,6 +80,8 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 	h.logger.Debugf(ctx, "deleted secret for App %#q, config version %#q", app.Spec.Name, configVersion)
+
+	h.removeAnnotation(&app, PauseAnnotation)
 
 	h.logger.Debugf(ctx, "deleted App %#q, config version %#q", app.Spec.Name, configVersion)
 

@@ -72,6 +72,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 				configVersion = entry.ConfigVersion
 			} else {
 				configVersion = "0.0.0"
+
 			}
 			break
 		}
@@ -85,7 +86,8 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	h.logger.Debugf(ctx, "resolved config version from %#q catalog to %#q", app.Spec.Catalog, configVersion)
 
 	if v, ok := annotations[annotation.ConfigVersion]; ok {
-		if v == configVersion {
+		_, paused = annotations[key.PauseAnnotation]
+		if v == configVersion && !paused {
 			h.logger.Debugf(ctx, "App has correct version annotation already")
 			h.logger.Debugf(ctx, "cancelling handler")
 			return nil
@@ -93,6 +95,10 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	annotations[annotation.ConfigVersion] = configVersion
+	if configVersion == "0.0.0" {
+		h.logger.Debugf(ctx, "App does not use generated config, removing pause annotation")
+		key.RemoveAnnotation(annotations, key.PauseAnnotation)
+	}
 	app.SetAnnotations(annotations)
 	err = h.k8sClient.CtrlClient().Update(ctx, &app)
 	if err != nil {

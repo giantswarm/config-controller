@@ -1,6 +1,7 @@
 package configversion
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -110,8 +111,14 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func getCatalogIndex(ctx context.Context, catalog string) ([]byte, error) {
+	client := &http.Client{}
+
 	url := fmt.Sprintf("https://giantswarm.github.io/%s/index.yaml", catalog)
-	response, err := http.Get(url) // nolint: gosec
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, &bytes.Buffer{}) // nolint: gosec
+	if err != nil {
+		return []byte{}, microerror.Mask(err)
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		return []byte{}, microerror.Mask(err)
 	}

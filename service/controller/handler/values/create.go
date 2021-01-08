@@ -33,7 +33,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		h.logger.Debugf(ctx, "App CR has config version %#q", configVersion)
 		if _, ok := annotations[key.PauseAnnotation]; ok {
 			h.logger.Debugf(ctx, "App does not use generated config, removing pause annotation")
-			annotations = key.RemoveAnnotation(annotations, key.PauseAnnotation)
+			app.SetAnnotations(key.RemoveAnnotation(annotations, key.PauseAnnotation))
 			err = h.k8sClient.CtrlClient().Update(ctx, &app)
 			if err != nil {
 				return microerror.Mask(err)

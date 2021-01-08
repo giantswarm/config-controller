@@ -97,7 +97,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	annotations[annotation.ConfigVersion] = configVersion
 	if configVersion == "0.0.0" {
 		h.logger.Debugf(ctx, "App does not use generated config, removing pause annotation")
-		key.RemoveAnnotation(annotations, key.PauseAnnotation)
+		annotations = key.RemoveAnnotation(annotations, key.PauseAnnotation)
 	}
 	app.SetAnnotations(annotations)
 	err = h.k8sClient.CtrlClient().Update(ctx, &app)

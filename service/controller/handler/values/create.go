@@ -38,6 +38,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
+			h.logger.Debugf(ctx, "removed %#q annotation", key.PauseAnnotation)
 		}
 		h.logger.Debugf(ctx, "cancelling handler")
 		return nil

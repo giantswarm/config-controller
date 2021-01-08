@@ -31,7 +31,7 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	if configVersion == "0.0.0" {
+	if configVersion == key.LegacyConfigVersion {
 		h.logger.Debugf(ctx, "App CR has config version %#q", configVersion)
 		h.logger.Debugf(ctx, "cancelling handler")
 	}

@@ -61,7 +61,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	entries, ok := index.Entries[app.Spec.Name]
 	if !ok || len(entries) == 0 {
-		h.logger.Debugf(ctx, "App has no entries in %#q's index.yaml", app.Spec.Catalog)
+		h.logger.Debugf(ctx, "entries for App not found in %#q's index.yaml", app.Spec.Catalog)
 		h.logger.Debugf(ctx, "cancelling handler")
 		return nil
 	}
@@ -72,7 +72,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if entry.ConfigVersion != "" {
 				configVersion = entry.ConfigVersion
 			} else {
-				configVersion = "0.0.0"
+				configVersion = key.LegacyConfigVersion
 
 			}
 			break
@@ -96,10 +96,6 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	annotations[annotation.ConfigVersion] = configVersion
-	if configVersion == "0.0.0" {
-		h.logger.Debugf(ctx, "App does not use generated config, removing pause annotation")
-		annotations = key.RemoveAnnotation(annotations, key.PauseAnnotation)
-	}
 	app.SetAnnotations(annotations)
 	err = h.k8sClient.CtrlClient().Update(ctx, &app)
 	if err != nil {

@@ -48,13 +48,10 @@ func RemoveAnnotation(annotations map[string]string, key string) map[string]stri
 		return nil
 	}
 
-	out := map[string]string{}
-	for k, v := range annotations {
-		if k == key {
-			continue
-		}
-		out[k] = v
+	_, ok := annotations[key]
+	if ok {
+		delete(annotations, key)
 	}
 
-	return out
+	return annotations
 }

@@ -86,8 +86,8 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	h.logger.Debugf(ctx, "resolved config version from %#q catalog to %#q", app.Spec.Catalog, configVersion)
 
 	if v, ok := annotations[annotation.ConfigVersion]; ok {
-		_, paused = annotations[key.PauseAnnotation]
-		if v == configVersion && !paused {
+		_, isPaused := annotations[key.PauseAnnotation]
+		if v == configVersion && !isPaused {
 			h.logger.Debugf(ctx, "App has correct version annotation already")
 			h.logger.Debugf(ctx, "cancelling handler")
 			return nil

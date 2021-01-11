@@ -87,13 +87,13 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 	h.logger.Debugf(ctx, "deleted secret for App, config version %#q", configVersion)
 
-	h.logger.Debugf(ctx, "clearing %q annotation from App CR", key.PauseAnnotation)
-	app.SetAnnotations(key.RemoveAnnotation(app.GetAnnotations(), key.PauseAnnotation))
+	h.logger.Debugf(ctx, "clearing %q annotation from App CR", annotation.AppOperatorPaused)
+	app.SetAnnotations(key.RemoveAnnotation(app.GetAnnotations(), annotation.AppOperatorPaused))
 	err = h.k8sClient.CtrlClient().Update(ctx, &app)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	h.logger.Debugf(ctx, "cleared %q annotation from App CR", key.PauseAnnotation)
+	h.logger.Debugf(ctx, "cleared %q annotation from App CR", annotation.AppOperatorPaused)
 
 	h.logger.Debugf(ctx, "deleted App config version %#q", configVersion)
 

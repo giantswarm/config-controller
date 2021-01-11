@@ -31,14 +31,14 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	if configVersion == key.LegacyConfigVersion {
 		h.logger.Debugf(ctx, "App CR has config version %#q", configVersion)
-		if _, ok := annotations[key.PauseAnnotation]; ok {
+		if _, ok := annotations[annotation.AppOperatorPaused]; ok {
 			h.logger.Debugf(ctx, "App does not use generated config, removing pause annotation")
-			app.SetAnnotations(key.RemoveAnnotation(annotations, key.PauseAnnotation))
+			app.SetAnnotations(key.RemoveAnnotation(annotations, annotation.AppOperatorPaused))
 			err = h.k8sClient.CtrlClient().Update(ctx, &app)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			h.logger.Debugf(ctx, "removed %#q annotation", key.PauseAnnotation)
+			h.logger.Debugf(ctx, "removed %#q annotation", annotation.AppOperatorPaused)
 		}
 		h.logger.Debugf(ctx, "cancelling handler")
 		return nil
@@ -85,7 +85,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	if !reflect.DeepEqual(app.Spec.Config.ConfigMap, configmapReference) || !reflect.DeepEqual(app.Spec.Config.Secret, secretReference) {
 		h.logger.Debugf(ctx, "updating App CR with configmap and secret details")
-		app.SetAnnotations(key.RemoveAnnotation(annotations, key.PauseAnnotation))
+		app.SetAnnotations(key.RemoveAnnotation(annotations, annotation.AppOperatorPaused))
 		app.Spec.Config.ConfigMap = configmapReference
 		app.Spec.Config.Secret = secretReference
 		err = h.k8sClient.CtrlClient().Update(ctx, &app)

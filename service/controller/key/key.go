@@ -8,10 +8,6 @@ import (
 )
 
 const (
-	// PauseAnnotation stops app-operator from reconciling App CR too soon.
-	// Once config has been generated, this annotation should be removed by
-	// config-controller.
-	PauseAnnotation = "app-operator.giantswarm.io/paused"
 	// LegacyConfigVersion should be set when the config for the app should not
 	// be generated.
 	LegacyConfigVersion = "0.0.0"

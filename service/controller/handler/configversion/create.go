@@ -14,10 +14,6 @@ import (
 	"github.com/giantswarm/config-controller/service/controller/key"
 )
 
-const (
-	ConfigVersionChartAnnotation = "config.giantswarm.io/version"
-)
-
 func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	app, err := key.ToAppCR(obj)
 	if err != nil {
@@ -81,7 +77,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if entry.Annotations == nil {
 			configVersion = key.LegacyConfigVersion
 		} else {
-			v, ok := entry.Annotations[ConfigVersionChartAnnotation]
+			v, ok := entry.Annotations[annotation.ConfigVersion]
 			if ok {
 				configVersion = v
 			} else {

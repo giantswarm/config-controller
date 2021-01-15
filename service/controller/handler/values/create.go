@@ -87,11 +87,12 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		Name:      secret.Name,
 	}
 	if reflect.DeepEqual(app.Spec.Config.ConfigMap, configmapReference) && reflect.DeepEqual(app.Spec.Config.Secret, secretReference) {
+		h.logger.Debugf(ctx, "configmap and secret are up to date")
 		return nil
 	}
 
 	if app.Spec.Config.ConfigMap.Name != "" {
-		h.logger.Debugf(ctx, "deleting configmap for older version")
+		h.logger.Debugf(ctx, "deleting configmap %#q in %#q namespace for older version", configmap.Name, configmap.Namespace)
 		err = h.k8sClient.CtrlClient().Delete(
 			ctx,
 			&corev1.ConfigMap{
@@ -104,11 +105,11 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if client.IgnoreNotFound(err) != nil {
 			return microerror.Mask(err)
 		}
-		h.logger.Debugf(ctx, "deleted configmap for older version")
+		h.logger.Debugf(ctx, "deleted configmap %#q in %#q namespace for older version", configmap.Name, configmap.Namespace)
 	}
 
 	if app.Spec.Config.Secret.Name != "" {
-		h.logger.Debugf(ctx, "deleting secret for older version")
+		h.logger.Debugf(ctx, "deleting secret %#q in %#q namespace for older version", secret.Name, secret.Namespace)
 		err = h.k8sClient.CtrlClient().Delete(
 			ctx,
 			&corev1.Secret{
@@ -121,7 +122,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if client.IgnoreNotFound(err) != nil {
 			return microerror.Mask(err)
 		}
-		h.logger.Debugf(ctx, "deleted secret for older version")
+		h.logger.Debugf(ctx, "deleted secret %#q in %#q namespace for older version", secret.Name, secret.Namespace)
 	}
 
 	h.logger.Debugf(ctx, "updating App CR with configmap and secret details")

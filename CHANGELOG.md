@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Remove old ConfigMap and Secret when a new config version is set.
+
 ### Fixed
 
 - Use `config.giantswarm.io/version` Chart annotation to determine configuration version.

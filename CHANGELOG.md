@@ -13,13 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `giantswarm.io/monitoring: "true"` label to the Service to make sure the
   app is scraped by the new monitoring platform.
+- Resolve catalog URL using storage URL from AppCatalog CR rather than using
+  simple format string.
 
 ## [0.2.1] - 2021-01-14
 
 ### Fixed
 
-- Resolve catalog URL using storage URL from AppCatalog CR rather than using
-  simple format string.
 - Remove old ConfigMap and Secret when a new config version is set.
 
 ### Fixed

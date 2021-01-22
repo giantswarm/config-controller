@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -40,7 +42,7 @@ func New(config Config) (*Service, error) {
 }
 
 func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desired Object) error {
-	s.logger.Debugf(ctx, "ensuring %#q %#q", Kind(desired), NamespacedName(desired))
+	s.logger.Debugf(ctx, "ensuring %#q %#q", Kind(desired), ObjectKey(desired))
 
 	err := setHash(hashAnnotation, desired)
 	if err != nil {
@@ -49,24 +51,24 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 
 	t := reflect.TypeOf(desired).Elem()
 	current := reflect.New(t).Interface().(Object)
-	err = s.client.Get(ctx, NamespacedName(desired), current)
+	err = s.client.Get(ctx, ObjectKey(desired), current)
 	if apierrors.IsNotFound(err) {
 		err = s.client.Create(ctx, desired)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		s.logger.Debugf(ctx, "created %#q %#q", Kind(desired), NamespacedName(desired))
+		s.logger.Debugf(ctx, "created %#q %#q", Kind(desired), ObjectKey(desired))
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	h1, ok1 := getAnnotation(desired, hashAnnotation)
-	h2, ok2 := getAnnotation(current, hashAnnotation)
+	h1, ok1 := GetAnnotation(desired, hashAnnotation)
+	h2, ok2 := GetAnnotation(current, hashAnnotation)
 
 	if ok1 && ok2 && h1 == h2 {
-		s.logger.Debugf(ctx, "object %#q %#q is up to date", Kind(desired), NamespacedName(desired))
+		s.logger.Debugf(ctx, "object %#q %#q is up to date", Kind(desired), ObjectKey(desired))
 		return nil
 	}
 
@@ -75,28 +77,65 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 		return microerror.Mask(err)
 	}
 
-	s.logger.Debugf(ctx, "updated %#q %#q", Kind(desired), NamespacedName(desired))
+	s.logger.Debugf(ctx, "updated %#q %#q", Kind(desired), ObjectKey(desired))
 	return nil
 }
 
-func getAnnotation(o Object, key string) (string, bool) {
-	a := o.GetAnnotations()
-	if a == nil {
-		return "", false
+func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
+	if obj == nil {
+		panic("nil obj")
 	}
 
-	s, ok := a[key]
-	return s, ok
-}
+	v := reflect.ValueOf(obj)
 
-func setAnnotation(o Object, key, val string) {
-	a := o.GetAnnotations()
-	if a == nil {
-		a = map[string]string{}
+	// Make sure we have a pointer behind the interface.
+	if reflect.ValueOf(obj).Kind() != reflect.Ptr {
+		panic(fmt.Sprintf("value of zero.(%s) of kind %q expected to be %q", v.Type(), v.Kind(), reflect.Ptr))
 	}
 
-	a[key] = val
-	o.SetAnnotations(a)
+	if backOff == nil {
+		backOff = backoff.NewMaxRetries(3, 300*time.Millisecond)
+	}
+
+	attempt := 0
+
+	o := func() error {
+		var err error
+
+		attempt++
+
+		// Zero the value behind the pointer.
+		e := v.Elem()
+		e.Set(reflect.Zero(e.Type()))
+
+		err = s.client.Get(ctx, key, obj)
+		if apierrors.IsNotFound(err) {
+			return backoff.Permanent(microerror.Mask(err))
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = modifyFunc()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = s.client.Update(ctx, obj)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+	n := func(err error, d time.Duration) {
+		s.logger.Debugf(ctx, "retrying (%d) %#q %#q modification in %s due to error: %s", attempt, Kind(obj), ObjectKey(obj), d, err)
+	}
+	err := backoff.RetryNotify(o, backOff, n)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }
 
 func setHash(annotation string, o Object) error {
@@ -106,7 +145,7 @@ func setHash(annotation string, o Object) error {
 	}
 
 	sum := sha256.Sum256(bytes)
-	setAnnotation(o, annotation, fmt.Sprintf("%x", sum))
+	SetAnnotation(o, annotation, fmt.Sprintf("%x", sum))
 
 	return nil
 }

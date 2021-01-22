@@ -47,7 +47,8 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 		return microerror.Mask(err)
 	}
 
-	current := reflect.New(reflect.TypeOf(desired)).Elem().Interface().(Object)
+	t := reflect.TypeOf(desired).Elem()
+	current := reflect.New(t).Interface().(Object)
 	err = s.client.Get(ctx, NamespacedName(desired), current)
 	if apierrors.IsNotFound(err) {
 		err = s.client.Create(ctx, desired)

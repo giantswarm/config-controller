@@ -33,7 +33,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if _, ok := k8sresource.GetAnnotation(&app, annotation.AppOperatorPaused); ok {
 			h.logger.Debugf(ctx, "removing %#q annotation due to App from %#q catalog", annotation.AppOperatorPaused, app.Spec.Catalog)
 
-			var current *v1alpha1.App
+			current := &v1alpha1.App{}
 			modifyFunc := func() error {
 				k8sresource.DeleteAnnotation(current, annotation.AppOperatorPaused)
 				return nil
@@ -107,7 +107,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		h.logger.Debugf(ctx, "setting config version to %#q", configVersion)
 
-		var current *v1alpha1.App
+		current := &v1alpha1.App{}
 		modifyFunc := func() error {
 			k8sresource.DeleteAnnotation(current, annotation.AppOperatorPaused)
 			k8sresource.SetAnnotation(current, annotation.ConfigVersion, configVersion)

@@ -89,8 +89,13 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 	v := reflect.ValueOf(obj)
 
 	// Make sure we have a pointer behind the interface.
-	if reflect.ValueOf(obj).Kind() != reflect.Ptr {
+	if v.Kind() != reflect.Ptr {
 		panic(fmt.Sprintf("value of zero.(%s) of kind %q expected to be %q", v.Type(), v.Kind(), reflect.Ptr))
+	}
+
+	// Make sure the pointer has a value set.
+	if v.IsZero() {
+		panic(fmt.Sprintf("value behind obj.(%s) pointer is nil (%v)", v.Type(), obj))
 	}
 
 	if backOff == nil {

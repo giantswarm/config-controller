@@ -4,11 +4,12 @@ import (
 	"regexp"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/config-controller/pkg/generator/key"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/giantswarm/config-controller/pkg/generator/key"
 )
 
 // LegacyConfigVersion should be set when the config for the app should not

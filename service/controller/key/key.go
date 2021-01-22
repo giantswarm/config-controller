@@ -5,47 +5,19 @@ import (
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-
-	"github.com/giantswarm/config-controller/pkg/generator/key"
 )
 
-// LegacyConfigVersion should be set when the config for the app should not
-// be generated.
-const LegacyConfigVersion = "0.0.0"
+const (
+	// LegacyConfigVersion should be set when the config for the app should not
+	// be generated.
+	LegacyConfigVersion = "0.0.0"
 
-const Owner = key.Owner
+	ObjectHashAnnotation = "config-controller.giantswarm.io/object-hash"
+)
 
 var (
 	tagConfigVersionPattern = regexp.MustCompile(`^(\d+)\.x\.x$`)
 )
-
-type Object interface {
-	runtime.Object
-
-	GetAnnotations() map[string]string
-	GetName() string
-	GetNamespace() string
-	SetAnnotations(map[string]string)
-	GetObjectKind() schema.ObjectKind
-}
-
-func GetObjectHash(o Object) (string, bool) {
-	return key.GetObjectHash(o)
-}
-
-func GetObjectKind(o Object) string {
-	return o.GetObjectKind().GroupVersionKind().Kind
-}
-
-func NamespacedName(o Object) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: o.GetNamespace(),
-		Name:      o.GetName(),
-	}
-}
 
 func ToAppCR(v interface{}) (v1alpha1.App, error) {
 	if v == nil {

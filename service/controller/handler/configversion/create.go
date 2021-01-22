@@ -109,7 +109,6 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		current := &v1alpha1.App{}
 		modifyFunc := func() error {
-			k8sresource.DeleteAnnotation(current, annotation.AppOperatorPaused)
 			k8sresource.SetAnnotation(current, annotation.ConfigVersion, configVersion)
 			return nil
 		}

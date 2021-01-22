@@ -39,19 +39,15 @@ func New(config Config) (*Service, error) {
 	return s, nil
 }
 
-func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, empty, desired Object) error {
+func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desired Object) error {
 	s.logger.Debugf(ctx, "ensuring %#q %#q", Kind(desired), NamespacedName(desired))
-
-	if reflect.TypeOf(empty) != reflect.TypeOf(desired) {
-		panic(fmt.Sprintf("empty.(%s) and desired.(%s) have different types", empty, desired))
-	}
 
 	err := setHash(hashAnnotation, desired)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	current := empty
+	current := reflect.New(reflect.TypeOf(desired)).Interface().(Object)
 	err = s.client.Get(ctx, NamespacedName(desired), current)
 	if apierrors.IsNotFound(err) {
 		err = s.client.Create(ctx, desired)

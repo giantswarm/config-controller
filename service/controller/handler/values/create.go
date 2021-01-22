@@ -53,12 +53,12 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	h.logger.Debugf(ctx, "generated app config version %#q", configVersion)
 
-	err = h.resource.EnsureCreated(ctx, key.ObjectHashAnnotation, &corev1.ConfigMap{}, configmap)
+	err = h.resource.EnsureCreated(ctx, key.ObjectHashAnnotation, configmap)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = h.resource.EnsureCreated(ctx, key.ObjectHashAnnotation, &corev1.Secret{}, secret)
+	err = h.resource.EnsureCreated(ctx, key.ObjectHashAnnotation, secret)
 	if err != nil {
 		return microerror.Mask(err)
 	}

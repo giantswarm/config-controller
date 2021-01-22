@@ -8,11 +8,11 @@ import (
 	"github.com/giantswarm/micrologger"
 	vaultapi "github.com/hashicorp/vault/api"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
-	"github.com/giantswarm/config-controller/pkg/generator/key"
-	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
+	"github.com/giantswarm/config-controller/service/controller/key"
 	"github.com/giantswarm/config-controller/service/internal/github"
 )
 
@@ -110,7 +110,7 @@ func (h *Handler) generateConfig(ctx context.Context, installation, namespace, a
 			return nil, nil, microerror.Maskf(executionFailedError, "configVersion must be defined")
 		}
 
-		tagReference := controllerkey.TryVersionToTag(configVersion)
+		tagReference := key.TryVersionToTag(configVersion)
 		if tagReference != "" {
 			tag, err := h.gitHub.GetLatestTag(ctx, key.Owner, ConfigRepo, tagReference)
 			if err != nil {
@@ -146,4 +146,34 @@ func (h *Handler) generateConfig(ctx context.Context, installation, namespace, a
 	}
 
 	return configmap, secret, nil
+}
+
+func (h *Handler) ensureObject(ctx context.Context, empty, desired key.Object) error {
+	h.logger.Debugf(ctx, "ensuring %#q %#q", key.GetObjectKind(desired), key.NamespacedName(desired))
+
+	current := empty
+	err := h.k8sClient.CtrlClient().Get(ctx, key.NamespacedName(desired), current)
+	if apierrors.IsNotFound(err) {
+		err = h.k8sClient.CtrlClient().Create(ctx, desired)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		h.logger.Debugf(ctx, "created %#q %#q", key.GetObjectKind(desired), key.NamespacedName(desired))
+	} else if err != nil {
+		return microerror.Mask(err)
+	} else {
+		h1, ok1 := key.GetObjectHash(desired)
+		h2, ok2 := key.GetObjectHash(current)
+		if !ok1 || !ok2 || h1 != h2 {
+			err = h.k8sClient.CtrlClient().Update(ctx, desired)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			h.logger.Debugf(ctx, "updated %#q %#q", key.GetObjectKind(desired), key.NamespacedName(desired))
+		} else {
+			h.logger.Debugf(ctx, "object %#q %#q is up to date", key.GetObjectKind(desired), key.NamespacedName(desired))
+		}
+	}
+
+	return nil
 }

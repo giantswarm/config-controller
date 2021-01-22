@@ -257,6 +257,9 @@ func (g Generator) GenerateConfig(ctx context.Context, installation, app, namesp
 		},
 	}
 
+	key.SetObjectHash(configmap)
+	key.SetObjectHash(secret)
+
 	return configmap, secret, nil
 }
 

@@ -100,6 +100,27 @@ func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
 	return gvk, nil
 }
 
+// Modify gets the object for the given key. It sets the most recent version of
+// the object to provided obj pointer and calls modifyFunc which is supposed to
+// apply changes to the pointer.
+//
+//	- The modifyFunc is called on every try.
+//	- The obj variable is reset and populated before every try.
+//	- There are no retries if the object defined by the key does not exist.
+//
+// Example usage:
+//
+//	key := client.ObjectKey{Namespace: "giantswarm", Name: "my-operator"}
+//	current := &v1alpha1.App{}
+//	modifyFunc := func() error {
+//		current.Spec.Version = "2.0.0"
+//		return nil
+//	}
+//	err := h.resource.Modify(ctx, key, current, modifyFunc, nil)
+//	if err != nil {
+//		...
+//	}
+//
 func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
 	if obj == nil {
 		panic("nil obj")

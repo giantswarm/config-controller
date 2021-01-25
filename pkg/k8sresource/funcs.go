@@ -33,10 +33,6 @@ func SetAnnotation(o Object, key, val string) {
 	o.SetAnnotations(a)
 }
 
-func Kind(o Object) string {
-	return o.GetObjectKind().GroupVersionKind().Kind
-}
-
 func ObjectKey(o Object) client.ObjectKey {
 	return client.ObjectKey{
 		Namespace: o.GetNamespace(),

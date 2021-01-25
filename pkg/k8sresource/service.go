@@ -6,23 +6,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
 type Config struct {
-	Client client.Client
+	Client k8sclient.Interface
 	Logger micrologger.Logger
 }
 
 type Service struct {
-	client client.Client
 	logger micrologger.Logger
+
+	client client.Client
+	scheme *runtime.Scheme
 }
 
 func New(config Config) (*Service, error) {
@@ -34,15 +41,18 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		client: config.Client,
 		logger: config.Logger,
+
+		client: config.Client.CtrlClient(),
+		scheme: config.Client.Scheme(),
 	}
 
 	return s, nil
 }
 
 func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desired Object) error {
-	s.logger.Debugf(ctx, "ensuring %#q %#q", Kind(desired), ObjectKey(desired))
+
+	s.logger.Debugf(ctx, "ensuring %#q %#q", s.kind(desired), ObjectKey(desired))
 
 	err := setHash(hashAnnotation, desired)
 	if err != nil {
@@ -58,7 +68,7 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 			return microerror.Mask(err)
 		}
 
-		s.logger.Debugf(ctx, "created %#q %#q", Kind(desired), ObjectKey(desired))
+		s.logger.Debugf(ctx, "created %#q %#q", s.kind(desired), ObjectKey(desired))
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -68,7 +78,7 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 	h2, ok2 := GetAnnotation(current, hashAnnotation)
 
 	if ok1 && ok2 && h1 == h2 {
-		s.logger.Debugf(ctx, "object %#q %#q is up to date", Kind(desired), ObjectKey(desired))
+		s.logger.Debugf(ctx, "object %#q %#q is up to date", s.kind(desired), ObjectKey(desired))
 		return nil
 	}
 
@@ -77,8 +87,17 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 		return microerror.Mask(err)
 	}
 
-	s.logger.Debugf(ctx, "updated %#q %#q", Kind(desired), ObjectKey(desired))
+	s.logger.Debugf(ctx, "updated %#q %#q", s.kind(desired), ObjectKey(desired))
 	return nil
+}
+
+func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
+	gvk, err := apiutil.GVKForObject(o, s.scheme)
+	if err != nil {
+		return schema.GroupVersionKind{}, microerror.Mask(err)
+	}
+
+	return gvk, nil
 }
 
 func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
@@ -99,7 +118,7 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 	}
 
 	if backOff == nil {
-		backOff = backoff.NewMaxRetries(3, 300*time.Millisecond)
+		backOff = backoff.NewMaxRetries(6, 150*time.Millisecond)
 	}
 
 	attempt := 0
@@ -133,7 +152,7 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 		return nil
 	}
 	n := func(err error, d time.Duration) {
-		s.logger.Debugf(ctx, "retrying (%d) %#q %#q modification in %s due to error: %s", attempt, Kind(obj), ObjectKey(obj), d, err)
+		s.logger.Debugf(ctx, "retrying (%d) %#q %#q modification in %s due to error: %s", attempt, s.kind(obj), ObjectKey(obj), d, err)
 	}
 	err := backoff.RetryNotify(o, backOff, n)
 	if err != nil {
@@ -141,6 +160,18 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 	}
 
 	return nil
+}
+
+// kind is a best effort approach to extract object kind.
+func (s *Service) kind(o Object) string {
+	gvk, err := apiutil.GVKForObject(o, s.scheme)
+	if err != nil {
+		t := fmt.Sprintf("%T", o)
+		t = t[strings.LastIndex(t, ".")+1:]
+		return t
+	}
+
+	return gvk.Kind
 }
 
 func setHash(annotation string, o Object) error {

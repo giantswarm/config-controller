@@ -11,6 +11,7 @@ func DeleteAnnotation(o Object, key string) {
 	}
 
 	delete(a, key)
+	o.SetAnnotations(a)
 }
 
 func GetAnnotation(o Object, key string) (string, bool) {

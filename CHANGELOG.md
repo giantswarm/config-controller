@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Add missing `giantswarm.io/monitoring-*` annotations.
 - Update configuration ConfigMap ans Secret only when they change.
 - Retry App CR modifications on conflicts.
 

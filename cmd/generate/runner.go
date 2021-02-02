@@ -106,7 +106,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	gen, err := generator.New(&generator.Config{
 		Fs:               store,
 		DecryptTraverser: decryptTraverser,
-		ProjectVersion:   project.AppControlPlaneVersion(),
+		ProjectVersion:   project.Version(),
 	})
 	if err != nil {
 		return microerror.Mask(err)

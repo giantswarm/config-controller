@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -11,27 +11,30 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	vaultapi "github.com/hashicorp/vault/api"
+
 	"github.com/giantswarm/config-controller/pkg/label"
 	"github.com/giantswarm/config-controller/pkg/project"
-	"github.com/giantswarm/config-controller/service/controller/handler/configversion"
+	"github.com/giantswarm/config-controller/service/controller/handler/configuration"
 )
 
-type AppCatalogEntryConfig struct {
+type ConfigConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	GitHubToken string
-	UniqueApp   bool
+	GitHubToken  string
+	UniqueConfig bool
+	VaultClient  *vaultapi.Client
 }
 
-type AppCatalogEntry struct {
+type Config struct {
 	*controller.Controller
 }
 
-func NewAppCatalogEntry(config AppCatalogEntryConfig) (*AppCatalogEntry, error) {
+func NewConfig(config ConfigConfig) (*Config, error) {
 	var err error
 
-	resources, err := newAppCatalogEntryResources(config)
+	resources, err := newConfigResources(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -42,14 +45,14 @@ func NewAppCatalogEntry(config AppCatalogEntryConfig) (*AppCatalogEntry, error) 
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(v1alpha1.App)
+				return new(v1alpha1.Config)
 			},
 			Resources: resources,
-			Selector:  label.VersionSelector(config.UniqueApp),
+			Selector:  label.VersionSelector(config.UniqueConfig),
 
 			// Name is used to compute finalizer names. This here results in something
-			// like operatorkit.giantswarm.io/config-controller-app-controller.
-			Name: project.Name() + "-app-catalog-entry-controller",
+			// like operatorkit.giantswarm.io/config-controller-config-controller.
+			Name: project.Name() + "-config-controller",
 		}
 
 		operatorkitController, err = controller.New(c)
@@ -58,33 +61,34 @@ func NewAppCatalogEntry(config AppCatalogEntryConfig) (*AppCatalogEntry, error) 
 		}
 	}
 
-	c := &AppCatalogEntry{
+	c := &Config{
 		Controller: operatorkitController,
 	}
 
 	return c, nil
 }
 
-func newAppCatalogEntryResources(config AppCatalogEntryConfig) ([]resource.Interface, error) {
+func newConfigResources(config ConfigConfig) ([]resource.Interface, error) {
 	var err error
 
-	var configversionResource resource.Interface
+	var configurationHandler resource.Interface
 	{
-		c := configversion.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
+		c := configuration.Config{
+			K8sClient:   config.K8sClient,
+			Logger:      config.Logger,
+			VaultClient: config.VaultClient,
 
 			GitHubToken: config.GitHubToken,
 		}
 
-		configversionResource, err = configversion.New(c)
+		configurationHandler, err = configuration.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	resources := []resource.Interface{
-		configversionResource,
+	handlers := []resource.Interface{
+		configurationHandler,
 	}
 
 	{
@@ -92,7 +96,7 @@ func newAppCatalogEntryResources(config AppCatalogEntryConfig) ([]resource.Inter
 			Logger: config.Logger,
 		}
 
-		resources, err = retryresource.Wrap(resources, c)
+		handlers, err = retryresource.Wrap(handlers, c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -101,11 +105,11 @@ func newAppCatalogEntryResources(config AppCatalogEntryConfig) ([]resource.Inter
 	{
 		c := metricsresource.WrapConfig{}
 
-		resources, err = metricsresource.Wrap(resources, c)
+		handlers, err = metricsresource.Wrap(handlers, c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	return resources, nil
+	return handlers, nil
 }

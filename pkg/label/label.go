@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/config-controller/pkg/project"
 )
 
-func AppVersionSelector(unique bool) controller.Selector {
+func VersionSelector(unique bool) controller.Selector {
 	return controller.NewSelector(func(labels controller.Labels) bool {
 		if !labels.Has(label.ConfigControllerVersion) {
 			return false
@@ -23,9 +23,9 @@ func AppVersionSelector(unique bool) controller.Selector {
 func GetProjectVersion(unique bool) string {
 	if unique {
 		// When config-controller is deployed as a unique app it only
-		// processes control plane app CRs. These CRs always have the
+		// processes management cluster CRs. These CRs always have the
 		// version label config-controller.giantswarm.io/version: 0.0.0
-		return project.AppControlPlaneVersion()
+		return "0.0.0"
 	} else {
 		return project.Version()
 	}

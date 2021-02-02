@@ -49,7 +49,7 @@ func NewApp(config AppConfig) (*App, error) {
 				return new(v1alpha1.App)
 			},
 			Resources: resources,
-			Selector:  label.AppVersionSelector(config.UniqueApp),
+			Selector:  label.VersionSelector(config.UniqueApp),
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-app-controller.

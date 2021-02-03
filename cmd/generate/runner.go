@@ -15,11 +15,6 @@ import (
 	"github.com/giantswarm/config-controller/internal/meta"
 )
 
-const (
-	owner = "giantswarm"
-	repo  = "config"
-)
-
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger

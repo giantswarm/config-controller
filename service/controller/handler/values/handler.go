@@ -13,13 +13,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/config-controller/internal/generator/github"
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/generator/key"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 	"github.com/giantswarm/config-controller/pkg/project"
 	controllerkey "github.com/giantswarm/config-controller/service/controller/key"
-	"github.com/giantswarm/config-controller/service/internal/github"
 )
 
 const (
@@ -91,7 +91,7 @@ func New(config Config) (*Handler, error) {
 	var gh *github.GitHub
 	{
 		c := github.Config{
-			GitHubToken: config.GitHubToken,
+			Token: config.GitHubToken,
 		}
 
 		gh, err = github.New(c)

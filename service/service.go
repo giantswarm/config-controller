@@ -36,6 +36,7 @@ type Service struct {
 	bootOnce                  sync.Once
 	appCatalogEntryController *controller.AppCatalogEntry
 	appController             *controller.App
+	configController          *controller.Config
 	operatorCollector         *collector.Set
 }
 
@@ -144,6 +145,24 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var configController *controller.Config
+	{
+		c := controller.ConfigConfig{
+			K8sClient:   k8sClient,
+			Logger:      config.Logger,
+			VaultClient: vaultClient,
+
+			GitHubToken:  config.Viper.GetString(config.Flag.Service.GitHub.Token),
+			Installation: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			UniqueApp:    config.Viper.GetBool(config.Flag.Service.App.Unique),
+		}
+
+		configController, err = controller.NewConfig(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorCollector *collector.Set
 	{
 		c := collector.SetConfig{
@@ -179,6 +198,7 @@ func New(config Config) (*Service, error) {
 		bootOnce:                  sync.Once{},
 		appController:             appController,
 		appCatalogEntryController: appCatalogEntryController,
+		configController:          configController,
 		operatorCollector:         operatorCollector,
 	}
 
@@ -191,5 +211,6 @@ func (s *Service) Boot(ctx context.Context) {
 
 		go s.appCatalogEntryController.Boot(ctx)
 		go s.appController.Boot(ctx)
+		go s.configController.Boot(ctx)
 	})
 }

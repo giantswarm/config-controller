@@ -19,12 +19,13 @@ import (
 )
 
 type ConfigConfig struct {
-	K8sClient k8sclient.Interface
-	Logger    micrologger.Logger
+	K8sClient   k8sclient.Interface
+	Logger      micrologger.Logger
+	VaultClient *vaultapi.Client
 
 	GitHubToken  string
-	UniqueConfig bool
-	VaultClient  *vaultapi.Client
+	Installation string
+	UniqueApp    bool
 }
 
 type Config struct {
@@ -48,7 +49,7 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 				return new(v1alpha1.Config)
 			},
 			Resources: resources,
-			Selector:  label.VersionSelector(config.UniqueConfig),
+			Selector:  label.VersionSelector(config.UniqueApp),
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-config-controller.
@@ -78,7 +79,8 @@ func newConfigResources(config ConfigConfig) ([]resource.Interface, error) {
 			Logger:      config.Logger,
 			VaultClient: config.VaultClient,
 
-			GitHubToken: config.GitHubToken,
+			GitHubToken:  config.GitHubToken,
+			Installation: config.Installation,
 		}
 
 		configurationHandler, err = configuration.New(c)

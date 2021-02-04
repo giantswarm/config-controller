@@ -121,11 +121,34 @@ func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
 //	}
 //
 func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
+	err := s.modify(ctx, key, obj, modifyFunc, backOff, false)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+// ModifyStatus works exactly like Modify but updates the status subresource.
+func (s *Service) ModifyStatus(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
+	err := s.modify(ctx, key, obj, modifyFunc, backOff, true)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (s *Service) modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff, statusUpdate bool) error {
 	if obj == nil {
 		panic("nil obj")
 	}
 
-	s.logger.Debugf(ctx, "modifying %#q %#q", s.kind(obj), key)
+	if statusUpdate {
+		s.logger.Debugf(ctx, "modifying status %#q %#q", s.kind(obj), key)
+	} else {
+		s.logger.Debugf(ctx, "modifying %#q %#q", s.kind(obj), key)
+	}
 
 	v := reflect.ValueOf(obj)
 
@@ -166,22 +189,37 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 			return microerror.Mask(err)
 		}
 
-		err = s.client.Update(ctx, obj)
-		if err != nil {
-			return microerror.Mask(err)
+		if statusUpdate {
+			err = s.client.Status().Update(ctx, obj)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		} else {
+			err = s.client.Update(ctx, obj)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		return nil
 	}
 	n := func(err error, d time.Duration) {
-		s.logger.Debugf(ctx, "retrying (%d) %#q %#q modification in %s due to error: %s", attempt, s.kind(obj), ObjectKey(obj), d, err)
+		if statusUpdate {
+			s.logger.Debugf(ctx, "retrying (%d) %#q %#q status modification in %s due to error: %s", attempt, s.kind(obj), ObjectKey(obj), d, err)
+		} else {
+			s.logger.Debugf(ctx, "retrying (%d) %#q %#q modification in %s due to error: %s", attempt, s.kind(obj), ObjectKey(obj), d, err)
+		}
 	}
 	err := backoff.RetryNotify(o, backOff, n)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	s.logger.Debugf(ctx, "modified %#q %#q", s.kind(obj), key)
+	if statusUpdate {
+		s.logger.Debugf(ctx, "modified status %#q %#q", s.kind(obj), key)
+	} else {
+		s.logger.Debugf(ctx, "modified %#q %#q", s.kind(obj), key)
+	}
 
 	return nil
 }

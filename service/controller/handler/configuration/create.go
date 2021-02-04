@@ -95,7 +95,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return nil
 		}
 
-		err = h.resource.Modify(ctx, k8sresource.ObjectKey(config), current, modifyFunc, nil)
+		err = h.resource.ModifyStatus(ctx, k8sresource.ObjectKey(config), current, modifyFunc, nil)
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -2,7 +2,7 @@ package configuration
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // nolint:gosec
 	"encoding/json"
 	"fmt"
 
@@ -119,7 +119,7 @@ func hash(v interface{}) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	sum := sha1.Sum(bs)
+	sum := sha1.Sum(bs) // nolint:gosec
 	return fmt.Sprintf("%x", sum)[:10], nil
 }
 

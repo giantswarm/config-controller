@@ -75,6 +75,9 @@ func New(config Config) (*Handler, error) {
 		}
 
 		gen, err = generator.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var resource *k8sresource.Service

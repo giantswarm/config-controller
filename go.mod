@@ -8,7 +8,8 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions/v3 v3.16.2-0.20210202133116-302f4a6aacb5
+	github.com/giantswarm/apiextensions v0.4.20
+	github.com/giantswarm/apiextensions/v3 v3.17.1-0.20210204071139-332f568ce12e
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/exporterkit v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0
@@ -44,6 +45,7 @@ require (
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
 	sigs.k8s.io/controller-runtime v0.6.3
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.10-gs

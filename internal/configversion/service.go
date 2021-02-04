@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/types"
@@ -20,28 +20,28 @@ type Config struct {
 	K8sClient k8sclient.Interface
 }
 
-type ConfigVersion struct {
+type Service struct {
 	k8sClient k8sclient.Interface
 }
 
-func New(config Config) (*ConfigVersion, error) {
+func New(config Config) (*Service, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 
-	c := &ConfigVersion{
+	s := &Service{
 		k8sClient: config.K8sClient,
 	}
 
-	return c, nil
+	return s, nil
 }
 
-func (c *ConfigVersion) Get(ctx context.Context, app corev1alpha1.ConfigSpecApp) (string, error) {
+func (s *Service) Get(ctx context.Context, app corev1alpha1.ConfigSpecApp) (string, error) {
 	if app.Catalog == "releases" {
 		return "", microerror.Maskf(executionFailedError, "catalog %#q is not supported", app.Catalog)
 	}
 
-	index, err := c.getCatalogIndex(ctx, app.Catalog)
+	index, err := s.getCatalogIndex(ctx, app.Catalog)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -60,7 +60,7 @@ func (c *ConfigVersion) Get(ctx context.Context, app corev1alpha1.ConfigSpecApp)
 			break
 		}
 
-		v, ok := entry.Annotations[annotation.ConfigVersion]
+		v, ok := entry.Annotations[meta.Annotation.ConfigVersion()]
 		if !ok {
 			break
 		}
@@ -72,12 +72,12 @@ func (c *ConfigVersion) Get(ctx context.Context, app corev1alpha1.ConfigSpecApp)
 	return "", microerror.Maskf(notFoundError, "App %#q not found in catalog %#q", av, app.Catalog)
 }
 
-func (c *ConfigVersion) getCatalogIndex(ctx context.Context, catalogName string) (catalogIndex, error) {
+func (s *Service) getCatalogIndex(ctx context.Context, catalogName string) (catalogIndex, error) {
 	client := &http.Client{}
 
 	var catalog applicationv1alpha1.AppCatalog
 	{
-		err := c.k8sClient.CtrlClient().Get(ctx, types.NamespacedName{Name: catalogName}, &catalog)
+		err := s.k8sClient.CtrlClient().Get(ctx, types.NamespacedName{Name: catalogName}, &catalog)
 		if err != nil {
 			return catalogIndex{}, microerror.Mask(err)
 		}

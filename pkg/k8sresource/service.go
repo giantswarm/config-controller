@@ -51,7 +51,6 @@ func New(config Config) (*Service, error) {
 }
 
 func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desired Object) error {
-
 	s.logger.Debugf(ctx, "ensuring %#q %#q", s.kind(desired), ObjectKey(desired))
 
 	err := setHash(hashAnnotation, desired)
@@ -126,6 +125,8 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 		panic("nil obj")
 	}
 
+	s.logger.Debugf(ctx, "modifying %#q %#q", s.kind(obj), key)
+
 	v := reflect.ValueOf(obj)
 
 	// Make sure we have a pointer behind the interface.
@@ -179,6 +180,8 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	s.logger.Debugf(ctx, "modified %#q %#q", s.kind(obj), key)
 
 	return nil
 }

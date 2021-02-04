@@ -6,8 +6,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	vaultapi "github.com/hashicorp/vault/api"
 
+	"github.com/giantswarm/config-controller/internal/configversion"
+	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
-	"github.com/giantswarm/config-controller/service/internal/github"
 )
 
 const (
@@ -19,16 +20,17 @@ type Config struct {
 	Logger      micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubToken string
+	GitHubToken  string
+	Installation string
 }
 
 type Handler struct {
-	k8sClient   k8sclient.Interface
-	logger      micrologger.Logger
-	vaultClient *vaultapi.Client
+	k8sClient k8sclient.Interface
+	logger    micrologger.Logger
 
-	gitHub   *github.GitHub
-	resource *k8sresource.Service
+	configVersion *configversion.Service
+	generator     *generator.Service
+	resource      *k8sresource.Service
 }
 
 func New(config Config) (*Handler, error) {
@@ -45,19 +47,34 @@ func New(config Config) (*Handler, error) {
 	if config.GitHubToken == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken must not be empty", config)
 	}
+	if config.Installation == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Installation must not be empty", config)
+	}
 
 	var err error
 
-	var gh *github.GitHub
+	var configVersion *configversion.Service
 	{
-		c := github.Config{
-			GitHubToken: config.GitHubToken,
+		c := configversion.Config{
+			K8sClient: config.K8sClient,
 		}
 
-		gh, err = github.New(c)
+		configVersion, err = configversion.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+	}
+
+	var gen *generator.Service
+	{
+		c := generator.Config{
+			VaultClient: config.VaultClient,
+
+			GitHubToken:  config.GitHubToken,
+			Installation: config.Installation,
+		}
+
+		gen, err = generator.New(c)
 	}
 
 	var resource *k8sresource.Service
@@ -75,12 +92,12 @@ func New(config Config) (*Handler, error) {
 	}
 
 	h := &Handler{
-		k8sClient:   config.K8sClient,
-		logger:      config.Logger,
-		vaultClient: config.VaultClient,
+		k8sClient: config.K8sClient,
+		logger:    config.Logger,
 
-		gitHub:   gh,
-		resource: resource,
+		configVersion: configVersion,
+		generator:     gen,
+		resource:      resource,
 	}
 
 	return h, nil

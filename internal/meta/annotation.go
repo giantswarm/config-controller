@@ -14,6 +14,7 @@ var (
 	xAppAnnotation            = project.Name() + ".x-giantswarm.io/app"
 	xCreatorAnnotation        = project.Name() + ".x-giantswarm.io/creator"
 	xInstallationAnnotation   = project.Name() + ".x-giantswarm.io/installation"
+	xObjectHash               = project.Name() + ".x-giantswarm.io/object-hash"
 	xProjectVersionAnnotation = project.Name() + ".x-giantswarm.io/project-version"
 )
 
@@ -44,6 +45,10 @@ func (annotation) XCreatorDefault() string {
 
 func (annotation) XInstallation() string {
 	return xInstallationAnnotation
+}
+
+func (annotation) XObjectHash() string {
+	return xObjectHash
 }
 
 func (annotation) XProjectVersion() string {

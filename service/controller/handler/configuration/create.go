@@ -82,7 +82,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// Update Config CR status.
 	{
-		var current *v1alpha1.Config
+		current := &v1alpha1.Config{}
 
 		modifyFunc := func() error {
 			current.Status.App = v1alpha1.ConfigStatusApp(config.Spec.App)

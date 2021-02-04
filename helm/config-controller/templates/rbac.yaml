@@ -21,6 +21,16 @@ rules:
     - appcatalogs
   verbs:
     - get
+- apiGroups:
+    - core.giantswarm.io
+  resources:
+    - configs
+  verbs:
+    - get
+    - list
+    - patch
+    - watch
+    - update
 - apiGroups: [""]
   resources:
     - configmaps

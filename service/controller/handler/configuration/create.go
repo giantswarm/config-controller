@@ -27,14 +27,14 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		cav := config.Spec.App.Catalog + "/" + config.Spec.App.Name + "@" + config.Spec.App.Version
 
-		h.logger.Debugf(ctx, "getting config version for App %#q", cav)
+		h.logger.Debugf(ctx, "resolving config version for App %#q", cav)
 
 		configVersion, err = h.configVersion.Get(ctx, config.Spec.App)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		h.logger.Debugf(ctx, "got config version for App %#q = %#q", cav, configVersion)
+		h.logger.Debugf(ctx, "resolved config version %#q for App %#q", configVerson, cav)
 	}
 
 	var configmap *corev1.ConfigMap
@@ -139,33 +139,33 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 		return nil, microerror.Mask(err)
 	}
 
-	previousConfig, ok, err := meta.Annotation.XPreviousConfig.Get(config)
+	previousConfig, err := meta.Annotation.XPreviousConfig.Get(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	// Annotation is there and the value is equal to the current
+	// If the annotation  is there and the value is equal to the current
 	// .status.config so nothing to do here. Return early.
-	if ok && reflect.DeepEqual(config.Status.Config, previousConfig) {
+	if reflect.DeepEqual(config.Status.Config, previousConfig) {
 		return config, nil
 	}
 
 	// Cleanup orphaned config.
-	if ok {
-		configMap := configMapMeta(previousConfig)
-		h.logger.Debugf(ctx, "found orphaned ConfigMap %#q", k8sresource.ObjectKey(configMap))
-
-		err = h.resource.EnsureDeleted(ctx, configMap)
+	{
+		_, orphaned, err := getConfigObjectsMeta(config)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 
-		secret := secretMeta(previousConfig)
-		h.logger.Debugf(ctx, "found orphaned Secret %#q", k8sresource.ObjectKey(secret))
+		for _, obj := range orphaned {
+			h.logger.Debugf(ctx, "found orphaned %#q %#q", k.resource.Kind(obj), k8sresource.ObjectKey(obj))
+		}
 
-		err = h.resource.EnsureDeleted(ctx, secret)
-		if err != nil {
-			return nil, microerror.Mask(err)
+		for _, obj := range orphaned {
+			err = h.resource.EnsureDeleted(ctx, obj)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
 	}
 

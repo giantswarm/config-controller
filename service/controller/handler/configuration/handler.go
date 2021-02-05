@@ -1,6 +1,8 @@
 package configuration
 
 import (
+	"reflect"
+
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/giantswarm/config-controller/internal/configversion"
 	"github.com/giantswarm/config-controller/internal/generator"
+	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 )
 
@@ -121,7 +124,30 @@ func (h *Handler) Name() string {
 	return Name
 }
 
-func configMapMeta(c v1alpha1.ConfigStatusConfig) *corev1.ConfigMap {
+func getConfigObjectsMeta(config *v1alpha1.Config) (current, orphaned []k8sresource.Object, err error) {
+	currConfig := config.Status.Config
+	prevConfig, err := meta.Annotation.XPreviousConfig.Get(config)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	if obj := getConfigMapMeta(currConfig); obj.Name != "" {
+		current = append(current, obj)
+	}
+	if obj := getSecretMeta(currConfig); obj.Name != "" {
+		current = append(current, obj)
+	}
+	if obj := getConfigMapMeta(prevConfig); obj.Name != "" && !reflect.DeepEqual(currConfig.ConfigMapRef, prevConfig.ConfigMapRef) {
+		orphaned = append(orphaned, obj)
+	}
+	if obj := getSecretMeta(prevConfig); obj.Name != "" && !reflect.DeepEqual(currConfig.SecretRef, prevConfig.SecretRef) {
+		orphaned = append(orphaned, obj)
+	}
+
+	return current, orphaned, err
+}
+
+func getConfigMapMeta(c v1alpha1.ConfigStatusConfig) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ConfigMapRef.Name,
@@ -130,7 +156,7 @@ func configMapMeta(c v1alpha1.ConfigStatusConfig) *corev1.ConfigMap {
 	}
 }
 
-func secretMeta(c v1alpha1.ConfigStatusConfig) *corev1.Secret {
+func getSecretMeta(c v1alpha1.ConfigStatusConfig) *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.SecretRef.Name,

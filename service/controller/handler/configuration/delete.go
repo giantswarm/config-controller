@@ -2,11 +2,9 @@ package configuration
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 	"github.com/giantswarm/config-controller/service/controller/key"
 )
@@ -19,25 +17,19 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	var toDelete []k8sresource.Object
 	{
-		configMap := configMapMeta(config.Status.Config)
-		secret := secretMeta(config.Status.Config)
-
-		h.logger.Debugf(ctx, "found ConfigMap %#q to delete", k8sresource.ObjectKey(configMap))
-		h.logger.Debugf(ctx, "found Secret %#q to delete", k8sresource.ObjectKey(secret))
-
-		toDelete = append(toDelete, configMap, secret)
-
-		previousConfig, ok, err := meta.Annotation.XPreviousConfig.Get(config)
+		current, orphaned, err := getConfigObjectsMeta(config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		if ok && !reflect.DeepEqual(config.Status.Config, previousConfig) {
-			orphanedConfigMap := configMapMeta(previousConfig)
-			orphanedSecret := secretMeta(previousConfig)
 
-			h.logger.Debugf(ctx, "found orphaned ConfigMap %#q to delete", k8sresource.ObjectKey(orphanedConfigMap))
-			h.logger.Debugf(ctx, "found orphaned Secret %#q to delete", k8sresource.ObjectKey(orphanedSecret))
+		for _, obj := range current {
+			h.logger.Debugf(ctx, "found %#q %#q", k.resource.Kind(obj), k8sresource.ObjectKey(obj))
 		}
+		for _, obj := range orphaned {
+			h.logger.Debugf(ctx, "found orphaned %#q %#q", k.resource.Kind(obj), k8sresource.ObjectKey(obj))
+		}
+
+		toDelete = append(current, orphaned...)
 	}
 
 	if len(toDelete) == 0 {

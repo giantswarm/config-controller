@@ -30,24 +30,24 @@ type XPreviousConfig struct{}
 
 func (XPreviousConfig) Key() string { return xPreviousConfigAnnotation }
 
-func (XPreviousConfig) Get(o Object) (v1alpha1.ConfigStatusConfig, bool, error) {
+func (XPreviousConfig) Get(o Object) (v1alpha1.ConfigStatusConfig, error) {
 	a := o.GetAnnotations()
 	if a == nil {
-		return v1alpha1.ConfigStatusConfig{}, false, nil
+		return v1alpha1.ConfigStatusConfig{}, nil
 	}
 
 	raw, ok := a[xPreviousConfigAnnotation]
 	if !ok {
-		return v1alpha1.ConfigStatusConfig{}, false, nil
+		return v1alpha1.ConfigStatusConfig{}, nil
 	}
 
 	var c v1alpha1.ConfigStatusConfig
 	err := json.Unmarshal([]byte(raw), &c)
 	if err != nil {
-		return v1alpha1.ConfigStatusConfig{}, false, microerror.Mask(err)
+		return v1alpha1.ConfigStatusConfig{}, microerror.Mask(err)
 	}
 
-	return c, true, nil
+	return c, nil
 }
 
 func (XPreviousConfig) Set(o Object, c v1alpha1.ConfigStatusConfig) error {

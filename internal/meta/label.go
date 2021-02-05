@@ -2,6 +2,7 @@ package meta
 
 import (
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+
 	"github.com/giantswarm/config-controller/pkg/project"
 )
 

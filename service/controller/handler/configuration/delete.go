@@ -4,10 +4,11 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/giantswarm/microerror"
+
 	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 	"github.com/giantswarm/config-controller/service/controller/key"
-	"github.com/giantswarm/microerror"
 )
 
 func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {

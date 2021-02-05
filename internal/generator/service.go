@@ -158,7 +158,7 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 	}
 
 	annotations := copyMap(in.ExtraAnnotations)
-	annotations[meta.Annotation.ConfigVersion()] = in.ConfigVersion
+	annotations[meta.Annotation.ConfigVersion.Key()] = in.ConfigVersion
 
 	meta := metav1.ObjectMeta{
 		Name:      in.Name,

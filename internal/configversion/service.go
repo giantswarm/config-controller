@@ -61,7 +61,7 @@ func (s *Service) Get(ctx context.Context, app corev1alpha1.ConfigSpecApp) (stri
 			break
 		}
 
-		v, ok := entry.Annotations[meta.Annotation.ConfigVersion()]
+		v, ok := entry.Annotations[meta.Annotation.ConfigVersion.Key()]
 		if !ok {
 			break
 		}

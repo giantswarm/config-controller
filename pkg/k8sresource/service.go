@@ -90,6 +90,21 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 	return nil
 }
 
+func (s *Service) EnsureDeleted(ctx context.Context, obj Object) error {
+	s.logger.Debugf(ctx, "ensuring deletion of %#q %#q", s.kind(obj), ObjectKey(obj))
+
+	err := s.client.Delete(ctx, obj)
+	if apierrors.IsNotFound(err) {
+		s.logger.Debugf(ctx, "%#q %#q already deleted", s.kind(obj), ObjectKey(obj))
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	s.logger.Debugf(ctx, "deleted %#q %#q", s.kind(obj), ObjectKey(obj))
+
+	return nil
+}
+
 func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
 	gvk, err := apiutil.GVKForObject(o, s.scheme)
 	if err != nil {

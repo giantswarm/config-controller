@@ -5,5 +5,15 @@ var (
 	Label      label
 )
 
-type annotation struct{}
-type label struct{}
+type annotation struct {
+	ConfigVersion
+	XApp
+	XCreator
+	XInstallation
+	XObjectHash
+	XPreviousConfig
+	XProjectVersion
+}
+
+type label struct {
+}

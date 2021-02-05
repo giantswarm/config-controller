@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
@@ -147,62 +146,34 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 		return nil, microerror.Mask(err)
 	}
 
-	var needsCleanup bool
-	var previousConfig v1alpha1.ConfigStatusConfig
-	{
-		c, ok, err := meta.Annotation.XPreviousConfig.Get(config)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		// Annotation is there and the value is equal to the current
-		// .status.config so nothing to do here. Return early.
-		if ok && reflect.DeepEqual(config.Status.Config, c) {
-			return config, nil
-		}
-
-		// If annotation exists but it isn't equal to .status.config
-		// trigger the cleanup.
-		if ok {
-			needsCleanup = true
-			previousConfig = c
-		}
+	previousConfig, ok, err := meta.Annotation.XPreviousConfig.Get(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	// Delete the old ConfigMap and Secret need to be deleted if they are
-	// still there.
-	if needsCleanup {
-		configmap := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      previousConfig.ConfigMapRef.Name,
-				Namespace: previousConfig.ConfigMapRef.Namespace,
-			},
-		}
+	// Annotation is there and the value is equal to the current
+	// .status.config so nothing to do here. Return early.
+	if ok && reflect.DeepEqual(config.Status.Config, previousConfig) {
+		return config, nil
+	}
 
-		secret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      previousConfig.SecretRef.Name,
-				Namespace: previousConfig.SecretRef.Namespace,
-			},
-		}
+	// Cleanup orphaned config.
+	if ok {
+		configMap := configMapMeta(previousConfig)
+		h.logger.Debugf(ctx, "found orphaned ConfigMap %#q", k8sresource.ObjectKey(configMap))
 
-		h.logger.Debugf(ctx, "cleaning up orphaned ConfigMap %#q", k8sresource.ObjectKey(configmap))
-
-		err = h.resource.EnsureDeleted(ctx, configmap)
+		err = h.resource.EnsureDeleted(ctx, configMap)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		h.logger.Debugf(ctx, "cleaned up orphaned ConfigMap %#q", k8sresource.ObjectKey(configmap))
-
-		h.logger.Debugf(ctx, "cleaning up orphaned Secret %#q", k8sresource.ObjectKey(secret))
+		secret := secretMeta(previousConfig)
+		h.logger.Debugf(ctx, "found orphaned Secret %#q", k8sresource.ObjectKey(secret))
 
 		err = h.resource.EnsureDeleted(ctx, secret)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-
-		h.logger.Debugf(ctx, "cleaned up orphaned Secret %#q", k8sresource.ObjectKey(secret))
 	}
 
 	// Now the ConfigMap and the Secret referenced by the annotation (if it

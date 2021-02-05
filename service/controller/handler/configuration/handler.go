@@ -1,10 +1,13 @@
 package configuration
 
 import (
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	vaultapi "github.com/hashicorp/vault/api"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/config-controller/internal/configversion"
 	"github.com/giantswarm/config-controller/internal/generator"
@@ -116,4 +119,22 @@ func New(config Config) (*Handler, error) {
 
 func (h *Handler) Name() string {
 	return Name
+}
+
+func configMapMeta(c v1alpha1.ConfigStatusConfig) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      c.ConfigMapRef.Name,
+			Namespace: c.ConfigMapRef.Namespace,
+		},
+	}
+}
+
+func secretMeta(c v1alpha1.ConfigStatusConfig) *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      c.SecretRef.Name,
+			Namespace: c.SecretRef.Namespace,
+		},
+	}
 }

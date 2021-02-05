@@ -34,7 +34,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		h.logger.Debugf(ctx, "resolved config version %#q for App %#q", configVerson, cav)
+		h.logger.Debugf(ctx, "resolved config version %#q for App %#q", configVersion, cav)
 	}
 
 	var configmap *corev1.ConfigMap
@@ -154,11 +154,11 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 	{
 		_, orphaned, err := getConfigObjectsMeta(config)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 
 		for _, obj := range orphaned {
-			h.logger.Debugf(ctx, "found orphaned %#q %#q", k.resource.Kind(obj), k8sresource.ObjectKey(obj))
+			h.logger.Debugf(ctx, "found orphaned %#q %#q", h.resource.Kind(obj), k8sresource.ObjectKey(obj))
 		}
 
 		for _, obj := range orphaned {

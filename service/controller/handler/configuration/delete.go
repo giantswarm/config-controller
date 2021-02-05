@@ -23,10 +23,10 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		}
 
 		for _, obj := range current {
-			h.logger.Debugf(ctx, "found %#q %#q", k.resource.Kind(obj), k8sresource.ObjectKey(obj))
+			h.logger.Debugf(ctx, "found %#q %#q", h.resource.Kind(obj), k8sresource.ObjectKey(obj))
 		}
 		for _, obj := range orphaned {
-			h.logger.Debugf(ctx, "found orphaned %#q %#q", k.resource.Kind(obj), k8sresource.ObjectKey(obj))
+			h.logger.Debugf(ctx, "found orphaned %#q %#q", h.resource.Kind(obj), k8sresource.ObjectKey(obj))
 		}
 
 		toDelete = append(current, orphaned...)

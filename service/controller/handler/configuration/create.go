@@ -100,14 +100,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		h.logger.Debugf(ctx, "updating Config status")
 
-		current := &v1alpha1.Config{}
-
-		err := h.k8sClient.CtrlClient().Get(ctx, k8sresource.ObjectKey(config), current)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		desiredStatus := *current.Status.DeepCopy()
+		desiredStatus := *config.Status.DeepCopy()
 		desiredStatus.App = v1alpha1.ConfigStatusApp(config.Spec.App)
 		desiredStatus.Config.ConfigMapRef.Name = configmap.Name
 		desiredStatus.Config.ConfigMapRef.Namespace = configmap.Namespace
@@ -115,11 +108,11 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		desiredStatus.Config.SecretRef.Namespace = secret.Namespace
 		desiredStatus.Version = configVersion
 
-		if reflect.DeepEqual(current.Status, desiredStatus) {
+		if reflect.DeepEqual(config.Status, desiredStatus) {
 			h.logger.Debugf(ctx, "Config status already up to date")
 		} else {
-			current.Status = desiredStatus
-			err := h.k8sClient.CtrlClient().Update(ctx, current)
+			config.Status = desiredStatus
+			err := h.k8sClient.CtrlClient().Update(ctx, config)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -130,7 +123,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// Cleanup orphaned ConfigMap and Secret.
 	{
-		config, err = h.cleanupOrphanedConfig(ctx, config)
+		_, err = h.cleanupOrphanedConfig(ctx, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

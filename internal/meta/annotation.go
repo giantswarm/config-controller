@@ -14,7 +14,7 @@ import (
 
 var (
 	configVersionAnnotation   = apiextensionsannotation.ConfigVersion
-	xAppAnnotation            = project.Name() + ".x-giantswarm.io/app"
+	xAppInfoAnnotation        = project.Name() + ".x-giantswarm.io/app-info"
 	xCreatorAnnotation        = project.Name() + ".x-giantswarm.io/creator"
 	xInstallationAnnotation   = project.Name() + ".x-giantswarm.io/installation"
 	xObjectHashAnnotation     = project.Name() + ".x-giantswarm.io/object-hash"
@@ -67,9 +67,17 @@ func (XPreviousConfig) Set(o Object, c v1alpha1.ConfigStatusConfig) error {
 	return nil
 }
 
-type XApp struct{}
+type XAppInfo struct{}
 
-func (XApp) Key() string { return xAppAnnotation }
+func (XAppInfo) Key() string { return xAppInfoAnnotation }
+
+func (XAppInfo) Val(catalog, app, version string) string {
+	return catalog + "/" + app + "@" + version
+}
+
+func (XAppInfo) ValFromConfig(c *v1alpha1.Config) string {
+	return XAppInfo{}.Val(c.Spec.App.Catalog, c.Spec.App.Name, c.Spec.App.Version)
+}
 
 type XCreator struct{}
 

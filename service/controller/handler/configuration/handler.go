@@ -16,21 +16,26 @@ const (
 )
 
 type Config struct {
+	Logger micrologger.Logger
+
 	K8sClient   k8sclient.Interface
-	Logger      micrologger.Logger
 	VaultClient *vaultapi.Client
 
 	GitHubToken  string
 	Installation string
+	UniqueApp    bool
 }
 
 type Handler struct {
-	k8sClient k8sclient.Interface
-	logger    micrologger.Logger
+	logger micrologger.Logger
 
 	configVersion *configversion.Service
 	generator     *generator.Service
+	k8sClient     k8sclient.Interface
 	resource      *k8sresource.Service
+
+	installation string
+	uniqueApp    bool
 }
 
 func New(config Config) (*Handler, error) {
@@ -95,12 +100,15 @@ func New(config Config) (*Handler, error) {
 	}
 
 	h := &Handler{
-		k8sClient: config.K8sClient,
-		logger:    config.Logger,
+		logger: config.Logger,
 
 		configVersion: configVersion,
 		generator:     gen,
+		k8sClient:     config.K8sClient,
 		resource:      resource,
+
+		installation: config.Installation,
+		uniqueApp:    config.UniqueApp,
 	}
 
 	return h, nil

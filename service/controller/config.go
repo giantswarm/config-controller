@@ -75,12 +75,14 @@ func newConfigResources(config ConfigConfig) ([]resource.Interface, error) {
 	var configurationHandler resource.Interface
 	{
 		c := configuration.Config{
+			Logger: config.Logger,
+
 			K8sClient:   config.K8sClient,
-			Logger:      config.Logger,
 			VaultClient: config.VaultClient,
 
 			GitHubToken:  config.GitHubToken,
 			Installation: config.Installation,
+			UniqueApp:    config.UniqueApp,
 		}
 
 		configurationHandler, err = configuration.New(c)

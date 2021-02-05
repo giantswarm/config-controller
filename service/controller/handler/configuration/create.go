@@ -59,9 +59,15 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Name:      name,
 			Namespace: namespace,
 
-			// TODO extra labels and annotations
-			ExtraAnnotations: map[string]string{},
-			ExtraLabels:      map[string]string{},
+			ExtraAnnotations: map[string]string{
+				meta.Annotation.ConfigVersion.Key():   configVersion,
+				meta.Annotation.XAppInfo.Key():        meta.Annotation.XAppInfo.ValFromConfig(config),
+				meta.Annotation.XInstallation.Key():   h.installation,
+				meta.Annotation.XProjectVersion.Key(): meta.Annotation.XProjectVersion.Val(h.uniqueApp),
+			},
+			ExtraLabels: map[string]string{
+				meta.Label.ManagedBy.Key(): meta.Label.ManagedBy.Default(),
+			},
 		})
 		if err != nil {
 			return microerror.Mask(err)

@@ -25,6 +25,7 @@ rules:
     - core.giantswarm.io
   resources:
     - configs
+    - configs/status
   verbs:
     - get
     - list

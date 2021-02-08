@@ -72,10 +72,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Namespace: r.flag.Namespace,
 
 		ExtraAnnotations: map[string]string{
-			meta.Annotation.XApp():            r.flag.App,
-			meta.Annotation.XCreator():        meta.Annotation.XCreatorDefault(),
-			meta.Annotation.XInstallation():   r.flag.Installation,
-			meta.Annotation.XProjectVersion(): meta.Annotation.XProjectVersionVal(false),
+			meta.Annotation.ConfigVersion.Key():   r.flag.ConfigVersion,
+			meta.Annotation.XAppInfo.Key():        meta.Annotation.XAppInfo.Val("<unknown>", r.flag.App, "<unknown>"),
+			meta.Annotation.XCreator.Key():        meta.Annotation.XCreator.Default(),
+			meta.Annotation.XInstallation.Key():   r.flag.Installation,
+			meta.Annotation.XProjectVersion.Key(): meta.Annotation.XProjectVersion.Val(false),
 		},
 		ExtraLabels: nil,
 	}

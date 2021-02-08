@@ -4,32 +4,36 @@ import (
 	"os"
 	"os/user"
 
-	apiextensionsannotation "github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 
 	"github.com/giantswarm/config-controller/pkg/project"
 )
 
 var (
-	configVersionAnnotation   = apiextensionsannotation.ConfigVersion
-	xAppAnnotation            = project.Name() + ".x-giantswarm.io/app"
+	configVersionAnnotation   = annotation.ConfigVersion
+	xAppInfoAnnotation        = project.Name() + ".x-giantswarm.io/app-info"
 	xCreatorAnnotation        = project.Name() + ".x-giantswarm.io/creator"
 	xInstallationAnnotation   = project.Name() + ".x-giantswarm.io/installation"
 	xProjectVersionAnnotation = project.Name() + ".x-giantswarm.io/project-version"
 )
 
-func (annotation) ConfigVersion() string {
-	return configVersionAnnotation
+type ConfigVersion struct{}
+
+func (ConfigVersion) Key() string { return configVersionAnnotation }
+
+type XAppInfo struct{}
+
+func (XAppInfo) Key() string { return xAppInfoAnnotation }
+
+func (XAppInfo) Val(catalog, app, version string) string {
+	return catalog + "/" + app + "@" + version
 }
 
-func (annotation) XApp() string {
-	return xAppAnnotation
-}
+type XCreator struct{}
 
-func (annotation) XCreator() string {
-	return xCreatorAnnotation
-}
+func (XCreator) Key() string { return xCreatorAnnotation }
 
-func (annotation) XCreatorDefault() string {
+func (XCreator) Default() string {
 	u, err := user.Current()
 	if err != nil {
 		return u.Username
@@ -42,15 +46,15 @@ func (annotation) XCreatorDefault() string {
 	return os.Getenv("USERNAME") // Windows
 }
 
-func (annotation) XInstallation() string {
-	return xInstallationAnnotation
-}
+type XInstallation struct{}
 
-func (annotation) XProjectVersion() string {
-	return xProjectVersionAnnotation
-}
+func (XInstallation) Key() string { return xInstallationAnnotation }
 
-func (annotation) XProjectVersionVal(unique bool) string {
+type XProjectVersion struct{}
+
+func (XProjectVersion) Key() string { return xProjectVersionAnnotation }
+
+func (XProjectVersion) Val(unique bool) string {
 	if unique {
 		return "0.0.0"
 	}

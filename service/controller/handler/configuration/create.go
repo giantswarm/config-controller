@@ -112,7 +112,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			h.logger.Debugf(ctx, "Config status already up to date")
 		} else {
 			config.Status = desiredStatus
-			err := h.k8sClient.CtrlClient().Update(ctx, config)
+			err := h.k8sClient.CtrlClient().Status().Update(ctx, config)
 			if err != nil {
 				return microerror.Mask(err)
 			}

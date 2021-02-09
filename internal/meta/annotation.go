@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+
 	"github.com/giantswarm/config-controller/pkg/project"
 )
 

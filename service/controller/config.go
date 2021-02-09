@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/controller"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	vaultapi "github.com/hashicorp/vault/api"
@@ -19,12 +18,13 @@ import (
 )
 
 type ConfigConfig struct {
-	K8sClient k8sclient.Interface
-	Logger    micrologger.Logger
+	K8sClient   k8sclient.Interface
+	Logger      micrologger.Logger
+	VaultClient *vaultapi.Client
 
 	GitHubToken  string
-	UniqueConfig bool
-	VaultClient  *vaultapi.Client
+	Installation string
+	UniqueApp    bool
 }
 
 type Config struct {
@@ -34,7 +34,7 @@ type Config struct {
 func NewConfig(config ConfigConfig) (*Config, error) {
 	var err error
 
-	resources, err := newConfigResources(config)
+	resources, err := newConfigHandlers(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -48,7 +48,7 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 				return new(v1alpha1.Config)
 			},
 			Resources: resources,
-			Selector:  meta.Label.Version.Selector(config.UniqueConfig),
+			Selector:  meta.Label.Version.Selector(config.UniqueApp),
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-config-controller.
@@ -68,17 +68,20 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 	return c, nil
 }
 
-func newConfigResources(config ConfigConfig) ([]resource.Interface, error) {
+func newConfigHandlers(config ConfigConfig) ([]resource.Interface, error) {
 	var err error
 
 	var configurationHandler resource.Interface
 	{
 		c := configuration.Config{
+			Logger: config.Logger,
+
 			K8sClient:   config.K8sClient,
-			Logger:      config.Logger,
 			VaultClient: config.VaultClient,
 
-			GitHubToken: config.GitHubToken,
+			GitHubToken:  config.GitHubToken,
+			Installation: config.Installation,
+			UniqueApp:    config.UniqueApp,
 		}
 
 		configurationHandler, err = configuration.New(c)
@@ -89,17 +92,6 @@ func newConfigResources(config ConfigConfig) ([]resource.Interface, error) {
 
 	handlers := []resource.Interface{
 		configurationHandler,
-	}
-
-	{
-		c := retryresource.WrapConfig{
-			Logger: config.Logger,
-		}
-
-		handlers, err = retryresource.Wrap(handlers, c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
 	}
 
 	{

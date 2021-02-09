@@ -7,7 +7,6 @@ import (
 	vaultapi "github.com/hashicorp/vault/api"
 
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
-	"github.com/giantswarm/config-controller/service/internal/github"
 )
 
 const (
@@ -15,26 +14,31 @@ const (
 )
 
 type Config struct {
+	Logger micrologger.Logger
+
 	K8sClient   k8sclient.Interface
-	Logger      micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubToken string
+	GitHubToken  string
+	Installation string
+	UniqueApp    bool
 }
 
 type Handler struct {
-	k8sClient   k8sclient.Interface
-	logger      micrologger.Logger
-	vaultClient *vaultapi.Client
+	logger micrologger.Logger
 
-	gitHub   *github.GitHub
-	resource *k8sresource.Service
+	k8sClient k8sclient.Interface
+	resource  *k8sresource.Service
+
+	installation string
+	uniqueApp    bool
 }
 
 func New(config Config) (*Handler, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -45,20 +49,11 @@ func New(config Config) (*Handler, error) {
 	if config.GitHubToken == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken must not be empty", config)
 	}
+	if config.Installation == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Installation must not be empty", config)
+	}
 
 	var err error
-
-	var gh *github.GitHub
-	{
-		c := github.Config{
-			GitHubToken: config.GitHubToken,
-		}
-
-		gh, err = github.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
 
 	var resource *k8sresource.Service
 	{
@@ -75,12 +70,13 @@ func New(config Config) (*Handler, error) {
 	}
 
 	h := &Handler{
-		k8sClient:   config.K8sClient,
-		logger:      config.Logger,
-		vaultClient: config.VaultClient,
+		logger: config.Logger,
 
-		gitHub:   gh,
-		resource: resource,
+		k8sClient: config.K8sClient,
+		resource:  resource,
+
+		installation: config.Installation,
+		uniqueApp:    config.UniqueApp,
 	}
 
 	return h, nil

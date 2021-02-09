@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add configuration linter under `lint` command.
+
 ## [0.2.3] - 2021-01-28
 
 ### Fixed

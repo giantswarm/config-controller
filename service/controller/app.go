@@ -13,7 +13,7 @@ import (
 
 	vaultapi "github.com/hashicorp/vault/api"
 
-	"github.com/giantswarm/config-controller/pkg/label"
+	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/handler/values"
 )
@@ -49,7 +49,7 @@ func NewApp(config AppConfig) (*App, error) {
 				return new(v1alpha1.App)
 			},
 			Resources: resources,
-			Selector:  label.VersionSelector(config.UniqueApp),
+			Selector:  meta.Label.Version.Selector(config.UniqueApp),
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-app-controller.
@@ -78,10 +78,10 @@ func newAppResources(config AppConfig) ([]resource.Interface, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			VaultClient:    config.VaultClient,
-			GitHubToken:    config.GitHubToken,
-			Installation:   config.Installation,
-			ProjectVersion: label.GetProjectVersion(config.UniqueApp),
+			VaultClient:  config.VaultClient,
+			GitHubToken:  config.GitHubToken,
+			Installation: config.Installation,
+			UniqueApp:    config.UniqueApp,
 		}
 
 		valuesResource, err = values.New(c)

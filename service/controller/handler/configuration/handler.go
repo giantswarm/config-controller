@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/config-controller/internal/configversion"
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
+
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 )
 
@@ -48,6 +49,7 @@ func New(config Config) (*Handler, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}

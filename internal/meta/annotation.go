@@ -5,15 +5,15 @@ import (
 	"os"
 	"os/user"
 
-	apiextensionsannotation "github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/config-controller/pkg/project"
 )
 
 var (
-	configVersionAnnotation   = apiextensionsannotation.ConfigVersion
+	configVersionAnnotation   = annotation.ConfigVersion
 	xAppInfoAnnotation        = project.Name() + ".x-giantswarm.io/app-info"
 	xCreatorAnnotation        = project.Name() + ".x-giantswarm.io/creator"
 	xInstallationAnnotation   = project.Name() + ".x-giantswarm.io/installation"

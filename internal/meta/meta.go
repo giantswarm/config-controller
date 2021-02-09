@@ -31,4 +31,6 @@ type AnnotationType struct {
 type LabelType struct {
 	// ManagedBy is standard "giantswarm.io/managed-by" label.
 	ManagedBy
+	// Version is standard "config-controller.giantswarm.io/version" label.
+	Version
 }

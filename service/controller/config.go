@@ -12,7 +12,7 @@ import (
 
 	vaultapi "github.com/hashicorp/vault/api"
 
-	"github.com/giantswarm/config-controller/pkg/label"
+	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/handler/configuration"
 )
@@ -48,7 +48,7 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 				return new(v1alpha1.Config)
 			},
 			Resources: resources,
-			Selector:  label.VersionSelector(config.UniqueApp),
+			Selector:  meta.Label.Version.Selector(config.UniqueApp),
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-config-controller.

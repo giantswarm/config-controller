@@ -152,6 +152,17 @@ func LintUndefinedTemplateValues(d *Discovery) (messages LinterMessages) {
 					used = true
 					break
 				}
+
+				for templatePatchPath := range templatePatch.paths {
+					if strings.HasPrefix(templatePatchPath, path+".") {
+						used = true
+						break
+					}
+				}
+
+				if used {
+					break
+				}
 			}
 
 			if used {

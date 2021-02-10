@@ -10,9 +10,9 @@ import (
 )
 
 type Discovery struct {
-	Config        *ValueFile
-	ConfigPatches []*ValueFile
-	Secrets       []*ValueFile
+	Config        *ConfigFile
+	ConfigPatches []*ConfigFile
+	Secrets       []*ConfigFile
 
 	Templates             []*TemplateFile
 	SecretTemplates       []*TemplateFile
@@ -24,8 +24,8 @@ type Discovery struct {
 	Apps          []string
 
 	AppsPerInstallation                  map[string][]string
-	ConfigPatchesPerInstallation         map[string]*ValueFile
-	SecretsPerInstallation               map[string]*ValueFile
+	ConfigPatchesPerInstallation         map[string]*ConfigFile
+	SecretsPerInstallation               map[string]*ConfigFile
 	TemplatesPerApp                      map[string]*TemplateFile
 	SecretTemplatesPerApp                map[string]*TemplateFile
 	TemplatePatchesPerInstallation       map[string][]*TemplateFile
@@ -60,8 +60,8 @@ func (d Discovery) GetAppSecretTemplatePatch(installation, app string) (*Templat
 
 func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 	d := &Discovery{
-		ConfigPatches: []*ValueFile{},
-		Secrets:       []*ValueFile{},
+		ConfigPatches: []*ConfigFile{},
+		Secrets:       []*ConfigFile{},
 
 		Templates:             []*TemplateFile{},
 		SecretTemplates:       []*TemplateFile{},
@@ -72,8 +72,8 @@ func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 		Apps:          []string{},
 
 		AppsPerInstallation:                  map[string][]string{},
-		ConfigPatchesPerInstallation:         map[string]*ValueFile{},
-		SecretsPerInstallation:               map[string]*ValueFile{},
+		ConfigPatchesPerInstallation:         map[string]*ConfigFile{},
+		SecretsPerInstallation:               map[string]*ConfigFile{},
 		TemplatesPerApp:                      map[string]*TemplateFile{},
 		SecretTemplatesPerApp:                map[string]*TemplateFile{},
 		TemplatePatchesPerInstallation:       map[string][]*TemplateFile{},
@@ -87,7 +87,7 @@ func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		d.Config, err = NewValueFile(filepath, body)
+		d.Config, err = NewConfigFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -112,7 +112,7 @@ func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		patch, err := NewValueFile(filepath, body)
+		patch, err := NewConfigFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -124,7 +124,7 @@ func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		secret, err := NewValueFile(filepath, body)
+		secret, err := NewConfigFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -248,22 +248,22 @@ func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 	sort.Strings(d.Installations)
 	sort.Strings(d.Apps)
 
-	if err := d.populateValuePaths(); err != nil {
+	if err := d.populateConfigValues(); err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return d, nil
 }
 
-// populateValuePaths fills UsedBy and OvershadowedBy fields in all ValuePath
+// populateConfigValues fills UsedBy and overshadowedBy fields in all ConfigValue
 // structs in d.Config and d.ConfigPatches. This allows linter to find unused
 // values easier.
-func (d *Discovery) populateValuePaths() error {
-	// 1. Mark all overshadowed valuePaths in config.yaml
+func (d *Discovery) populateConfigValues() error {
+	// 1. Mark all overshadowed configValues in config.yaml
 	for _, configPatch := range d.ConfigPatches {
 		for path := range configPatch.paths {
 			if original, ok := d.Config.paths[path]; ok {
-				original.OvershadowedBy = append(original.OvershadowedBy, configPatch)
+				original.overshadowedBy = append(original.overshadowedBy, configPatch)
 			}
 		}
 	}
@@ -305,38 +305,38 @@ func (d *Discovery) populateValuePaths() error {
 	return nil
 }
 
-func populatePathsWithUsedBy(source *TemplateFile, config, configPatch *ValueFile) {
+func populatePathsWithUsedBy(source *TemplateFile, config, configPatch *ConfigFile) {
 	for path, templatePath := range source.values {
 		if configPatch != nil {
-			valuePath, valuePathOk := configPatch.paths[path]
-			if valuePathOk {
+			configValue, configValueOk := configPatch.paths[path]
+			if configValueOk {
 				// config patch exists and contains the path
-				valuePath.UsedBy = appendUniqueUsedBy(valuePath.UsedBy, source)
+				configValue.usedBy = appendUniqueUsedBy(configValue.usedBy, source)
 				continue
 			}
 		}
 
-		valuePath, valuePathOk := config.paths[path]
-		if valuePathOk {
+		configValue, configValueOk := config.paths[path]
+		if configValueOk {
 			// the value comes from default config
-			valuePath.UsedBy = appendUniqueUsedBy(valuePath.UsedBy, source)
+			configValue.usedBy = appendUniqueUsedBy(configValue.usedBy, source)
 			continue
 		}
 
 		// value is missing from config; linter will check if it's patched
-		templatePath.MayBeMissing = true
+		templatePath.mayBeMissing = true
 	}
 }
 
-func populateSecretPathsWithUsedBy(installationSecret *ValueFile, defaultTemplate, templatePatch *TemplateFile) {
+func populateSecretPathsWithUsedBy(installationSecret *ConfigFile, defaultTemplate, templatePatch *TemplateFile) {
 	if templatePatch != nil {
 		for path, value := range templatePatch.values {
-			valuePath, valuePathOk := installationSecret.paths[path]
-			if valuePathOk {
-				valuePath.UsedBy = appendUniqueUsedBy(valuePath.UsedBy, templatePatch)
+			configValue, configValueOk := installationSecret.paths[path]
+			if configValueOk {
+				configValue.usedBy = appendUniqueUsedBy(configValue.usedBy, templatePatch)
 				continue
 			}
-			value.MayBeMissing = true
+			value.mayBeMissing = true
 		}
 	}
 
@@ -346,12 +346,12 @@ func populateSecretPathsWithUsedBy(installationSecret *ValueFile, defaultTemplat
 				// already checked; value is overriden by patch in this case
 				continue
 			}
-			valuePath, valuePathOk := installationSecret.paths[path]
-			if valuePathOk {
-				valuePath.UsedBy = appendUniqueUsedBy(valuePath.UsedBy, defaultTemplate)
+			configValue, configValueOk := installationSecret.paths[path]
+			if configValueOk {
+				configValue.usedBy = appendUniqueUsedBy(configValue.usedBy, defaultTemplate)
 				continue
 			}
-			value.MayBeMissing = true
+			value.mayBeMissing = true
 		}
 
 	}

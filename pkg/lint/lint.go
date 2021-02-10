@@ -16,7 +16,7 @@ type LinterFunc func(d *Discovery) (messages LinterMessages)
 var AllLinterFunctions = []LinterFunc{
 	LintUnusedConfigValues,
 	LintDuplicateConfigValues,
-	LintOvershadowedConfigValues,
+	LintovershadowedConfigValues,
 	LintUnusedConfigPatchValues,
 	LintUndefinedTemplateValues,
 	LintUndefinedTemplatePatchValues,
@@ -29,9 +29,9 @@ var AllLinterFunctions = []LinterFunc{
 
 func LintDuplicateConfigValues(d *Discovery) (messages LinterMessages) {
 	for path, defaultPath := range d.Config.paths {
-		for _, overshadowingPatch := range defaultPath.OvershadowedBy {
+		for _, overshadowingPatch := range defaultPath.overshadowedBy {
 			patchedPath := overshadowingPatch.paths[path]
-			if reflect.DeepEqual(defaultPath.Value, patchedPath.Value) {
+			if reflect.DeepEqual(defaultPath.value, patchedPath.value) {
 				messages = append(
 					messages,
 					NewError(overshadowingPatch.filepath, path, "is duplicate of the same path in %s", d.Config.filepath),
@@ -42,20 +42,20 @@ func LintDuplicateConfigValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintOvershadowedConfigValues(d *Discovery) (messages LinterMessages) {
+func LintovershadowedConfigValues(d *Discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 {
 		return // avoid division by 0
 	}
-	for path, valuePath := range d.Config.paths {
-		if len(valuePath.OvershadowedBy) == len(d.Installations) {
+	for path, configValue := range d.Config.paths {
+		if len(configValue.overshadowedBy) == len(d.Installations) {
 			messages = append(
 				messages,
 				NewError(d.Config.filepath, path, "is overshadowed by all config.yaml.patch files"),
 			)
-		} else if float64(len(valuePath.OvershadowedBy)/len(d.Installations)) >= overshadowErrorThreshold {
+		} else if float64(len(configValue.overshadowedBy)/len(d.Installations)) >= overshadowErrorThreshold {
 			msg := NewMessage(
 				d.Config.filepath, path, "is overshadowed by %d/%d patches",
-				len(valuePath.OvershadowedBy), len(d.Installations),
+				len(configValue.overshadowedBy), len(d.Installations),
 			).WithDescription("consider removing it from %s", d.Config.filepath)
 			messages = append(messages, msg)
 		}
@@ -68,8 +68,8 @@ func LintUnusedConfigPatchValues(d *Discovery) (messages LinterMessages) {
 		if len(d.AppsPerInstallation[configPatch.installation]) == 0 {
 			continue // avoid division by 0
 		}
-		for path, valuePath := range configPatch.paths {
-			if len(valuePath.UsedBy) > 0 {
+		for path, configValue := range configPatch.paths {
+			if len(configValue.usedBy) > 0 {
 				continue
 			}
 			messages = append(messages, NewError(configPatch.filepath, path, "is unused"))
@@ -82,12 +82,12 @@ func LintUnusedConfigValues(d *Discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 || len(d.Apps) == 0 {
 		return // what's the point, nothing is defined
 	}
-	for path, valuePath := range d.Config.paths {
-		if len(valuePath.UsedBy) == 0 {
+	for path, configValue := range d.Config.paths {
+		if len(configValue.usedBy) == 0 {
 			messages = append(messages, NewError(d.Config.filepath, path, "is unused"))
-		} else if len(valuePath.UsedBy) == 1 {
-			msg := NewMessage(d.Config.filepath, path, "is used by just one app: %s", valuePath.UsedBy[0].app).
-				WithDescription("consider moving this value to %s template or template patch", valuePath.UsedBy[0].app)
+		} else if len(configValue.usedBy) == 1 {
+			msg := NewMessage(d.Config.filepath, path, "is used by just one app: %s", configValue.usedBy[0].app).
+				WithDescription("consider moving this value to %s template or template patch", configValue.usedBy[0].app)
 			messages = append(messages, msg)
 		}
 	}
@@ -99,12 +99,12 @@ func LintUnusedSecretValues(d *Discovery) (messages LinterMessages) {
 		return // what's the point, nothing is defined
 	}
 	for _, secretFile := range d.Secrets {
-		for path, valuePath := range secretFile.paths {
-			if len(valuePath.UsedBy) == 0 {
+		for path, configValue := range secretFile.paths {
+			if len(configValue.usedBy) == 0 {
 				messages = append(messages, NewError(secretFile.filepath, path, "is unused"))
-			} else if len(valuePath.UsedBy) == 1 {
-				msg := NewMessage(secretFile.filepath, path, "is used by just one app: %s", valuePath.UsedBy[0].app).
-					WithDescription("consider moving this value to %s secret-values patch", valuePath.UsedBy[0].app)
+			} else if len(configValue.usedBy) == 1 {
+				msg := NewMessage(secretFile.filepath, path, "is used by just one app: %s", configValue.usedBy[0].app).
+					WithDescription("consider moving this value to %s secret-values patch", configValue.usedBy[0].app)
 				messages = append(messages, msg)
 			}
 
@@ -116,7 +116,7 @@ func LintUnusedSecretValues(d *Discovery) (messages LinterMessages) {
 func LintUndefinedSecretTemplateValues(d *Discovery) (messages LinterMessages) {
 	for _, template := range d.SecretTemplates {
 		for path, value := range template.values {
-			if !value.MayBeMissing {
+			if !value.mayBeMissing {
 				continue
 			}
 
@@ -129,7 +129,7 @@ func LintUndefinedSecretTemplateValues(d *Discovery) (messages LinterMessages) {
 func LintUndefinedSecretTemplatePatchValues(d *Discovery) (messages LinterMessages) {
 	for _, template := range d.SecretTemplatePatches {
 		for path, value := range template.values {
-			if !value.MayBeMissing {
+			if !value.mayBeMissing {
 				continue
 			}
 
@@ -142,7 +142,7 @@ func LintUndefinedSecretTemplatePatchValues(d *Discovery) (messages LinterMessag
 func LintUndefinedTemplateValues(d *Discovery) (messages LinterMessages) {
 	for _, template := range d.Templates {
 		for path, value := range template.values {
-			if !value.MayBeMissing {
+			if !value.mayBeMissing {
 				continue
 			}
 
@@ -179,8 +179,8 @@ func LintUnencryptedSecretValues(d *Discovery) (messages LinterMessages) {
 		return // what's the point, nothing is defined
 	}
 	for _, secretFile := range d.Secrets {
-		for path, valuePath := range secretFile.paths {
-			stringValue, ok := (valuePath.Value).(string)
+		for path, configValue := range secretFile.paths {
+			stringValue, ok := (configValue.value).(string)
 			if !ok {
 				continue
 			}
@@ -199,7 +199,7 @@ func LintUnencryptedSecretValues(d *Discovery) (messages LinterMessages) {
 func LintUndefinedTemplatePatchValues(d *Discovery) (messages LinterMessages) {
 	for _, templatePatch := range d.TemplatePatches {
 		for path, value := range templatePatch.values {
-			if !value.MayBeMissing {
+			if !value.mayBeMissing {
 				continue
 			}
 			messages = append(messages, NewError(templatePatch.filepath, path, "is templated but never configured"))

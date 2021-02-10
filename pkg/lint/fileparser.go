@@ -27,19 +27,18 @@ func init() {
 	fMap["include"] = includes.include
 }
 
-type ValueFile struct {
+type ConfigFile struct {
 	filepath     string
 	installation string // optional
-	paths        map[string]*ValuePath
-	sourceBytes  []byte
+	paths        map[string]*ConfigValue
 }
 
-type ValuePath struct {
-	Value interface{}
+type ConfigValue struct {
+	value interface{}
 	// files using this value
-	UsedBy []*TemplateFile
+	usedBy []*TemplateFile
 	// value is overshadowed by some files
-	OvershadowedBy []*ValueFile
+	overshadowedBy []*ConfigFile
 }
 
 type TemplateFile struct {
@@ -54,27 +53,24 @@ type TemplateFile struct {
 	paths map[string]bool
 	// includes contains names of all include files used by this template
 	includes []string
-
-	sourceBytes    []byte
-	sourceTemplate *template.Template
 }
 
 type TemplateValue struct {
-	Path            string
-	OccurrenceCount int
-	// MayBeMissing is set when value is not found in config.
+	path            string
+	occurrenceCount int
+	// mayBeMissing is set when value is not found in config.
 	// Linter will check if it's patched in by any of the template patches. If
 	// yes, fine. If not, that's an error and linter will let you know.
-	MayBeMissing bool
+	mayBeMissing bool
 }
 
-func NewValueFile(filepath string, body []byte) (*ValueFile, error) {
+func NewConfigFile(filepath string, body []byte) (*ConfigFile, error) {
 	if !strings.HasSuffix(filepath, ".yaml") && !strings.HasSuffix(filepath, ".yaml.patch") {
 		return nil, microerror.Maskf(executionFailedError, "given file is not a value file: %q", filepath)
 	}
 
 	// extract paths with valuemodifier path service
-	allPaths := map[string]*ValuePath{}
+	allPaths := map[string]*ConfigValue{}
 	{
 		c := pathmodifier.Config{
 			InputBytes: body,
@@ -95,19 +91,18 @@ func NewValueFile(filepath string, body []byte) (*ValueFile, error) {
 				return nil, microerror.Maskf(executionFailedError, "error getting %q value for %q: %s", filepath, path, err)
 			}
 
-			v := ValuePath{
-				Value:          value,
-				UsedBy:         []*TemplateFile{},
-				OvershadowedBy: []*ValueFile{},
+			v := ConfigValue{
+				value:          value,
+				usedBy:         []*TemplateFile{},
+				overshadowedBy: []*ConfigFile{},
 			}
 			allPaths[NormalPath(path)] = &v
 		}
 	}
 
-	vf := &ValueFile{
-		filepath:    filepath,
-		paths:       allPaths,
-		sourceBytes: body,
+	vf := &ConfigFile{
+		filepath: filepath,
+		paths:    allPaths,
 	}
 
 	// assign installation if possible
@@ -125,8 +120,7 @@ func NewTemplateFile(filepath string, body []byte) (*TemplateFile, error) {
 	}
 
 	tf := &TemplateFile{
-		filepath:    filepath,
-		sourceBytes: body,
+		filepath: filepath,
 	}
 
 	// extract templated values and all paths from the template
@@ -142,7 +136,6 @@ func NewTemplateFile(filepath string, body []byte) (*TemplateFile, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		tf.sourceTemplate = t
 
 		// extract all values
 		for _, node := range t.Tree.Root.Nodes {
@@ -155,11 +148,11 @@ func NewTemplateFile(filepath string, body []byte) (*TemplateFile, error) {
 				normalPath := NormalPath(np)
 				if _, ok := values[normalPath]; !ok {
 					values[normalPath] = &TemplateValue{
-						Path:            normalPath,
-						OccurrenceCount: 1,
+						path:            normalPath,
+						occurrenceCount: 1,
 					}
 				} else {
-					values[normalPath].OccurrenceCount += 1
+					values[normalPath].occurrenceCount += 1
 				}
 			}
 		}

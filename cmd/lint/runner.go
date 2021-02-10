@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 
 	"github.com/giantswarm/microerror"
@@ -37,9 +36,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	err = r.run(ctx, cmd, args)
-	if IsLinterFoundIssues(err) {
-		os.Exit(1)
-	} else if err != nil {
+	if err != nil {
 		return microerror.Mask(err)
 	}
 

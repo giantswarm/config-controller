@@ -47,7 +47,8 @@ type TemplateFile struct {
 	app          string
 
 	// values map contains values requested in template using template's dot
-	// notation, e.g. '{{ .some.value }}'
+	// notation, e.g. '{{ .some.value }}'. In that case the key would be
+	// 'some.value'.
 	values map[string]*TemplateValue
 	// paths map contains all paths in template extracted by valuemodifier/path
 	paths map[string]bool

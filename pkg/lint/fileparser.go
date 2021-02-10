@@ -184,9 +184,6 @@ func NewTemplateFile(filepath string, body []byte) (*TemplateFile, error) {
 		svc, err := pathmodifier.New(c)
 		if err != nil {
 			// try to pretty print offending yaml
-			fmt.Println("debug ---")
-			fmt.Println(output.String())
-			fmt.Println("debug ---")
 			var yamlOut interface{}
 			yamlErr := yaml.Unmarshal(output.Bytes(), &yamlOut)
 

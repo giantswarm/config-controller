@@ -237,10 +237,7 @@ func NewTemplateFile(filepath string, body []byte) (*TemplateFile, error) {
 }
 
 func NormalPath(path string) string {
-	if strings.HasPrefix(path, ".") {
-		path = strings.TrimPrefix(path, ".")
-	}
-	return path
+	return strings.TrimPrefix(path, ".")
 }
 
 // includeExtract is a helper struct, with a method passed to template's

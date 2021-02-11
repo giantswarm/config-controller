@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"path"
 
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	pathmodifier "github.com/giantswarm/valuemodifier/path"

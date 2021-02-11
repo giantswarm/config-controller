@@ -52,6 +52,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var gen *generator.Service
 	{
 		c := generator.Config{
+			Log:         r.logger,
 			VaultClient: vaultClient,
 
 			GitHubToken:  r.flag.GitHubToken,

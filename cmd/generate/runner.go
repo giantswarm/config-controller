@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
@@ -51,8 +52,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var gen *generator.Service
 	{
+		var logger micrologger.Logger
+		{
+			c := micrologger.Config{
+				IOWriter: os.Stderr,
+			}
+
+			logger, err = micrologger.New(c)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
 		c := generator.Config{
-			Log:         r.logger,
+			Log:         logger,
 			VaultClient: vaultClient,
 
 			GitHubToken:  r.flag.GitHubToken,

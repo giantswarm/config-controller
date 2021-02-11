@@ -103,6 +103,16 @@ func TestGenerator_generateRawConfig(t *testing.T) {
 			installation:     "puma",
 			decryptTraverser: &mapStringTraverser{},
 		},
+
+		{
+			name:                 "case 9 - throw error when a key is missing",
+			caseFile:             "testdata/case9.yaml",
+			expectedErrorMessage: `<.this.key.is.missing>: map has no entry for key "this"`,
+
+			app:              "operator",
+			installation:     "puma",
+			decryptTraverser: &mapStringTraverser{},
+		},
 	}
 
 	for _, tc := range testCases {

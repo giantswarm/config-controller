@@ -220,7 +220,7 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 }
 
 func (h *Handler) newConfigurationFromDraughtsman(ctx context.Context, in generator.GenerateInput) (*corev1.ConfigMap, *corev1.Secret, error) {
-	var draughtsmanConfigmap *corev1.ConfigMap
+	draughtsmanConfigmap := new(corev1.ConfigMap)
 	{
 		k := client.ObjectKey{
 			Name:      "draughtsman-values-configmap",
@@ -233,7 +233,7 @@ func (h *Handler) newConfigurationFromDraughtsman(ctx context.Context, in genera
 		}
 	}
 
-	var draughtsmanSecret *corev1.Secret
+	draughtsmanSecret := new(corev1.Secret)
 	{
 		k := client.ObjectKey{
 			Name:      "draughtsman-values-secret",

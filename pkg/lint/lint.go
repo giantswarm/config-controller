@@ -25,10 +25,10 @@ var AllLinterFunctions = []LinterFunc{
 	LintDuplicateconfigValues,
 	LintovershadowedconfigValues,
 	LintUnusedConfigPatchValues,
-	LintUndefinedTemplateValues,
+	LintUndefinedtemplateValues,
 	LintUndefinedTemplatePatchValues,
 	LintUnusedSecretValues,
-	LintUndefinedSecretTemplateValues,
+	LintUndefinedSecrettemplateValues,
 	LintUndefinedSecretTemplatePatchValues,
 	LintUnencryptedSecretValues,
 	LintIncludeFiles,
@@ -170,7 +170,7 @@ func LintUnusedSecretValues(d *discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUndefinedSecretTemplateValues(d *discovery) (messages LinterMessages) {
+func LintUndefinedSecrettemplateValues(d *discovery) (messages LinterMessages) {
 	for _, template := range d.SecretTemplates {
 		for path, value := range template.values {
 			if !value.mayBeMissing {
@@ -196,7 +196,7 @@ func LintUndefinedSecretTemplatePatchValues(d *discovery) (messages LinterMessag
 	return messages
 }
 
-func LintUndefinedTemplateValues(d *discovery) (messages LinterMessages) {
+func LintUndefinedtemplateValues(d *discovery) (messages LinterMessages) {
 	for _, template := range d.Templates {
 		for path, value := range template.values {
 			if !value.mayBeMissing {

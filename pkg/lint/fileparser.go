@@ -54,19 +54,19 @@ type configValue struct {
 // ```
 // would produce the following:
 // paths: {"keyA.keyB": true}
-// values: {"get.this.from.config": TemplateValue{...}}
+// values: {"get.this.from.config": templateValue{...}}
 type templateFile struct {
 	filepath     string
 	installation string // optional for defaults
 	app          string
 
-	values map[string]*TemplateValue
+	values map[string]*templateValue
 	paths  map[string]bool
 	// includes contains names of all include files used by this template
 	includes []string
 }
 
-type TemplateValue struct {
+type templateValue struct {
 	path            string
 	occurrenceCount int
 	// mayBeMissing is set when value is not found in config.
@@ -75,7 +75,7 @@ type TemplateValue struct {
 	mayBeMissing bool
 }
 
-func NewConfigFile(filepath string, body []byte) (*configFile, error) {
+func newConfigFile(filepath string, body []byte) (*configFile, error) {
 	if !strings.HasSuffix(filepath, ".yaml") && !strings.HasSuffix(filepath, ".yaml.patch") {
 		return nil, microerror.Maskf(executionFailedError, "given file is not a value file: %q", filepath)
 	}
@@ -125,7 +125,7 @@ func NewConfigFile(filepath string, body []byte) (*configFile, error) {
 	return vf, nil
 }
 
-func NewTemplateFile(filepath string, body []byte) (*templateFile, error) {
+func newTemplateFile(filepath string, body []byte) (*templateFile, error) {
 	if !strings.HasSuffix(filepath, ".template") && !strings.HasSuffix(filepath, "values.yaml.patch") {
 		return nil, microerror.Maskf(executionFailedError, "given file is not a template: %q", filepath)
 	}
@@ -135,7 +135,7 @@ func NewTemplateFile(filepath string, body []byte) (*templateFile, error) {
 	}
 
 	// extract templated values and all paths from the template
-	values := map[string]*TemplateValue{}
+	values := map[string]*templateValue{}
 	paths := map[string]bool{}
 	{
 		includes.clear()
@@ -158,7 +158,7 @@ func NewTemplateFile(filepath string, body []byte) (*templateFile, error) {
 			for _, np := range nodePaths {
 				normalPath := NormalPath(np)
 				if _, ok := values[normalPath]; !ok {
-					values[normalPath] = &TemplateValue{
+					values[normalPath] = &templateValue{
 						path:            normalPath,
 						occurrenceCount: 1,
 					}

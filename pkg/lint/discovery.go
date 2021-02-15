@@ -87,7 +87,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		d.Config, err = NewConfigFile(filepath, body)
+		d.Config, err = newConfigFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -112,7 +112,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		patch, err := NewConfigFile(filepath, body)
+		patch, err := newConfigFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -124,7 +124,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		secret, err := NewConfigFile(filepath, body)
+		secret, err := newConfigFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -147,7 +147,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		template, err := NewTemplateFile(filepath, body)
+		template, err := newTemplateFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -159,7 +159,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		secret, err := NewTemplateFile(filepath, body)
+		secret, err := newTemplateFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -191,7 +191,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
-			templatePatch, err := NewTemplateFile(filepath, body)
+			templatePatch, err := newTemplateFile(filepath, body)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -206,7 +206,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
-			secretPatch, err := NewTemplateFile(filepath, body)
+			secretPatch, err := newTemplateFile(filepath, body)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -232,7 +232,7 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		includeTemplate, err := NewTemplateFile(filepath, body)
+		includeTemplate, err := newTemplateFile(filepath, body)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -21,9 +21,9 @@ const (
 type LinterFunc func(d *discovery) (messages LinterMessages)
 
 var AllLinterFunctions = []LinterFunc{
-	LintUnusedConfigValues,
-	LintDuplicateConfigValues,
-	LintovershadowedConfigValues,
+	LintUnusedconfigValues,
+	LintDuplicateconfigValues,
+	LintovershadowedconfigValues,
 	LintUnusedConfigPatchValues,
 	LintUndefinedTemplateValues,
 	LintUndefinedTemplatePatchValues,
@@ -84,7 +84,7 @@ func (l *Linter) Lint(ctx context.Context) (messages LinterMessages) {
 	return messages
 }
 
-func LintDuplicateConfigValues(d *discovery) (messages LinterMessages) {
+func LintDuplicateconfigValues(d *discovery) (messages LinterMessages) {
 	for path, defaultPath := range d.Config.paths {
 		for _, overshadowingPatch := range defaultPath.overshadowedBy {
 			patchedPath := overshadowingPatch.paths[path]
@@ -99,7 +99,7 @@ func LintDuplicateConfigValues(d *discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintovershadowedConfigValues(d *discovery) (messages LinterMessages) {
+func LintovershadowedconfigValues(d *discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 {
 		return // avoid division by 0
 	}
@@ -135,7 +135,7 @@ func LintUnusedConfigPatchValues(d *discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUnusedConfigValues(d *discovery) (messages LinterMessages) {
+func LintUnusedconfigValues(d *discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 || len(d.Apps) == 0 {
 		return // what's the point, nothing is defined
 	}

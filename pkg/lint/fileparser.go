@@ -27,21 +27,21 @@ func init() {
 	fMap["include"] = includes.include
 }
 
-type ConfigFile struct {
+type configFile struct {
 	filepath     string
 	installation string // optional
-	paths        map[string]*ConfigValue
+	paths        map[string]*configValue
 }
 
-type ConfigValue struct {
+type configValue struct {
 	value interface{}
 	// files using this value
-	usedBy []*TemplateFile
+	usedBy []*templateFile
 	// value is overshadowed by some files
-	overshadowedBy []*ConfigFile
+	overshadowedBy []*configFile
 }
 
-// TemplateFile contains a representation of values and paths in a template.
+// templateFile contains a representation of values and paths in a template.
 // Paths map contains all paths in template extracted by valuemodifier/path.
 // Values map contains values requested in template using template's dot
 // notation, e.g. '{{ .some.value }}'. In that case the key would be
@@ -55,7 +55,7 @@ type ConfigValue struct {
 // would produce the following:
 // paths: {"keyA.keyB": true}
 // values: {"get.this.from.config": TemplateValue{...}}
-type TemplateFile struct {
+type templateFile struct {
 	filepath     string
 	installation string // optional for defaults
 	app          string
@@ -75,13 +75,13 @@ type TemplateValue struct {
 	mayBeMissing bool
 }
 
-func NewConfigFile(filepath string, body []byte) (*ConfigFile, error) {
+func NewConfigFile(filepath string, body []byte) (*configFile, error) {
 	if !strings.HasSuffix(filepath, ".yaml") && !strings.HasSuffix(filepath, ".yaml.patch") {
 		return nil, microerror.Maskf(executionFailedError, "given file is not a value file: %q", filepath)
 	}
 
 	// extract paths with valuemodifier path service
-	allPaths := map[string]*ConfigValue{}
+	allPaths := map[string]*configValue{}
 	{
 		c := pathmodifier.Config{
 			InputBytes: body,
@@ -102,16 +102,16 @@ func NewConfigFile(filepath string, body []byte) (*ConfigFile, error) {
 				return nil, microerror.Maskf(executionFailedError, "error getting %q value for %q: %s", filepath, path, err)
 			}
 
-			v := ConfigValue{
+			v := configValue{
 				value:          value,
-				usedBy:         []*TemplateFile{},
-				overshadowedBy: []*ConfigFile{},
+				usedBy:         []*templateFile{},
+				overshadowedBy: []*configFile{},
 			}
 			allPaths[NormalPath(path)] = &v
 		}
 	}
 
-	vf := &ConfigFile{
+	vf := &configFile{
 		filepath: filepath,
 		paths:    allPaths,
 	}
@@ -125,12 +125,12 @@ func NewConfigFile(filepath string, body []byte) (*ConfigFile, error) {
 	return vf, nil
 }
 
-func NewTemplateFile(filepath string, body []byte) (*TemplateFile, error) {
+func NewTemplateFile(filepath string, body []byte) (*templateFile, error) {
 	if !strings.HasSuffix(filepath, ".template") && !strings.HasSuffix(filepath, "values.yaml.patch") {
 		return nil, microerror.Maskf(executionFailedError, "given file is not a template: %q", filepath)
 	}
 
-	tf := &TemplateFile{
+	tf := &templateFile{
 		filepath: filepath,
 	}
 

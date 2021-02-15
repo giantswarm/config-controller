@@ -10,29 +10,29 @@ import (
 )
 
 type discovery struct {
-	Config        *ConfigFile
-	ConfigPatches []*ConfigFile
-	Secrets       []*ConfigFile
+	Config        *configFile
+	ConfigPatches []*configFile
+	Secrets       []*configFile
 
-	Templates             []*TemplateFile
-	SecretTemplates       []*TemplateFile
-	TemplatePatches       []*TemplateFile
-	SecretTemplatePatches []*TemplateFile
-	Include               []*TemplateFile
+	Templates             []*templateFile
+	SecretTemplates       []*templateFile
+	TemplatePatches       []*templateFile
+	SecretTemplatePatches []*templateFile
+	Include               []*templateFile
 
 	Installations []string
 	Apps          []string
 
 	AppsPerInstallation                  map[string][]string
-	ConfigPatchesPerInstallation         map[string]*ConfigFile
-	SecretsPerInstallation               map[string]*ConfigFile
-	TemplatesPerApp                      map[string]*TemplateFile
-	SecretTemplatesPerApp                map[string]*TemplateFile
-	TemplatePatchesPerInstallation       map[string][]*TemplateFile
-	SecretTemplatePatchesPerInstallation map[string][]*TemplateFile
+	ConfigPatchesPerInstallation         map[string]*configFile
+	SecretsPerInstallation               map[string]*configFile
+	TemplatesPerApp                      map[string]*templateFile
+	SecretTemplatesPerApp                map[string]*templateFile
+	TemplatePatchesPerInstallation       map[string][]*templateFile
+	SecretTemplatePatchesPerInstallation map[string][]*templateFile
 }
 
-func (d discovery) GetAppTemplatePatch(installation, app string) (*TemplateFile, bool) {
+func (d discovery) getAppTemplatePatch(installation, app string) (*templateFile, bool) {
 	templatePatches, ok := d.TemplatePatchesPerInstallation[installation]
 	if !ok {
 		return nil, false
@@ -45,7 +45,7 @@ func (d discovery) GetAppTemplatePatch(installation, app string) (*TemplateFile,
 	return nil, false
 }
 
-func (d discovery) GetAppSecretTemplatePatch(installation, app string) (*TemplateFile, bool) {
+func (d discovery) getAppSecretTemplatePatch(installation, app string) (*templateFile, bool) {
 	templatePatches, ok := d.SecretTemplatePatchesPerInstallation[installation]
 	if !ok {
 		return nil, false
@@ -60,24 +60,24 @@ func (d discovery) GetAppSecretTemplatePatch(installation, app string) (*Templat
 
 func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 	d := &discovery{
-		ConfigPatches: []*ConfigFile{},
-		Secrets:       []*ConfigFile{},
+		ConfigPatches: []*configFile{},
+		Secrets:       []*configFile{},
 
-		Templates:             []*TemplateFile{},
-		SecretTemplates:       []*TemplateFile{},
-		TemplatePatches:       []*TemplateFile{},
-		SecretTemplatePatches: []*TemplateFile{},
+		Templates:             []*templateFile{},
+		SecretTemplates:       []*templateFile{},
+		TemplatePatches:       []*templateFile{},
+		SecretTemplatePatches: []*templateFile{},
 
 		Installations: []string{},
 		Apps:          []string{},
 
 		AppsPerInstallation:                  map[string][]string{},
-		ConfigPatchesPerInstallation:         map[string]*ConfigFile{},
-		SecretsPerInstallation:               map[string]*ConfigFile{},
-		TemplatesPerApp:                      map[string]*TemplateFile{},
-		SecretTemplatesPerApp:                map[string]*TemplateFile{},
-		TemplatePatchesPerInstallation:       map[string][]*TemplateFile{},
-		SecretTemplatePatchesPerInstallation: map[string][]*TemplateFile{},
+		ConfigPatchesPerInstallation:         map[string]*configFile{},
+		SecretsPerInstallation:               map[string]*configFile{},
+		TemplatesPerApp:                      map[string]*templateFile{},
+		SecretTemplatesPerApp:                map[string]*templateFile{},
+		TemplatePatchesPerInstallation:       map[string][]*templateFile{},
+		SecretTemplatePatchesPerInstallation: map[string][]*templateFile{},
 	}
 
 	// collect config.yaml
@@ -173,8 +173,8 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 			continue
 		}
 		d.AppsPerInstallation[inst.Name()] = []string{}
-		d.TemplatePatchesPerInstallation[inst.Name()] = []*TemplateFile{}
-		d.SecretTemplatePatchesPerInstallation[inst.Name()] = []*TemplateFile{}
+		d.TemplatePatchesPerInstallation[inst.Name()] = []*templateFile{}
+		d.SecretTemplatePatchesPerInstallation[inst.Name()] = []*templateFile{}
 		appDirs, err := fs.ReadDir("default/apps/")
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -248,17 +248,17 @@ func newDiscovery(fs generator.Filesystem) (*discovery, error) {
 	sort.Strings(d.Installations)
 	sort.Strings(d.Apps)
 
-	if err := d.populateConfigValues(); err != nil {
+	if err := d.populateconfigValues(); err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return d, nil
 }
 
-// populateConfigValues fills UsedBy and overshadowedBy fields in all ConfigValue
+// populateconfigValues fills UsedBy and overshadowedBy fields in all configValue
 // structs in d.Config and d.ConfigPatches. This allows linter to find unused
 // values easier.
-func (d *discovery) populateConfigValues() error {
+func (d *discovery) populateconfigValues() error {
 	// 1. Mark all overshadowed configValues in config.yaml
 	for _, configPatch := range d.ConfigPatches {
 		for path := range configPatch.paths {
@@ -277,7 +277,7 @@ func (d *discovery) populateConfigValues() error {
 
 		for _, app := range d.Apps {
 			// mark all fields used by app template's patch
-			if templatePatch, ok := d.GetAppTemplatePatch(installation, app); ok {
+			if templatePatch, ok := d.getAppTemplatePatch(installation, app); ok {
 				populatePathsWithUsedBy(templatePatch, d.Config, configPatch)
 			}
 
@@ -296,7 +296,7 @@ func (d *discovery) populateConfigValues() error {
 		}
 		for _, app := range d.Apps {
 			defaultTemplate := d.SecretTemplatesPerApp[app]
-			templatePatch, _ := d.GetAppSecretTemplatePatch(installation, app)
+			templatePatch, _ := d.getAppSecretTemplatePatch(installation, app)
 
 			populateSecretPathsWithUsedBy(secret, defaultTemplate, templatePatch)
 		}
@@ -305,7 +305,7 @@ func (d *discovery) populateConfigValues() error {
 	return nil
 }
 
-func populatePathsWithUsedBy(source *TemplateFile, config, configPatch *ConfigFile) {
+func populatePathsWithUsedBy(source *templateFile, config, configPatch *configFile) {
 	for path, templatePath := range source.values {
 		if configPatch != nil {
 			configValue, configValueOk := configPatch.paths[path]
@@ -328,7 +328,7 @@ func populatePathsWithUsedBy(source *TemplateFile, config, configPatch *ConfigFi
 	}
 }
 
-func populateSecretPathsWithUsedBy(installationSecret *ConfigFile, defaultTemplate, templatePatch *TemplateFile) {
+func populateSecretPathsWithUsedBy(installationSecret *configFile, defaultTemplate, templatePatch *templateFile) {
 	if templatePatch != nil {
 		for path, value := range templatePatch.values {
 			configValue, configValueOk := installationSecret.paths[path]
@@ -357,7 +357,7 @@ func populateSecretPathsWithUsedBy(installationSecret *ConfigFile, defaultTempla
 	}
 }
 
-func appendUniqueUsedBy(list []*TemplateFile, t *TemplateFile) []*TemplateFile {
+func appendUniqueUsedBy(list []*templateFile, t *templateFile) []*templateFile {
 	for _, v := range list {
 		if v == t {
 			return list

@@ -1,8 +1,9 @@
 package generator
 
 import (
-	"github.com/giantswarm/config-controller/pkg/github"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/config-controller/pkg/github"
 )
 
 var invalidConfigError = &microerror.Error{

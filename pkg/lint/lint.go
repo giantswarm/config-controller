@@ -9,8 +9,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/config-controller/pkg/generator"
 )
 
 const (

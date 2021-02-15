@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add configuration linter under `lint` command.
+- Add logs when generating config via CLI.
+
 ### Fixed
 
 - Throw errors when template keys are missing.

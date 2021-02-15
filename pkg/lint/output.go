@@ -24,7 +24,7 @@ type LinterMessage struct {
 	description string // optional description, suggestion, information
 }
 
-func NewError(sourceFile, path, message string, arg ...interface{}) LinterMessage {
+func newError(sourceFile, path, message string, arg ...interface{}) LinterMessage {
 	return LinterMessage{
 		caller:      getCaller(),
 		isError:     true,
@@ -35,7 +35,7 @@ func NewError(sourceFile, path, message string, arg ...interface{}) LinterMessag
 	}
 }
 
-func NewMessage(sourceFile, path, message string, arg ...interface{}) LinterMessage {
+func newMessage(sourceFile, path, message string, arg ...interface{}) LinterMessage {
 	return LinterMessage{
 		caller:      getCaller(),
 		isError:     false,

@@ -137,7 +137,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
-	if err := validateNilValues(ctx, configmap); err != nil {
+	if err := validateNilValues(ctx, configmap, false); err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
@@ -184,7 +184,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
 		} else {
-			if err := validateNilValues(ctx, patch); err != nil {
+			if err := validateNilValues(ctx, patch, true); err != nil {
 				return "", "", microerror.Mask(err)
 			}
 
@@ -208,7 +208,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
-	if err := validateNilValues(ctx, secret); err != nil {
+	if err := validateNilValues(ctx, secret, true); err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
@@ -392,7 +392,7 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 	return out.String(), nil
 }
 
-func validateNilValues(ctx context.Context, body string) error {
+func validateNilValues(ctx context.Context, body string, validateStrings bool) error {
 	c := pathmodifier.Config{
 		InputBytes: []byte(body),
 		Separator:  ".",
@@ -418,9 +418,11 @@ func validateNilValues(ctx context.Context, body string) error {
 			return microerror.Maskf(emptyValueError, "value is undefined: %q", path)
 		}
 
-		s, ok := value.(string)
-		if ok && s == "" {
-			return microerror.Maskf(emptyValueError, "value is undefined: %q", path)
+		if validateStrings {
+			s, ok := value.(string)
+			if ok && s == "" {
+				return microerror.Maskf(emptyValueError, "value is undefined: %q", path)
+			}
 		}
 	}
 

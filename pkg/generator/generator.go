@@ -113,9 +113,6 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
-	if err := validateNilValues(ctx, configmapBase); err != nil {
-		return "", "", microerror.Mask(err)
-	}
 
 	// 3.
 	var configmapPatch string
@@ -127,9 +124,6 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
 		} else {
-			if err := validateNilValues(ctx, patch); err != nil {
-				return "", "", microerror.Mask(err)
-			}
 			configmapPatch = patch
 		}
 	}
@@ -141,6 +135,9 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		[]byte(configmapPatch),
 	)
 	if err != nil {
+		return "", "", microerror.Mask(err)
+	}
+	if err := validateNilValues(ctx, configmap); err != nil {
 		return "", "", microerror.Mask(err)
 	}
 

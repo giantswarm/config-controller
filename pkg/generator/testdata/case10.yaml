@@ -9,11 +9,11 @@ data: |
 path: default/apps/operator/configmap-values.yaml.template
 data: |
   answer: {{ .universalValue }}
+  undefinedValue: {{ .thisValueIsUndefined }}
 ---
 path: default/apps/operator/secret-values.yaml.template
 data: |
   secretAccessKey: {{ .key }}
-  undefinedValue: {{ .thisValueIsUndefined }}
 ---
 path: installations/puma/apps/operator/secret-values.yaml.patch
 data: |

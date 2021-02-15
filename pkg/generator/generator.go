@@ -170,6 +170,9 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
+	if err := validateSecretValues(ctx, secret); err != nil {
+		return "", "", microerror.Mask(err)
+	}
 
 	// 7.
 	var secretPatch string
@@ -181,6 +184,10 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
 		} else {
+			if err := validateSecretValues(ctx, patch); err != nil {
+				return "", "", microerror.Mask(err)
+			}
+
 			decryptedBytes, err := g.decryptTraverser.Traverse(ctx, []byte(patch))
 			if err != nil {
 				return "", "", microerror.Mask(err)
@@ -347,7 +354,7 @@ func (g Generator) renderTemplate(ctx context.Context, templateText string, temp
 	funcMap := sprig.FuncMap()
 	funcMap["include"] = g.include
 
-	t, err := template.New("main").Funcs(funcMap).Option("missingkey=error").Parse(templateText)
+	t, err := template.New("main").Funcs(funcMap).Option("missingkey=invalid").Parse(templateText)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -368,7 +375,7 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 		return "", microerror.Mask(err)
 	}
 
-	t, err := template.New(templateName).Funcs(sprig.FuncMap()).Option("missingkey=error").Parse(string(contents))
+	t, err := template.New(templateName).Funcs(sprig.FuncMap()).Option("missingkey=invalid").Parse(string(contents))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -380,4 +387,39 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 	}
 
 	return out.String(), nil
+}
+
+func validateSecretValues(ctx context.Context, secretBody string) error {
+	c := pathmodifier.Config{
+		InputBytes: []byte(secretBody),
+		Separator:  ".",
+	}
+
+	svc, err := pathmodifier.New(c)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	paths, err := svc.All()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, path := range paths {
+		value, err := svc.Get(path)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if value == nil {
+			return microerror.Maskf(emptySecretValueError, "secret value is undefined: %q", path)
+		}
+
+		s, ok := value.(string)
+		if ok && s == "" {
+			return microerror.Maskf(emptySecretValueError, "secret value is undefined: %q", path)
+		}
+	}
+
+	return nil
 }

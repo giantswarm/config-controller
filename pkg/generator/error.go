@@ -27,3 +27,12 @@ func IsNotFound(err error) bool {
 
 	return microerror.Cause(err) == notFoundError
 }
+
+var emptySecretValueError = &microerror.Error{
+	Kind: "emptySecretValueError",
+}
+
+// IsEmptySecretValue asserts emptySecretValueError.
+func IsEmptySecretValue(err error) bool {
+	return microerror.Cause(err) == emptySecretValueError
+}

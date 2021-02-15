@@ -25,7 +25,7 @@ var allLinterFunctions = []linterFunc{
 	lintDuplicateconfigValues,
 	lintovershadowedconfigValues,
 	lintUnusedConfigPatchValues,
-	lintUndefinedtemplateValues,
+	lintUndefinedTemplateValues,
 	lintUndefinedTemplatePatchValues,
 	lintUnusedSecretValues,
 	lintUndefinedSecrettemplateValues,
@@ -196,7 +196,7 @@ func lintUndefinedSecretTemplatePatchValues(d *discovery) (messages LinterMessag
 	return messages
 }
 
-func lintUndefinedtemplateValues(d *discovery) (messages LinterMessages) {
+func lintUndefinedTemplateValues(d *discovery) (messages LinterMessages) {
 	for _, template := range d.Templates {
 		for path, value := range template.values {
 			if !value.mayBeMissing {

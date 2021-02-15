@@ -173,9 +173,6 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
-	if err := validateNilValues(ctx, secret); err != nil {
-		return "", "", microerror.Mask(err)
-	}
 
 	// 7.
 	var secretPatch string
@@ -209,6 +206,9 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		[]byte(secretPatch),
 	)
 	if err != nil {
+		return "", "", microerror.Mask(err)
+	}
+	if err := validateNilValues(ctx, secret); err != nil {
 		return "", "", microerror.Mask(err)
 	}
 

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Throw errors when template keys are missing.
+- Throw errors when secret keys are missing.
 
 ## [0.2.3] - 2021-01-28
 

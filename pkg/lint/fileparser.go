@@ -41,17 +41,27 @@ type ConfigValue struct {
 	overshadowedBy []*ConfigFile
 }
 
+// TemplateFile contains a representation of values and paths in a template.
+// Paths map contains all paths in template extracted by valuemodifier/path.
+// Values map contains values requested in template using template's dot
+// notation, e.g. '{{ .some.value }}'. In that case the key would be
+// 'some.value'.
+//
+// A simple template, like:
+// ```
+// keyA:
+//   keyB:  "{{ .get.this.from.config }}"
+// ```
+// would produce the following:
+// paths: {"keyA.keyB": true}
+// values: {"get.this.from.config": TemplateValue{...}}
 type TemplateFile struct {
 	filepath     string
 	installation string // optional for defaults
 	app          string
 
-	// values map contains values requested in template using template's dot
-	// notation, e.g. '{{ .some.value }}'. In that case the key would be
-	// 'some.value'.
 	values map[string]*TemplateValue
-	// paths map contains all paths in template extracted by valuemodifier/path
-	paths map[string]bool
+	paths  map[string]bool
 	// includes contains names of all include files used by this template
 	includes []string
 }

@@ -113,6 +113,9 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
+	if err := validateNilValues(ctx, configmapBase); err != nil {
+		return "", "", microerror.Mask(err)
+	}
 
 	// 3.
 	var configmapPatch string
@@ -124,6 +127,9 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
 		} else {
+			if err := validateNilValues(ctx, patch); err != nil {
+				return "", "", microerror.Mask(err)
+			}
 			configmapPatch = patch
 		}
 	}
@@ -170,7 +176,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
-	if err := validateSecretValues(ctx, secret); err != nil {
+	if err := validateNilValues(ctx, secret); err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
@@ -184,7 +190,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 		} else if err != nil {
 			return "", "", microerror.Mask(err)
 		} else {
-			if err := validateSecretValues(ctx, patch); err != nil {
+			if err := validateNilValues(ctx, patch); err != nil {
 				return "", "", microerror.Mask(err)
 			}
 
@@ -389,9 +395,9 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 	return out.String(), nil
 }
 
-func validateSecretValues(ctx context.Context, secretBody string) error {
+func validateNilValues(ctx context.Context, body string) error {
 	c := pathmodifier.Config{
-		InputBytes: []byte(secretBody),
+		InputBytes: []byte(body),
 		Separator:  ".",
 	}
 
@@ -412,12 +418,12 @@ func validateSecretValues(ctx context.Context, secretBody string) error {
 		}
 
 		if value == nil {
-			return microerror.Maskf(emptySecretValueError, "secret value is undefined: %q", path)
+			return microerror.Maskf(emptyValueError, "value is undefined: %q", path)
 		}
 
 		s, ok := value.(string)
 		if ok && s == "" {
-			return microerror.Maskf(emptySecretValueError, "secret value is undefined: %q", path)
+			return microerror.Maskf(emptyValueError, "value is undefined: %q", path)
 		}
 	}
 

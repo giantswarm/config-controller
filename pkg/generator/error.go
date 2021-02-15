@@ -1,9 +1,8 @@
 package generator
 
 import (
-	"github.com/giantswarm/microerror"
-
 	"github.com/giantswarm/config-controller/pkg/github"
+	"github.com/giantswarm/microerror"
 )
 
 var invalidConfigError = &microerror.Error{
@@ -28,11 +27,11 @@ func IsNotFound(err error) bool {
 	return microerror.Cause(err) == notFoundError
 }
 
-var emptySecretValueError = &microerror.Error{
-	Kind: "emptySecretValueError",
+var emptyValueError = &microerror.Error{
+	Kind: "emptyValueError",
 }
 
-// IsEmptySecretValue asserts emptySecretValueError.
-func IsEmptySecretValue(err error) bool {
-	return microerror.Cause(err) == emptySecretValueError
+// IsEmptyValue asserts emptyValueError.
+func IsEmptyValue(err error) bool {
+	return microerror.Cause(err) == emptyValueError
 }

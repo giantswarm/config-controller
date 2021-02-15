@@ -3,13 +3,14 @@ package generator
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"html/template"
+	"os"
 	"path"
 
 	"github.com/Masterminds/sprig"
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
 	pathmodifier "github.com/giantswarm/valuemodifier/path"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,19 +44,19 @@ import (
 */
 
 type Config struct {
-	Log              micrologger.Logger
 	Fs               Filesystem
 	DecryptTraverser DecryptTraverser
 
 	Installation string
+	Verbose      bool
 }
 
 type Generator struct {
-	log              micrologger.Logger
 	fs               Filesystem
 	decryptTraverser DecryptTraverser
 
 	installation string
+	verbose      bool
 }
 
 func New(config Config) (*Generator, error) {
@@ -70,11 +71,11 @@ func New(config Config) (*Generator, error) {
 	}
 
 	g := Generator{
-		log:              config.Log,
 		fs:               config.Fs,
 		decryptTraverser: config.DecryptTraverser,
 
 		installation: config.Installation,
+		verbose:      config.Verbose,
 	}
 
 	return &g, nil
@@ -403,7 +404,7 @@ func (g Generator) include(templateName string, templateData interface{}) (strin
 }
 
 func (g Generator) logMessage(ctx context.Context, format string, params ...interface{}) {
-	if g.log != nil {
-		g.log.Debugf(ctx, format, params...)
+	if g.verbose {
+		fmt.Fprintf(os.Stderr, "generator: "+format+"\n", params...)
 	}
 }

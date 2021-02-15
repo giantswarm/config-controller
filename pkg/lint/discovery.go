@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/config-controller/pkg/generator"
 )
 
-type Discovery struct {
+type discovery struct {
 	Config        *ConfigFile
 	ConfigPatches []*ConfigFile
 	Secrets       []*ConfigFile
@@ -32,7 +32,7 @@ type Discovery struct {
 	SecretTemplatePatchesPerInstallation map[string][]*TemplateFile
 }
 
-func (d Discovery) GetAppTemplatePatch(installation, app string) (*TemplateFile, bool) {
+func (d discovery) GetAppTemplatePatch(installation, app string) (*TemplateFile, bool) {
 	templatePatches, ok := d.TemplatePatchesPerInstallation[installation]
 	if !ok {
 		return nil, false
@@ -45,7 +45,7 @@ func (d Discovery) GetAppTemplatePatch(installation, app string) (*TemplateFile,
 	return nil, false
 }
 
-func (d Discovery) GetAppSecretTemplatePatch(installation, app string) (*TemplateFile, bool) {
+func (d discovery) GetAppSecretTemplatePatch(installation, app string) (*TemplateFile, bool) {
 	templatePatches, ok := d.SecretTemplatePatchesPerInstallation[installation]
 	if !ok {
 		return nil, false
@@ -58,8 +58,8 @@ func (d Discovery) GetAppSecretTemplatePatch(installation, app string) (*Templat
 	return nil, false
 }
 
-func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
-	d := &Discovery{
+func newDiscovery(fs generator.Filesystem) (*discovery, error) {
+	d := &discovery{
 		ConfigPatches: []*ConfigFile{},
 		Secrets:       []*ConfigFile{},
 
@@ -258,7 +258,7 @@ func NewDiscovery(fs generator.Filesystem) (*Discovery, error) {
 // populateConfigValues fills UsedBy and overshadowedBy fields in all ConfigValue
 // structs in d.Config and d.ConfigPatches. This allows linter to find unused
 // values easier.
-func (d *Discovery) populateConfigValues() error {
+func (d *discovery) populateConfigValues() error {
 	// 1. Mark all overshadowed configValues in config.yaml
 	for _, configPatch := range d.ConfigPatches {
 		for path := range configPatch.paths {

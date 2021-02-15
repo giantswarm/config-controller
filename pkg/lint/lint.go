@@ -1,17 +1,23 @@
 package lint
 
 import (
+	"context"
+	"fmt"
 	"reflect"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
+
+	"github.com/giantswarm/config-controller/pkg/generator"
+	"github.com/giantswarm/microerror"
 )
 
 const (
 	overshadowErrorThreshold float64 = 0.75
 )
 
-type LinterFunc func(d *Discovery) (messages LinterMessages)
+type LinterFunc func(d *discovery) (messages LinterMessages)
 
 var AllLinterFunctions = []LinterFunc{
 	LintUnusedConfigValues,
@@ -27,7 +33,57 @@ var AllLinterFunctions = []LinterFunc{
 	LintIncludeFiles,
 }
 
-func LintDuplicateConfigValues(d *Discovery) (messages LinterMessages) {
+type Config struct {
+	Store           generator.Filesystem
+	FilterFunctions []string
+	OnlyErrors      bool
+	MaxMessages     int
+}
+
+type Linter struct {
+	discovery   *discovery
+	funcs       []LinterFunc
+	onlyErrors  bool
+	maxMessages int
+}
+
+func New(c Config) (*Linter, error) {
+	discovery, err := newDiscovery(c.Store)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	l := &Linter{
+		discovery:   discovery,
+		funcs:       GetFilteredLinterFunctions(c.FilterFunctions),
+		onlyErrors:  c.OnlyErrors,
+		maxMessages: c.MaxMessages,
+	}
+
+	return l, nil
+}
+
+func (l *Linter) Lint(ctx context.Context) (messages LinterMessages) {
+	fmt.Printf("Linting using %d functions\n\n", len(l.funcs))
+	for _, f := range l.funcs {
+		singleFuncMessages := f(l.discovery)
+		sort.Sort(singleFuncMessages)
+
+		for _, msg := range singleFuncMessages {
+			if l.onlyErrors && !msg.IsError() {
+				continue
+			}
+			messages = append(messages, msg)
+
+			if l.maxMessages > 0 && len(messages) >= l.maxMessages {
+				return messages
+			}
+		}
+	}
+	return messages
+}
+
+func LintDuplicateConfigValues(d *discovery) (messages LinterMessages) {
 	for path, defaultPath := range d.Config.paths {
 		for _, overshadowingPatch := range defaultPath.overshadowedBy {
 			patchedPath := overshadowingPatch.paths[path]
@@ -42,7 +98,7 @@ func LintDuplicateConfigValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintovershadowedConfigValues(d *Discovery) (messages LinterMessages) {
+func LintovershadowedConfigValues(d *discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 {
 		return // avoid division by 0
 	}
@@ -63,7 +119,7 @@ func LintovershadowedConfigValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUnusedConfigPatchValues(d *Discovery) (messages LinterMessages) {
+func LintUnusedConfigPatchValues(d *discovery) (messages LinterMessages) {
 	for _, configPatch := range d.ConfigPatches {
 		if len(d.AppsPerInstallation[configPatch.installation]) == 0 {
 			continue // avoid division by 0
@@ -78,7 +134,7 @@ func LintUnusedConfigPatchValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUnusedConfigValues(d *Discovery) (messages LinterMessages) {
+func LintUnusedConfigValues(d *discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 || len(d.Apps) == 0 {
 		return // what's the point, nothing is defined
 	}
@@ -94,7 +150,7 @@ func LintUnusedConfigValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUnusedSecretValues(d *Discovery) (messages LinterMessages) {
+func LintUnusedSecretValues(d *discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 {
 		return // what's the point, nothing is defined
 	}
@@ -113,7 +169,7 @@ func LintUnusedSecretValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUndefinedSecretTemplateValues(d *Discovery) (messages LinterMessages) {
+func LintUndefinedSecretTemplateValues(d *discovery) (messages LinterMessages) {
 	for _, template := range d.SecretTemplates {
 		for path, value := range template.values {
 			if !value.mayBeMissing {
@@ -126,7 +182,7 @@ func LintUndefinedSecretTemplateValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUndefinedSecretTemplatePatchValues(d *Discovery) (messages LinterMessages) {
+func LintUndefinedSecretTemplatePatchValues(d *discovery) (messages LinterMessages) {
 	for _, template := range d.SecretTemplatePatches {
 		for path, value := range template.values {
 			if !value.mayBeMissing {
@@ -139,7 +195,7 @@ func LintUndefinedSecretTemplatePatchValues(d *Discovery) (messages LinterMessag
 	return messages
 }
 
-func LintUndefinedTemplateValues(d *Discovery) (messages LinterMessages) {
+func LintUndefinedTemplateValues(d *discovery) (messages LinterMessages) {
 	for _, template := range d.Templates {
 		for path, value := range template.values {
 			if !value.mayBeMissing {
@@ -174,7 +230,7 @@ func LintUndefinedTemplateValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUnencryptedSecretValues(d *Discovery) (messages LinterMessages) {
+func LintUnencryptedSecretValues(d *discovery) (messages LinterMessages) {
 	if len(d.Installations) == 0 {
 		return // what's the point, nothing is defined
 	}
@@ -196,7 +252,7 @@ func LintUnencryptedSecretValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintUndefinedTemplatePatchValues(d *Discovery) (messages LinterMessages) {
+func LintUndefinedTemplatePatchValues(d *discovery) (messages LinterMessages) {
 	for _, templatePatch := range d.TemplatePatches {
 		for path, value := range templatePatch.values {
 			if !value.mayBeMissing {
@@ -208,7 +264,7 @@ func LintUndefinedTemplatePatchValues(d *Discovery) (messages LinterMessages) {
 	return messages
 }
 
-func LintIncludeFiles(d *Discovery) (messages LinterMessages) {
+func LintIncludeFiles(d *discovery) (messages LinterMessages) {
 	used := map[string]bool{}
 	exist := map[string]bool{}
 	for _, includeFile := range d.Include {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sort"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -72,37 +71,39 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	discovery, err := lint.NewDiscovery(store)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	messageCount := 0
-	linterFuncs := lint.GetFilteredLinterFunctions(r.flag.FilterFunctions)
-	fmt.Printf("Linting using %d functions\n\n", len(linterFuncs))
-
-	for _, f := range linterFuncs {
-		messages := f(discovery)
-		sort.Sort(messages)
-		for _, msg := range messages {
-			if r.flag.OnlyErrors && !msg.IsError() {
-				continue
-			}
-
-			fmt.Println(msg.Message(!r.flag.NoFuncNames, !r.flag.NoDescriptions))
-			messageCount += 1
-
-			if r.flag.MaxMessages > 0 && messageCount >= r.flag.MaxMessages {
-				fmt.Println("-------------------------")
-				fmt.Println("Too many messages, skipping the rest of checks")
-				fmt.Printf("Run linter with '--%s 0' to see all the errors\n", flagMaxMessages)
-				return microerror.Mask(linterFoundIssuesError)
-			}
+	var linter *lint.Linter
+	{
+		c := lint.Config{
+			Store:           store,
+			FilterFunctions: r.flag.FilterFunctions,
+			OnlyErrors:      r.flag.OnlyErrors,
+			MaxMessages:     r.flag.MaxMessages,
 		}
+
+		l, err := lint.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		linter = l
 	}
-	fmt.Printf("-------------------------\nFound %d issues\n", messageCount)
-	if messageCount > 0 {
+
+	messages := linter.Lint(ctx)
+
+	for _, msg := range messages {
+		fmt.Println(msg.Message(!r.flag.NoFuncNames, !r.flag.NoDescriptions))
+	}
+
+	if r.flag.MaxMessages > 0 && len(messages) == r.flag.MaxMessages {
+		fmt.Println("-------------------------")
+		fmt.Println("Too many messages, skipping the rest of checks")
+		fmt.Printf("Run linter with '--%s 0' to see all the errors\n", flagMaxMessages)
 		return microerror.Mask(linterFoundIssuesError)
 	}
+
+	fmt.Printf("-------------------------\nFound %d issues\n", len(messages))
+	if len(messages) > 0 {
+		return microerror.Mask(linterFoundIssuesError)
+	}
+
 	return nil
 }

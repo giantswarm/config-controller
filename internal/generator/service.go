@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	vaultapi "github.com/hashicorp/vault/api"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,17 +17,21 @@ import (
 )
 
 type Config struct {
+	Log         micrologger.Logger
 	VaultClient *vaultapi.Client
 
 	GitHubToken  string
 	Installation string
+	Verbose      bool
 }
 
 type Service struct {
+	log              micrologger.Logger
 	decryptTraverser generator.DecryptTraverser
 	gitHub           *github.GitHub
 
 	installation string
+	verbose      bool
 }
 
 func New(config Config) (*Service, error) {
@@ -81,10 +86,12 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
+		log:              config.Log,
 		decryptTraverser: decryptTraverser,
 		gitHub:           gitHub,
 
 		installation: config.Installation,
+		verbose:      config.Verbose,
 	}
 
 	return s, nil
@@ -150,6 +157,7 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 			DecryptTraverser: s.decryptTraverser,
 
 			Installation: s.installation,
+			Verbose:      s.verbose,
 		}
 
 		gen, err = generator.New(c)

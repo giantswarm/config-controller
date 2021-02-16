@@ -24,12 +24,9 @@ room for such suffix.
 {{- end -}}
 
 {{/*
-The unique deployment for management plane and uses a special app version of
+The unique deployment for Management Cluster uses a special app version of
 0.0.0.
 */}}
 {{- define "resource.app.unique" -}}
 {{- if hasSuffix "-unique" .Release.Name }}true{{ else }}false{{ end }}
-{{- end -}}
-{{- define "resource.app.version" -}}
-{{- if hasSuffix "-unique" .Release.Name }}0.0.0{{ else }}{{ .Chart.AppVersion }}{{ end }}
 {{- end -}}

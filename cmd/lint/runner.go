@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -111,19 +110,4 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
-}
-
-func skipValidation(msg string, filters []string) (bool, error) {
-	for _, filter := range filters {
-		matched, err := regexp.MatchString(filter, msg)
-		if err != nil {
-			return false, microerror.Mask(err)
-		}
-
-		if matched {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }

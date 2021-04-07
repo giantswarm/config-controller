@@ -316,7 +316,14 @@ func applyPatch(ctx context.Context, base, patch []byte) (string, error) {
 		c := pathmodifier.DefaultConfig()
 		c.InputBytes = base
 		svc, err := pathmodifier.New(c)
-		if err != nil {
+		if pathmodifier.IsInvalidFormat(err) {
+			// return a descriptive error message
+			x := struct{}{}
+			err := yaml.Unmarshal([]byte(base), &x)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+		} else if err != nil {
 			return "", microerror.Mask(err)
 		}
 		basePathSvc = svc
@@ -327,7 +334,14 @@ func applyPatch(ctx context.Context, base, patch []byte) (string, error) {
 		c := pathmodifier.DefaultConfig()
 		c.InputBytes = patch
 		svc, err := pathmodifier.New(c)
-		if err != nil {
+		if pathmodifier.IsInvalidFormat(err) {
+			// return a descriptive error message
+			x := struct{}{}
+			err := yaml.Unmarshal([]byte(patch), &x)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+		} else if err != nil {
 			return "", microerror.Mask(err)
 		}
 		patchPathSvc = svc

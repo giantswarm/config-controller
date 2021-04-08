@@ -319,10 +319,11 @@ func applyPatch(ctx context.Context, base, patch []byte) (string, error) {
 		if pathmodifier.IsInvalidFormat(err) {
 			// return a descriptive error message
 			x := struct{}{}
-			err := yaml.Unmarshal([]byte(base), &x)
-			if err != nil {
-				return "", microerror.Mask(err)
+			yamlErr := yaml.Unmarshal([]byte(base), &x)
+			if yamlErr != nil {
+				return "", microerror.Mask(yamlErr)
 			}
+			return "", microerror.Mask(err)
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -337,10 +338,11 @@ func applyPatch(ctx context.Context, base, patch []byte) (string, error) {
 		if pathmodifier.IsInvalidFormat(err) {
 			// return a descriptive error message
 			x := struct{}{}
-			err := yaml.Unmarshal([]byte(patch), &x)
-			if err != nil {
-				return "", microerror.Mask(err)
+			yamlErr := yaml.Unmarshal([]byte(patch), &x)
+			if yamlErr != nil {
+				return "", microerror.Mask(yamlErr)
 			}
+			return "", microerror.Mask(err)
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		}

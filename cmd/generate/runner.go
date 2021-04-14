@@ -82,7 +82,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ExtraLabels: nil,
 	}
 
-	configmap, secret, err := gen.Generate(ctx, in)
+	var configmap, secret interface{}
+
+	if r.flag.Raw {
+		configmap, secret, err = gen.GenerateRaw(ctx, in)
+	} else {
+		configmap, secret, err = gen.Generate(ctx, in)
+	}
 	if err != nil {
 		return microerror.Mask(err)
 	}

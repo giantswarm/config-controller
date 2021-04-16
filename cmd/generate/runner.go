@@ -82,15 +82,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ExtraLabels: nil,
 	}
 
-	var configmap, secret interface{}
-
-	if r.flag.Raw {
-		configmap, secret, err = gen.GenerateRaw(ctx, in)
-	} else {
-		configmap, secret, err = gen.Generate(ctx, in)
-	}
+	configmap, secret, err := gen.Generate(ctx, in)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if r.flag.Raw {
+		fmt.Println("---")
+		fmt.Printf(string(configmap.Data["configmap-values.yaml"]) + "\n")
+		fmt.Println("---")
+		fmt.Printf(string(secret.Data["secret-values.yaml"]) + "\n")
+		return nil
 	}
 
 	fmt.Println("---")

@@ -240,6 +240,17 @@ func lintUndefinedTemplateValues(d *discovery) (messages LinterMessages) {
 			}
 
 			used := false
+
+			for _, configPatch := range d.ConfigPatches {
+				if _, ok := configPatch.paths[path]; ok {
+					used = true
+					break
+				}
+			}
+			if used {
+				continue
+			}
+
 			for _, templatePatch := range d.TemplatePatches {
 				if _, ok := templatePatch.paths[path]; ok {
 					used = true

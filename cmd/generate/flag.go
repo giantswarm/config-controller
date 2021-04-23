@@ -7,14 +7,11 @@ import (
 
 const (
 	flagApp          = "app"
-	flagGithubToken  = "github-token"
 	flagInstallation = "installation"
 	flagName         = "name"
 	flagNamespace    = "namespace"
 	flagRaw          = "raw"
 	flagVerbose      = "verbose"
-
-	envConfigControllerGithubToken = "CONFIG_CONTROLLER_GITHUB_TOKEN" //nolint:gosec
 )
 
 type flag struct {

@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/config-controller/internal/generator/github"
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
 )
@@ -122,13 +121,8 @@ func (*fsStore) ReadDir(dirname string) (infos []os.FileInfo, err error) {
 }
 
 func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
-	const (
-		owner = "giantswarm"
-		repo  = "config"
-	)
 
-	var store github.Store
-	store = &fsStore{}
+	store := &fsStore{}
 
 	var gen *generator.Generator
 	{

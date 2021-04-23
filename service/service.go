@@ -4,7 +4,6 @@ package service
 
 import (
 	"context"
-	"sync"
 
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/micrologger"
@@ -23,8 +22,6 @@ type Config struct {
 
 type Service struct {
 	Version *version.Service
-
-	bootOnce sync.Once
 }
 
 // New creates a new configured service object.

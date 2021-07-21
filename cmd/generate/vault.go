@@ -42,8 +42,7 @@ func createVaultClientUsingOpsctl(ctx context.Context, gitHubToken, user, instal
 	cmdArgs := []string{"opsctl", "create", "vaultconfig", "-i", installation, "-o", "json"}
 
 	if user != "" {
-		cmdArgs = append(cmdArgs, "--user")
-		cmdArgs = append(cmdArgs, user)
+		cmdArgs = append(cmdArgs, "--user", user)
 	}
 
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...) //nolint:gosec

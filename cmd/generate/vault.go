@@ -38,11 +38,11 @@ func newVaultClient(config vaultClientConfig) (*vaultapi.Client, error) {
 	return vaultClient, nil
 }
 
-func createVaultClientUsingOpsctl(ctx context.Context, gitHubToken, user, installation string) (*vaultapi.Client, error) {
+func createVaultClientUsingOpsctl(ctx context.Context, gitHubToken, sshUser, installation string) (*vaultapi.Client, error) {
 	cmdArgs := []string{"opsctl", "create", "vaultconfig", "-i", installation, "-o", "json"}
 
-	if user != "" {
-		cmdArgs = append(cmdArgs, "--user", user)
+	if sshUser != "" {
+		cmdArgs = append(cmdArgs, "--user", sshUser)
 	}
 
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...) //nolint:gosec

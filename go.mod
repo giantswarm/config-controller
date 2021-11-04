@@ -21,7 +21,7 @@ require (
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/google/go-cmp v0.5.6
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
-	github.com/hashicorp/vault/api v1.2.0
+	github.com/hashicorp/vault/api v1.3.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.11.0

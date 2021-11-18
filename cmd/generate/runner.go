@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
@@ -54,7 +55,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		c := generator.Config{
 			VaultClient: vaultClient,
 
-			GitHubToken:  r.flag.GitHubToken,
+			GitHubToken:  strings.TrimSpace(r.flag.GitHubToken),
 			Installation: r.flag.Installation,
 			Verbose:      r.flag.Verbose,
 		}

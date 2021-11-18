@@ -41,6 +41,11 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 
 	var operatorkitController *controller.Controller
 	{
+		selector, err := meta.Label.Version.Selector(config.UniqueApp)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
 		c := controller.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
@@ -48,7 +53,7 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 				return new(v1alpha1.Config)
 			},
 			Resources: resources,
-			Selector:  meta.Label.Version.Selector(config.UniqueApp),
+			Selector:  selector,
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-config-controller.

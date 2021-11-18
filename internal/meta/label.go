@@ -1,8 +1,11 @@
 package meta
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller"
+	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/giantswarm/config-controller/pkg/project"
 )
@@ -33,15 +36,10 @@ func (Version) Val(uniqueApp bool) string {
 	}
 }
 
-func (Version) Selector(uniqueApp bool) controller.Selector {
-	return controller.NewSelector(func(labels controller.Labels) bool {
-		if !labels.Has(versionLabel) {
-			return false
-		}
-		if labels.Get(versionLabel) == (Version{}).Val(uniqueApp) {
-			return true
-		}
-
-		return false
-	})
+func (Version) Selector(uniqueApp bool) (labels.Selector, error) {
+	selector, err := labels.Parse(fmt.Sprintf("%s=%s", label.ConfigControllerVersion, (Version{}).Val(uniqueApp)))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return selector, nil
 }

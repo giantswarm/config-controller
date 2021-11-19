@@ -1,17 +1,16 @@
 package controller
 
 import (
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v4/pkg/controller"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource"
-	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
-	"k8s.io/apimachinery/pkg/runtime"
-
+	"github.com/giantswarm/operatorkit/v6/pkg/controller"
+	"github.com/giantswarm/operatorkit/v6/pkg/resource"
+	"github.com/giantswarm/operatorkit/v6/pkg/resource/wrapper/metricsresource"
 	vaultapi "github.com/hashicorp/vault/api"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/config-controller/api/v1alpha1"
 	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/handler/configuration"
@@ -41,14 +40,19 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 
 	var operatorkitController *controller.Controller
 	{
+		selector, err := meta.Label.Version.Selector(config.UniqueApp)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
 		c := controller.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			NewRuntimeObjectFunc: func() runtime.Object {
+			NewRuntimeObjectFunc: func() client.Object {
 				return new(v1alpha1.Config)
 			},
 			Resources: resources,
-			Selector:  meta.Label.Version.Selector(config.UniqueApp),
+			Selector:  selector,
 
 			// Name is used to compute finalizer names. This here results in something
 			// like operatorkit.giantswarm.io/config-controller-config-controller.

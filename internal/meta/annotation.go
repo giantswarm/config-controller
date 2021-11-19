@@ -5,11 +5,10 @@ import (
 	"os"
 	"os/user"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-
+	"github.com/giantswarm/config-controller/api/v1alpha1"
 	"github.com/giantswarm/config-controller/pkg/project"
 )
 

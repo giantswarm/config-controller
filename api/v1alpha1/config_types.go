@@ -4,11 +4,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	kindConfig              = "Config"
-	configDocumentationLink = "https://docs.giantswarm.io/ui-api/management-api/crd/configs.core.giantswarm.io/"
-)
-
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:storageversion

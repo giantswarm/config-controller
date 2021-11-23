@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions-application v0.0.0-20211118184941-0e4a8fce3437
+	github.com/giantswarm/apiextensions-application v0.1.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/exporterkit v0.2.1
 	github.com/giantswarm/k8sclient/v6 v6.0.0
@@ -33,13 +33,4 @@ require (
 	k8s.io/client-go v0.20.12
 	sigs.k8s.io/controller-runtime v0.8.3
 	sigs.k8s.io/yaml v1.3.0
-)
-
-replace (
-	github.com/coreos/etcd v3.3.10+incompatible => github.com/coreos/etcd v3.3.25+incompatible
-	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.25+incompatible
-	github.com/dgrijalva/jwt-go => github.com/form3tech-oss/jwt-go v3.2.1+incompatible
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // CVE-2021-3121
-	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc93
-	sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.10-gs
 )

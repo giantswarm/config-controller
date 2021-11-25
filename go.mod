@@ -29,11 +29,11 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/tidwall/pretty v1.0.1 // indirect
 	go.mongodb.org/mongo-driver v1.4.2 // indirect
-	k8s.io/api v0.18.9
-	k8s.io/apimachinery v0.18.9
-	k8s.io/client-go v0.18.9
-	sigs.k8s.io/controller-runtime v0.6.3
-	sigs.k8s.io/yaml v1.2.0
+	k8s.io/api v0.20.13
+	k8s.io/apimachinery v0.20.13
+	k8s.io/client-go v0.20.13
+	sigs.k8s.io/controller-runtime v0.6.5
+	sigs.k8s.io/yaml v1.3.0
 )
 
 replace (

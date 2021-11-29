@@ -3,9 +3,10 @@ package key
 import (
 	"regexp"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
+
+	corev1alpha1 "github.com/giantswarm/config-controller/api/v1alpha1"
 )
 
 const (

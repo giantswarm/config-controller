@@ -9,20 +9,20 @@ require (
 	github.com/giantswarm/apiextensions-application v0.1.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/exporterkit v0.2.1
-	github.com/giantswarm/k8sclient/v6 v6.0.0
-	github.com/giantswarm/k8smetadata v0.7.1
-	github.com/giantswarm/microendpoint v0.2.0
-	github.com/giantswarm/microerror v0.3.0
-	github.com/giantswarm/microkit v0.2.2
-	github.com/giantswarm/micrologger v0.5.0
-	github.com/giantswarm/operatorkit/v6 v6.0.0
+	github.com/giantswarm/k8sclient/v6 v6.1.0
+	github.com/giantswarm/k8smetadata v0.9.2
+	github.com/giantswarm/microendpoint v0.3.0
+	github.com/giantswarm/microerror v0.4.0
+	github.com/giantswarm/microkit v0.3.0
+	github.com/giantswarm/micrologger v0.6.0
+	github.com/giantswarm/operatorkit/v6 v6.1.0
 	github.com/giantswarm/valuemodifier v0.4.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-cmp v0.5.7
 	github.com/hashicorp/vault/api v1.3.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.12.0
+	github.com/prometheus/client_golang v1.12.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	k8s.io/api v0.20.15

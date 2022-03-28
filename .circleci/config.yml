@@ -108,31 +108,3 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
-
-      - architect/push-to-app-collection:
-          name: push-config-controller-to-vmware-app-collection
-          context: architect
-          app_name: "config-controller"
-          app_namespace: "giantswarm"
-          app_collection_repo: "vmware-app-collection"
-          requires:
-            - push-config-controller-to-app-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
-
-      - architect/push-to-app-collection:
-          name: push-config-controller-to-openstack-app-collection
-          context: architect
-          app_name: "config-controller"
-          app_namespace: "giantswarm"
-          app_collection_repo: "openstack-app-collection"
-          requires:
-            - push-config-controller-to-app-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/

@@ -3,6 +3,7 @@ package decrypt
 import (
 	"context"
 	"encoding/base64"
+
 	"github.com/giantswarm/microerror"
 	vaultapi "github.com/hashicorp/vault/api"
 )

@@ -3,18 +3,18 @@ package configuration
 import (
 	"reflect"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	vaultapi "github.com/hashicorp/vault/api"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/config-controller/api/v1alpha1"
 	"github.com/giantswarm/config-controller/internal/configversion"
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
-
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 )
 
@@ -126,7 +126,7 @@ func (h *Handler) Name() string {
 	return Name
 }
 
-func getConfigObjectsMeta(config *v1alpha1.Config) (current, orphaned []k8sresource.Object, err error) {
+func getConfigObjectsMeta(config *v1alpha1.Config) (current, orphaned []client.Object, err error) {
 	currConfig := config.Status.Config
 	prevConfig, err := meta.Annotation.XPreviousConfig.Get(config)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -50,7 +50,7 @@ func New(config Config) (*Service, error) {
 	return s, nil
 }
 
-func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desired Object) error {
+func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desired client.Object) error {
 	s.logger.Debugf(ctx, "ensuring %#q %#q", s.Kind(desired), ObjectKey(desired))
 
 	err := setHash(hashAnnotation, desired)
@@ -59,7 +59,7 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 	}
 
 	t := reflect.TypeOf(desired).Elem()
-	current := reflect.New(t).Interface().(Object)
+	current := reflect.New(t).Interface().(client.Object)
 	err = s.client.Get(ctx, ObjectKey(desired), current)
 	if apierrors.IsNotFound(err) {
 		err = s.client.Create(ctx, desired)
@@ -90,7 +90,7 @@ func (s *Service) EnsureCreated(ctx context.Context, hashAnnotation string, desi
 	return nil
 }
 
-func (s *Service) EnsureDeleted(ctx context.Context, obj Object) error {
+func (s *Service) EnsureDeleted(ctx context.Context, obj client.Object) error {
 	s.logger.Debugf(ctx, "ensuring deletion of %#q %#q", s.Kind(obj), ObjectKey(obj))
 
 	err := s.client.Delete(ctx, obj)
@@ -135,7 +135,7 @@ func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
 //		...
 //	}
 //
-func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
+func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj client.Object, modifyFunc func() error, backOff backoff.BackOff) error {
 	err := s.modify(ctx, key, obj, modifyFunc, backOff, false)
 	if err != nil {
 		return microerror.Mask(err)
@@ -145,7 +145,7 @@ func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj Object, 
 }
 
 // ModifyStatus works exactly like Modify but updates the status subresource.
-func (s *Service) ModifyStatus(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff) error {
+func (s *Service) ModifyStatus(ctx context.Context, key client.ObjectKey, obj client.Object, modifyFunc func() error, backOff backoff.BackOff) error {
 	err := s.modify(ctx, key, obj, modifyFunc, backOff, true)
 	if err != nil {
 		return microerror.Mask(err)
@@ -154,7 +154,7 @@ func (s *Service) ModifyStatus(ctx context.Context, key client.ObjectKey, obj Ob
 	return nil
 }
 
-func (s *Service) modify(ctx context.Context, key client.ObjectKey, obj Object, modifyFunc func() error, backOff backoff.BackOff, statusUpdate bool) error {
+func (s *Service) modify(ctx context.Context, key client.ObjectKey, obj client.Object, modifyFunc func() error, backOff backoff.BackOff, statusUpdate bool) error {
 	if obj == nil {
 		panic("nil obj")
 	}

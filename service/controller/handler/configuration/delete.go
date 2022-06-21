@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 	"github.com/giantswarm/config-controller/service/controller/key"
@@ -15,7 +16,7 @@ func (h *Handler) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var toDelete []k8sresource.Object
+	var toDelete []client.Object
 	{
 		current, orphaned, err := getConfigObjectsMeta(config)
 		if err != nil {

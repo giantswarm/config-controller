@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add deprecation notice in favor of `konfigure`.
 
+## [0.5.1] - 2021-11-30
+
+### Fixed
+
+- Generate missing Config CRD.
+
+## [0.5.0] - 2021-11-29
+
+### Changed
+
+- Drop `apiextensions` dependency.
+
 ## [0.4.0] - 2021-08-09
 
 ## [0.3.3] - 2021-08-05
@@ -150,7 +162,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create CLI/daemon scaffolding.
 - Generate application configuration using `generate` command.
 
-[Unreleased]: https://github.com/giantswarm/config-controller/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/giantswarm/config-controller/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/giantswarm/config-controller/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/giantswarm/config-controller/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/giantswarm/config-controller/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/giantswarm/config-controller/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/giantswarm/config-controller/compare/v0.3.1...v0.3.2

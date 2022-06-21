@@ -3,7 +3,6 @@ package decrypt
 import (
 	"context"
 	"encoding/base64"
-
 	"github.com/giantswarm/microerror"
 	vaultapi "github.com/hashicorp/vault/api"
 )
@@ -67,7 +66,8 @@ func (d *VaultDecrypter) vaultRequest(ctx context.Context, endpoint string, req,
 		return microerror.Mask(err)
 	}
 
-	httpResp, err := d.vaultClient.RawRequest(httpReq)
+	// TODO The vaultClient.RawRequest method is deprecated. I dont see an immediate quick replacement for this
+	httpResp, err := d.vaultClient.RawRequest(httpReq) // nolint:staticcheck
 	if err != nil {
 		return microerror.Mask(err)
 	}

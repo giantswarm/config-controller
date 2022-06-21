@@ -19,12 +19,12 @@ require (
 	github.com/giantswarm/valuemodifier v0.4.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
 	github.com/hashicorp/vault/api v1.7.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.12.0
-	github.com/spf13/cobra v1.3.0
-	github.com/spf13/viper v1.10.1
+	github.com/prometheus/client_golang v1.12.2
+	github.com/spf13/cobra v1.5.0
+	github.com/spf13/viper v1.12.0
 	k8s.io/api v0.20.15
 	k8s.io/apimachinery v0.20.15
 	k8s.io/client-go v0.20.15

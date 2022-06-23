@@ -9,13 +9,13 @@ require (
 	github.com/giantswarm/apiextensions-application v0.1.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/exporterkit v0.2.1
-	github.com/giantswarm/k8sclient/v6 v6.0.0
-	github.com/giantswarm/k8smetadata v0.7.1
-	github.com/giantswarm/microendpoint v0.2.0
-	github.com/giantswarm/microerror v0.3.0
-	github.com/giantswarm/microkit v0.2.2
-	github.com/giantswarm/micrologger v0.5.0
-	github.com/giantswarm/operatorkit/v6 v6.0.0
+	github.com/giantswarm/k8sclient/v6 v6.1.0
+	github.com/giantswarm/k8smetadata v0.11.1
+	github.com/giantswarm/microendpoint v0.3.0
+	github.com/giantswarm/microerror v0.4.0
+	github.com/giantswarm/microkit v0.3.0
+	github.com/giantswarm/micrologger v0.6.0
+	github.com/giantswarm/operatorkit/v6 v6.1.0
 	github.com/giantswarm/valuemodifier v0.4.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2

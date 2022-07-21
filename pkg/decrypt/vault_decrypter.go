@@ -3,6 +3,7 @@ package decrypt
 import (
 	"context"
 	"encoding/base64"
+
 	"github.com/giantswarm/valuemodifier/vault/decrypt"
 
 	"github.com/giantswarm/microerror"
@@ -43,6 +44,10 @@ func (d *VaultDecrypter) Decrypt(ctx context.Context, ciphertext []byte) ([]byte
 	}
 
 	plainText, err := service.Decrypt(ciphertext)
+
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	decoded, err := base64.StdEncoding.DecodeString(plainText)
 	if err != nil {

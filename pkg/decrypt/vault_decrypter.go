@@ -3,13 +3,14 @@ package decrypt
 import (
 	"context"
 	"encoding/base64"
+	"github.com/giantswarm/valuemodifier/vault/decrypt"
 
 	"github.com/giantswarm/microerror"
 	vaultapi "github.com/hashicorp/vault/api"
 )
 
 const (
-	keyring = "/v1/transit/decrypt/config"
+	key = "config"
 )
 
 type VaultDecrypterConfig struct {
@@ -35,52 +36,18 @@ func NewVaultDecrypter(config VaultDecrypterConfig) (*VaultDecrypter, error) {
 }
 
 func (d *VaultDecrypter) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, error) {
-	req := struct {
-		Ciphertext string `json:"ciphertext"`
-	}{
-		Ciphertext: string(ciphertext),
-	}
+	service, err := decrypt.New(decrypt.Config{VaultClient: d.vaultClient, Key: key})
 
-	resp := struct {
-		Data struct {
-			Plaintext string `json:"plaintext"`
-		} `json:"data"`
-	}{}
-
-	err := d.vaultRequest(ctx, keyring, req, &resp)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(resp.Data.Plaintext)
+	plainText, err := service.Decrypt(ciphertext)
+
+	decoded, err := base64.StdEncoding.DecodeString(plainText)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return decoded, nil
-}
-
-func (d *VaultDecrypter) vaultRequest(ctx context.Context, endpoint string, req, resp interface{}) error {
-	httpReq := d.vaultClient.NewRequest("POST", endpoint)
-	err := httpReq.SetJSONBody(req)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// TODO The vaultClient.RawRequest method is deprecated. I dont see an immediate quick replacement for this
-	httpResp, err := d.vaultClient.RawRequest(httpReq) // nolint:staticcheck
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if httpResp.StatusCode != 200 {
-		return microerror.Maskf(executionFailedError, "expected status code = 200, got %d", httpResp.StatusCode)
-	}
-
-	err = httpResp.DecodeJSON(resp)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
 }

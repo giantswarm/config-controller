@@ -1,6 +1,6 @@
 module github.com/giantswarm/config-controller
 
-go 1.18
+go 1.19
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
@@ -20,7 +20,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-cmp v0.5.9
-	github.com/hashicorp/vault/api v1.8.0
+	github.com/hashicorp/vault/api v1.8.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.13.0
 	github.com/spf13/cobra v1.6.0
@@ -164,7 +164,7 @@ replace (
 	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.8.1
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
-	github.com/labstack/echo/v4 => github.com/labstack/echo/v4 v4.9.0
+	github.com/labstack/echo/v4 => github.com/labstack/echo/v4 v4.9.1
 	// Fix vulnerabilties
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49

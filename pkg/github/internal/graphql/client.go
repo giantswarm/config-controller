@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/giantswarm/microerror"
@@ -67,7 +67,7 @@ func (c *Client) Do(ctx context.Context, req Request, v interface{}) error {
 	defer httpResp.Body.Close()
 
 	if httpResp.StatusCode != http.StatusOK {
-		bytes, _ := ioutil.ReadAll(httpResp.Body)
+		bytes, _ := io.ReadAll(httpResp.Body)
 		return microerror.Maskf(executionFailedError, "expected status code = %d but got %d, response body = %#q", http.StatusOK, httpResp.StatusCode, bytes)
 	}
 

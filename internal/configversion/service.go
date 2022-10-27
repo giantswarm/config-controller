@@ -3,7 +3,7 @@ package configversion
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -111,7 +111,7 @@ func (s *Service) getCatalogIndex(ctx context.Context, catalogName string) (cata
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return catalogIndex{}, microerror.Mask(err)
 	}

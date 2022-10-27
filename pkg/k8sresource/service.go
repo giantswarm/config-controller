@@ -118,9 +118,9 @@ func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
 // the object to provided obj pointer and calls modifyFunc which is supposed to
 // apply changes to the pointer.
 //
-//	- The modifyFunc is called on every try.
-//	- The obj variable is reset and populated before every try.
-//	- There are no retries if the object defined by the key does not exist.
+//   - The modifyFunc is called on every try.
+//   - The obj variable is reset and populated before every try.
+//   - There are no retries if the object defined by the key does not exist.
 //
 // Example usage:
 //
@@ -134,7 +134,6 @@ func (s *Service) GroupVersionKind(o Object) (schema.GroupVersionKind, error) {
 //	if err != nil {
 //		...
 //	}
-//
 func (s *Service) Modify(ctx context.Context, key client.ObjectKey, obj client.Object, modifyFunc func() error, backOff backoff.BackOff) error {
 	err := s.modify(ctx, key, obj, modifyFunc, backOff, false)
 	if err != nil {

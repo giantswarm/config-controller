@@ -1,9 +1,10 @@
 package gitrepo
 
 import (
-	"github.com/go-git/go-billy/v5"
 	"io"
 	"os"
+
+	"github.com/go-git/go-billy/v5"
 
 	"github.com/giantswarm/microerror"
 )

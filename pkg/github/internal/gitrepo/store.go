@@ -1,11 +1,12 @@
 package gitrepo
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 
-	"github.com/giantswarm/microerror"
 	"github.com/go-git/go-billy/v5"
+
+	"github.com/giantswarm/microerror"
 )
 
 type Store struct {
@@ -50,7 +51,7 @@ func (s *Store) ReadFile(path string) ([]byte, error) {
 	}
 	defer f.Close()
 
-	bs, err := ioutil.ReadAll(f)
+	bs, err := io.ReadAll(f)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

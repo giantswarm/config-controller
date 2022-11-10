@@ -273,8 +273,8 @@ github.com/giantswarm/operatorkit/v6 v6.1.0 h1:RyiBSgC+5zFSMynHeCTl5Bpc4TZErke34
 github.com/giantswarm/operatorkit/v6 v6.1.0/go.mod h1:IR6g8cRtYdT5hyuXq3/vfX5Bp95MvUQl4+wUezjBK7w=
 github.com/giantswarm/to v0.4.0 h1:x0GjbI94/nxcHztJiRtJzihCjgmUlEOto8RD98VA7WI=
 github.com/giantswarm/to v0.4.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
-github.com/giantswarm/valuemodifier v0.5.0 h1:E0YxkMZ4aCHlcZDCiIBvn5gaUTZWwYPr69QnIaf6OEg=
-github.com/giantswarm/valuemodifier v0.5.0/go.mod h1:aKoTYyt21uW9a5hW0YVfjrt229ZHppvVIYWc1yHfMbo=
+github.com/giantswarm/valuemodifier v0.5.1 h1:tgEqV102L3qf/9zGt4IdpZzBpgXUUlA9iSFjvA1lj54=
+github.com/giantswarm/valuemodifier v0.5.1/go.mod h1:aKoTYyt21uW9a5hW0YVfjrt229ZHppvVIYWc1yHfMbo=
 github.com/giantswarm/versionbundle v0.2.0/go.mod h1:n7GOlSXpX9TpP3EsYhErCjskN++c7uYHEEfV81NCH7s=
 github.com/giantswarm/versionbundle v0.3.0 h1:LhX2i314wiS3xXhAH35jauv4Z3ae4wdwQelN9kIVyLk=
 github.com/giantswarm/versionbundle v0.3.0/go.mod h1:zxTDitk/SfCvx/TbvouwPWW0hNGSdPDyGXXX3xm27Ik=

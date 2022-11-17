@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/microkit v0.3.0
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/giantswarm/operatorkit/v6 v6.1.0
-	github.com/giantswarm/valuemodifier v0.5.1
+	github.com/giantswarm/valuemodifier v0.5.2
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-cmp v0.5.9

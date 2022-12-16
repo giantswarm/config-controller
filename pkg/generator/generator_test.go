@@ -2,7 +2,7 @@ package generator
 
 import (
 	"context"
-	"io/ioutil"
+	"io/ioutil" //nolint
 	"os"
 	"path"
 	"strings"
@@ -126,7 +126,7 @@ func TestGenerator_generateRawConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", "config-controller-test")
+			tmpDir, err := os.MkdirTemp("", "config-controller-test")
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -192,7 +192,7 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 		}
 	}
 
-	rawData, err := ioutil.ReadFile(caseFile)
+	rawData, err := os.ReadFile(caseFile)
 	if err != nil {
 		panic(err)
 	}
@@ -221,7 +221,7 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 			panic(err)
 		}
 
-		err := ioutil.WriteFile(p, []byte(file.Data), 0644) // nolint:gosec
+		err := os.WriteFile(p, []byte(file.Data), 0644) // nolint:gosec
 		if err != nil {
 			panic(err)
 		}
@@ -231,7 +231,7 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 }
 
 func (fs *mockFilesystem) ReadFile(filepath string) ([]byte, error) {
-	data, err := ioutil.ReadFile(path.Join(fs.tempDirPath, filepath))
+	data, err := os.ReadFile(path.Join(fs.tempDirPath, filepath))
 	if err != nil {
 		return []byte{}, microerror.Maskf(notFoundError, "%q not found", filepath)
 	}

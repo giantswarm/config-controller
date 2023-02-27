@@ -7,15 +7,15 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions-application v0.5.1
-	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/exporterkit v0.2.1
-	github.com/giantswarm/k8sclient/v6 v6.1.0
+	github.com/giantswarm/backoff v1.0.0
+	github.com/giantswarm/exporterkit v1.0.0
+	github.com/giantswarm/k8sclient/v7 v7.0.1
 	github.com/giantswarm/k8smetadata v0.16.1
-	github.com/giantswarm/microendpoint v0.3.0
+	github.com/giantswarm/microendpoint v1.0.0
 	github.com/giantswarm/microerror v0.4.0
-	github.com/giantswarm/microkit v0.3.0
+	github.com/giantswarm/microkit v1.0.0
 	github.com/giantswarm/micrologger v1.0.0
-	github.com/giantswarm/operatorkit/v6 v6.1.0
+	github.com/giantswarm/operatorkit/v8 v8.0.0
 	github.com/giantswarm/valuemodifier v0.5.2
 	github.com/go-git/go-billy/v5 v5.4.0
 	github.com/go-git/go-git/v5 v5.5.1
@@ -41,8 +41,8 @@ require (
 	github.com/armon/go-metrics v0.4.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
+	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -51,9 +51,9 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/getsentry/sentry-go v0.11.0 // indirect
+	github.com/getsentry/sentry-go v0.12.0 // indirect
 	github.com/giantswarm/to v0.4.0 // indirect
-	github.com/giantswarm/versionbundle v0.3.0 // indirect
+	github.com/giantswarm/versionbundle v1.0.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect

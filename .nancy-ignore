@@ -1,5 +1,6 @@
 # pkg:golang/github.com/hashicorp/consul/api@v1.15.3
 CVE-2022-29153 until=2023-06-30
+CVE-2021-41803 until=2023-06-30
 
 # pkg:golang/github.com/hashicorp/consul/sdk@v0.3.0
 CVE-2022-29153 until=2023-06-30
@@ -19,3 +20,4 @@ CVE-2022-41723 until=2023-06-30
 
 # pkg:golang/k8s.io/apiserver@v0.24.3
 sonatype-2022-6522 until=2023-06-30
+CVE-2020-8561 until=2023-06-30

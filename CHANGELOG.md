@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove push to `shared-app-collection` as it is deprecated.
 
+### Changed
+
+- Updated default `securityContext` values to comply with PSS policies.
+
+
 ## [0.6.0] - 2022-07-21
 
 ### Changed

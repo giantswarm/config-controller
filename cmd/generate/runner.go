@@ -54,9 +54,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		c := generator.Config{
 			VaultClient: vaultClient,
 
-			GitHubToken:  r.flag.GitHubToken,
-			Installation: r.flag.Installation,
-			Verbose:      r.flag.Verbose,
+			GitHubToken:    r.flag.GitHubToken,
+			RepositoryName: r.flag.RepositoryName,
+			Installation:   r.flag.Installation,
+			Verbose:        r.flag.Verbose,
 		}
 
 		gen, err = generator.New(c)

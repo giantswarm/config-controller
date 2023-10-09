@@ -12,6 +12,7 @@ const (
 	flagApp           = "app"
 	flagConfigVersion = "config-version"
 	flagGithubToken   = "github-token"
+	repositoryName    = "repository-name"
 	flagInstallation  = "installation"
 	flagName          = "name"
 	flagNamespace     = "namespace"
@@ -23,21 +24,23 @@ const (
 )
 
 type flag struct {
-	App           string
-	ConfigVersion string
-	GitHubToken   string
-	Installation  string
-	Name          string
-	Namespace     string
-	Raw           bool
-	SSHUser       string
-	Verbose       bool
+	App            string
+	ConfigVersion  string
+	GitHubToken    string
+	RepositoryName string
+	Installation   string
+	Name           string
+	Namespace      string
+	Raw            bool
+	SSHUser        string
+	Verbose        bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.App, flagApp, "", `Name of an application to generate the config for (e.g. "kvm-operator").`)
 	cmd.Flags().StringVar(&f.ConfigVersion, flagConfigVersion, "", `Configuration version. Can be a major version range in format "2.x.x" or a branch name.`)
 	cmd.Flags().StringVar(&f.GitHubToken, flagGithubToken, "", fmt.Sprintf(`GitHub token to use for "opsctl create vaultconfig" calls. Defaults to the value of %s env var.`, envConfigControllerGithubToken))
+	cmd.Flags().StringVar(&f.RepositoryName, repositoryName, "config", `Repository name where configs are stored under the giantswarm organization, defaults to "config".`)
 	cmd.Flags().StringVar(&f.Installation, flagInstallation, "", `Installation codename (e.g. "gauss").`)
 	cmd.Flags().StringVar(&f.Name, flagName, "giantswarm", `Name of the generated ConfigMap/Secret.`)
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "giantswarm", `Namespace of the generated ConfigMap/Secret.`)

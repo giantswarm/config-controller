@@ -1,5 +1,6 @@
 package github
 
 type GitHub struct {
-	Token string
+	Token          string
+	RepositoryName string
 }

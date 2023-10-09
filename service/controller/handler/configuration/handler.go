@@ -28,9 +28,10 @@ type Config struct {
 	K8sClient   k8sclient.Interface
 	VaultClient *vaultapi.Client
 
-	GitHubToken  string
-	Installation string
-	UniqueApp    bool
+	GitHubToken    string
+	RepositoryName string
+	Installation   string
+	UniqueApp      bool
 }
 
 type Handler struct {
@@ -83,8 +84,9 @@ func New(config Config) (*Handler, error) {
 		c := generator.Config{
 			VaultClient: config.VaultClient,
 
-			GitHubToken:  config.GitHubToken,
-			Installation: config.Installation,
+			GitHubToken:    config.GitHubToken,
+			RepositoryName: config.RepositoryName,
+			Installation:   config.Installation,
 		}
 
 		gen, err = generator.New(c)

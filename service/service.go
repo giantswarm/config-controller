@@ -111,6 +111,14 @@ func New(config Config) (*Service, error) {
 		vaultClient.SetToken(config.Viper.GetString(config.Flag.Service.Vault.Token))
 	}
 
+	repositoryNameConfig := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryName)
+	var repositoryName string
+	if repositoryNameConfig == "" {
+		repositoryName = "config"
+	} else {
+		repositoryName = config.Viper.GetString(config.Flag.Service.GitHub.RepositoryName)
+	}
+
 	var configController *controller.Config
 	{
 		c := controller.ConfigConfig{
@@ -118,9 +126,10 @@ func New(config Config) (*Service, error) {
 			Logger:      config.Logger,
 			VaultClient: vaultClient,
 
-			GitHubToken:  config.Viper.GetString(config.Flag.Service.GitHub.Token),
-			Installation: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			UniqueApp:    config.Viper.GetBool(config.Flag.Service.App.Unique),
+			GitHubToken:    config.Viper.GetString(config.Flag.Service.GitHub.Token),
+			RepositoryName: repositoryName,
+			Installation:   config.Viper.GetString(config.Flag.Service.Installation.Name),
+			UniqueApp:      config.Viper.GetBool(config.Flag.Service.App.Unique),
 		}
 
 		configController, err = controller.NewConfig(c)

@@ -20,9 +20,10 @@ type Config struct {
 	Log         micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubToken  string
-	Installation string
-	Verbose      bool
+	GitHubToken    string
+	RepositoryName string
+	Installation   string
+	Verbose        bool
 }
 
 type Service struct {
@@ -30,8 +31,9 @@ type Service struct {
 	decryptTraverser generator.DecryptTraverser
 	gitHub           *github.GitHub
 
-	installation string
-	verbose      bool
+	repositoryName string
+	installation   string
+	verbose        bool
 }
 
 func New(config Config) (*Service, error) {
@@ -41,6 +43,10 @@ func New(config Config) (*Service, error) {
 
 	if config.GitHubToken == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken must not be empty", config)
+	}
+	if config.RepositoryName == "" {
+		// If repository name is not specified, fall back to original behaviour of using `giantswarm/config`
+		config.RepositoryName = "config"
 	}
 	if config.Installation == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Installation must not be empty", config)
@@ -90,8 +96,9 @@ func New(config Config) (*Service, error) {
 		decryptTraverser: decryptTraverser,
 		gitHub:           gitHub,
 
-		installation: config.Installation,
-		verbose:      config.Verbose,
+		repositoryName: config.RepositoryName,
+		installation:   config.Installation,
+		verbose:        config.Verbose,
 	}
 
 	return s, nil
@@ -111,7 +118,7 @@ type GenerateInput struct {
 	Namespace string
 
 	// ExtraAnnotations are additional annotations to be set on the
-	// generated ConfigMap and Secret. By default
+	// generated ConfigMap and Secret. By default,
 	// "config.giantswarm.io/version" annotation is set.
 	ExtraAnnotations map[string]string
 	// ExtraLabels are additional labels to be set on the generated
@@ -127,11 +134,20 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 
 	const (
 		owner = "giantswarm"
-		repo  = "config"
 	)
+
+	repo := s.repositoryName
 
 	var store github.Store
 	if isTagRange {
+		// For CCR repositories, always use the main branch
+		if repo != "config" {
+			store, err = s.gitHub.GetFilesByBranch(ctx, owner, repo, "main")
+			if err != nil {
+				return nil, nil, microerror.Mask(err)
+			}
+		}
+
 		tag, err := s.gitHub.GetLatestTag(ctx, owner, repo, tagPrefix)
 		if err != nil {
 			return nil, nil, microerror.Mask(err)

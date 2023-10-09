@@ -142,10 +142,12 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 	if isTagRange {
 		// For CCR repositories, always use the main branch
 		if repo != "config" {
-			store, err = s.gitHub.GetFilesByBranch(ctx, owner, repo, "main")
+			store, err = s.gitHub.GetFilesByBranch(ctx, owner, repo, "update-to-use-self-includes")
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
+
+			return nil, nil, microerror.Mask(err)
 		}
 
 		tag, err := s.gitHub.GetLatestTag(ctx, owner, repo, tagPrefix)

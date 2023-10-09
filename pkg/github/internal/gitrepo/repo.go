@@ -47,11 +47,12 @@ func (r *Repo) ShallowClone(ctx context.Context, url string, ref plumbing.Refere
 
 	fs := memfs.New()
 	_, err := git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
-		Auth:          auth,
-		URL:           url,
-		ReferenceName: ref,
-		SingleBranch:  true,
-		Depth:         1,
+		Auth:              auth,
+		URL:               url,
+		ReferenceName:     ref,
+		SingleBranch:      true,
+		Depth:             1,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
 	if err != nil {
 		return nil, microerror.Mask(err)

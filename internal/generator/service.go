@@ -146,18 +146,16 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 			if err != nil {
 				return nil, nil, microerror.Mask(err)
 			}
+		} else {
+			tag, err := s.gitHub.GetLatestTag(ctx, owner, repo, tagPrefix)
+			if err != nil {
+				return nil, nil, microerror.Mask(err)
+			}
 
-			return nil, nil, microerror.Mask(err)
-		}
-
-		tag, err := s.gitHub.GetLatestTag(ctx, owner, repo, tagPrefix)
-		if err != nil {
-			return nil, nil, microerror.Mask(err)
-		}
-
-		store, err = s.gitHub.GetFilesByTag(ctx, owner, repo, tag)
-		if err != nil {
-			return nil, nil, microerror.Mask(err)
+			store, err = s.gitHub.GetFilesByTag(ctx, owner, repo, tag)
+			if err != nil {
+				return nil, nil, microerror.Mask(err)
+			}
 		}
 	} else {
 		branch := in.ConfigVersion

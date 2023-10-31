@@ -178,7 +178,7 @@ replace (
 	github.com/nats-io/nats-server/v2 v2.5.0 => github.com/nats-io/nats-server/v2 v2.9.0
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	github.com/opencontainers/runc v1.1.1 => github.com/opencontainers/runc v1.1.2
-	github.com/pkg/sftp => github.com/pkg/sftp v1.13.5
+	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6
 	github.com/ulikunitz/xz => github.com/ulikunitz/xz v0.5.11
 	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0
 	golang.org/x/net => golang.org/x/net v0.17.0

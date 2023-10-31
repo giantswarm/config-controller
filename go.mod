@@ -73,7 +73,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -169,7 +169,7 @@ replace (
 	github.com/coreos/etcd => github.com/coreos/etcd v3.3.27+incompatible
 	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.8.2
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
+	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/labstack/echo/v4 => github.com/labstack/echo/v4 v4.11.2
 	// Fix vulnerabilties
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18

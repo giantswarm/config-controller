@@ -177,7 +177,7 @@ replace (
 	// Fix vulnerabilties
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49
-	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.3.0
+	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.5.2
 	github.com/nats-io/nats-server/v2 v2.5.0 => github.com/nats-io/nats-server/v2 v2.9.0
 	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.6
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7

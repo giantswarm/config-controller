@@ -176,6 +176,7 @@ replace (
 	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49
 	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.3.0
 	github.com/nats-io/nats-server/v2 v2.5.0 => github.com/nats-io/nats-server/v2 v2.9.0
+	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.6
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	github.com/opencontainers/runc v1.1.1 => github.com/opencontainers/runc v1.1.2
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added repository name parameter to be able to point to different config repositories, defaults to `config`
+
+### Changed
+
+- Removed usage of `config.giantswarm.io/version` annotation from AppCatalogEntries in favor of repository ref parameter, defaults to `main`
+- Changed repository clone mechanism to pull and initialize submodules as well
+
 ## [0.9.0] - 2023-11-10
 
 ### Changed

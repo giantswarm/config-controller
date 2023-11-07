@@ -22,6 +22,7 @@ type Config struct {
 
 	GitHubToken    string
 	RepositoryName string
+	RepositoryRef  string
 	Installation   string
 	Verbose        bool
 }
@@ -32,6 +33,7 @@ type Service struct {
 	gitHub           *github.GitHub
 
 	repositoryName string
+	repositoryRef  string
 	installation   string
 	verbose        bool
 }
@@ -47,6 +49,10 @@ func New(config Config) (*Service, error) {
 	if config.RepositoryName == "" {
 		// If repository name is not specified, fall back to original behaviour of using `giantswarm/config`
 		config.RepositoryName = "config"
+	}
+	if config.RepositoryRef == "" {
+		// If repository ref is not specified, fall back to using the main branch
+		config.RepositoryName = "main"
 	}
 	if config.Installation == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Installation must not be empty", config)
@@ -97,6 +103,7 @@ func New(config Config) (*Service, error) {
 		gitHub:           gitHub,
 
 		repositoryName: config.RepositoryName,
+		repositoryRef:  config.RepositoryRef,
 		installation:   config.Installation,
 		verbose:        config.Verbose,
 	}
@@ -127,43 +134,20 @@ type GenerateInput struct {
 }
 
 func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
-	tagPrefix, isTagRange, err := toTagPrefix(in.ConfigVersion)
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
+	//tagPrefix, isTagRange, err := toTagPrefix(in.ConfigVersion)
+	//if err != nil {
+	//	return nil, nil, microerror.Mask(err)
+	//}
 
 	const (
 		owner = "giantswarm"
 	)
 
-	repo := s.repositoryName
-
 	var store github.Store
-	if isTagRange {
-		// For CCR repositories, always use the main branch
-		if repo != "config" {
-			store, err = s.gitHub.GetFilesByBranch(ctx, owner, repo, "update-to-use-self-includes")
-			if err != nil {
-				return nil, nil, microerror.Mask(err)
-			}
-		} else {
-			tag, err := s.gitHub.GetLatestTag(ctx, owner, repo, tagPrefix)
-			if err != nil {
-				return nil, nil, microerror.Mask(err)
-			}
 
-			store, err = s.gitHub.GetFilesByTag(ctx, owner, repo, tag)
-			if err != nil {
-				return nil, nil, microerror.Mask(err)
-			}
-		}
-	} else {
-		branch := in.ConfigVersion
-
-		store, err = s.gitHub.GetFilesByBranch(ctx, owner, repo, branch)
-		if err != nil {
-			return nil, nil, microerror.Mask(err)
-		}
+	store, err = s.gitHub.GetFilesByBranch(ctx, owner, s.repositoryName, s.repositoryRef)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
 	}
 
 	var gen *generator.Generator

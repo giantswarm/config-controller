@@ -116,7 +116,15 @@ func New(config Config) (*Service, error) {
 	if repositoryNameConfig == "" {
 		repositoryName = "config"
 	} else {
-		repositoryName = config.Viper.GetString(config.Flag.Service.GitHub.RepositoryName)
+		repositoryName = repositoryNameConfig
+	}
+
+	repositoryRefConfig := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryRef)
+	var repositoryRef string
+	if repositoryRefConfig == "" {
+		repositoryRef = "main"
+	} else {
+		repositoryRef = repositoryRefConfig
 	}
 
 	var configController *controller.Config
@@ -128,6 +136,7 @@ func New(config Config) (*Service, error) {
 
 			GitHubToken:    config.Viper.GetString(config.Flag.Service.GitHub.Token),
 			RepositoryName: repositoryName,
+			RepositoryRef:  repositoryRef,
 			Installation:   config.Viper.GetString(config.Flag.Service.Installation.Name),
 			UniqueApp:      config.Viper.GetBool(config.Flag.Service.App.Unique),
 		}

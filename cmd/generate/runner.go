@@ -56,6 +56,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			GitHubToken:    r.flag.GitHubToken,
 			RepositoryName: r.flag.RepositoryName,
+			RepositoryRef:  r.flag.RepositoryRef,
 			Installation:   r.flag.Installation,
 			Verbose:        r.flag.Verbose,
 		}

@@ -30,6 +30,7 @@ type Config struct {
 
 	GitHubToken    string
 	RepositoryName string
+	RepositoryRef  string
 	Installation   string
 	UniqueApp      bool
 }
@@ -86,6 +87,7 @@ func New(config Config) (*Handler, error) {
 
 			GitHubToken:    config.GitHubToken,
 			RepositoryName: config.RepositoryName,
+			RepositoryRef:  config.RepositoryRef,
 			Installation:   config.Installation,
 		}
 

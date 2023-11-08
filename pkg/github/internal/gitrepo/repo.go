@@ -28,10 +28,6 @@ func New(config Config) (*Repo, error) {
 	return r, nil
 }
 
-func (r *Repo) ShallowCloneTag(ctx context.Context, url, tag string) (*Store, error) {
-	return r.ShallowClone(ctx, url, plumbing.NewTagReferenceName(tag))
-}
-
 func (r *Repo) ShallowCloneBranch(ctx context.Context, url, branch string) (*Store, error) {
 	return r.ShallowClone(ctx, url, plumbing.NewBranchReferenceName(branch))
 }

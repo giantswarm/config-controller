@@ -35,38 +35,6 @@ func New(c Config) (*GitHub, error) {
 	return gh, nil
 }
 
-func (gh *GitHub) GetLatestTag(ctx context.Context, owner, name, tagReference string) (string, error) {
-	key := gh.tagCache.Key(owner, name, tagReference)
-	tag, cached := gh.tagCache.Get(ctx, key)
-	if cached {
-		return tag, nil
-	}
-
-	tag, err := gh.client.GetLatestTag(ctx, owner, name, tagReference)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	gh.tagCache.Set(ctx, key, tag)
-	return tag, nil
-}
-
-func (gh *GitHub) GetFilesByTag(ctx context.Context, owner, name, tag string) (github.Store, error) {
-	key := gh.repoCache.Key(owner, name, tag)
-	store, cached := gh.repoCache.Get(ctx, key)
-	if cached {
-		return store, nil
-	}
-
-	store, err := gh.client.GetFilesByTag(ctx, owner, name, tag)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	gh.repoCache.Set(ctx, key, store)
-	return store, nil
-}
-
 func (gh *GitHub) GetFilesByBranch(ctx context.Context, owner, name, branch string) (github.Store, error) {
 	key := gh.repoCache.Key(owner, name, branch)
 	store, cached := gh.repoCache.Get(ctx, key)

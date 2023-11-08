@@ -25,6 +25,8 @@ vault:
   address: ""
 
 github:
+  repositoryName: "config"
+  repositoryRef: "main"
   token: ""
 
 # Add seccomp to pod security context

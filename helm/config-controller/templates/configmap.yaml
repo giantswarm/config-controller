@@ -16,6 +16,9 @@ data:
     service:
       app:
         unique: true
+      github:
+        repositoryName: {{ .Values.github.repositoryName }}
+        repositoryRef: {{ .Values.github.repositoryRef }}
       installation:
         name: {{ .Values.managementCluster.name }}
       kubernetes:

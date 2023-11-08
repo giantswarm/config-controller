@@ -10,7 +10,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/config-controller/internal/generator/github"
-	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/xstrings"
@@ -114,10 +113,6 @@ func New(config Config) (*Service, error) {
 type GenerateInput struct {
 	// App for which the configuration is generated.
 	App string
-	// ConfigVersion used to generate the configuration which is either a major
-	// version range in format "2.x.x" or a branch name. Exact version
-	// names (e.g. "1.2.3" are not supported.
-	ConfigVersion string
 
 	// Name of the generated ConfigMap and Secret.
 	Name string
@@ -134,11 +129,6 @@ type GenerateInput struct {
 }
 
 func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
-	//tagPrefix, isTagRange, err := toTagPrefix(in.ConfigVersion)
-	//if err != nil {
-	//	return nil, nil, microerror.Mask(err)
-	//}
-
 	const (
 		owner = "giantswarm"
 	)
@@ -167,7 +157,6 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 	}
 
 	annotations := xstrings.CopyMap(in.ExtraAnnotations)
-	annotations[meta.Annotation.ConfigVersion.Key()] = in.ConfigVersion
 
 	meta := metav1.ObjectMeta{
 		Name:      in.Name,

@@ -51,18 +51,4 @@ func (g *GitHub) GetFilesByBranch(ctx context.Context, owner, name, branch strin
 	}
 
 	return store, nil
-
-	/*if !g.sshCredential.IsEmpty() {
-		url := "ssh://git@ssh.github.com:443/" + owner + "/" + name + ".git"
-		store, err = g.repo.ShallowCloneBranchHTTPs(ctx, url, branch)
-	} else {
-		url := "https://github.com/" + owner + "/" + name + ".git"
-		store, err = g.repo.ShallowCloneBranch(ctx, url, branch)
-	}
-
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return store, nil*/
 }

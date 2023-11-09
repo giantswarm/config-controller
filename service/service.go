@@ -133,7 +133,6 @@ func New(config Config) (*Service, error) {
 			GitHubSSHCredential: ssh.Credential{
 				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SSH.Key),
 				Password: config.Viper.GetString(config.Flag.Service.GitHub.SSH.Password),
-				Username: config.Viper.GetString(config.Flag.Service.GitHub.SSH.Username),
 			},
 			GitHubToken:    config.Viper.GetString(config.Flag.Service.GitHub.Token),
 			RepositoryName: repositoryName,

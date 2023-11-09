@@ -1,8 +1,6 @@
 package key
 
 import (
-	"regexp"
-
 	"github.com/giantswarm/microerror"
 
 	corev1alpha1 "github.com/giantswarm/config-controller/api/v1alpha1"
@@ -14,10 +12,6 @@ const (
 	LegacyConfigVersion = "0.0.0"
 
 	ObjectHashAnnotation = "config-controller.giantswarm.io/object-hash"
-)
-
-var (
-	tagConfigVersionPattern = regexp.MustCompile(`^(\d+)\.x\.x$`)
 )
 
 func ToConfigCR(v interface{}) (*corev1alpha1.Config, error) {

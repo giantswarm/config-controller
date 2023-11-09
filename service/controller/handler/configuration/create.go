@@ -50,15 +50,16 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		nn := namespace + "/" + name
+		rr := h.repositoryName + "@" + h.repositoryRef
 
-		h.logger.Debugf(ctx, "generating %#q ConfigMap and Secret from the \"%s@%s\" configuration", nn, h.repositoryName, h.repositoryRef)
+		h.logger.Debugf(ctx, "generating %#q ConfigMap and Secret from the %#q configuration", nn, rr)
 
 		configmap, secret, err = h.generator.Generate(ctx, generateIn)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		h.logger.Debugf(ctx, "generated %#q ConfigMap and Secret from the \"%s@%s\" configuration", nn, h.repositoryName, h.repositoryRef)
+		h.logger.Debugf(ctx, "generated %#q ConfigMap and Secret from the %#q configuration", nn, rr)
 	}
 
 	// Ensure ConfigMap and Secret.

@@ -6,11 +6,13 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/config-controller/internal/generator/github/cache"
+	"github.com/giantswarm/config-controller/internal/ssh"
 	"github.com/giantswarm/config-controller/pkg/github"
 )
 
 type Config struct {
-	Token string
+	SSHCredential ssh.Credential
+	Token         string
 }
 
 type GitHub struct {

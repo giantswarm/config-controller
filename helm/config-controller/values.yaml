@@ -27,6 +27,9 @@ vault:
 github:
   repositoryName: "config"
   repositoryRef: "main"
+  ssh:
+    key: ""
+    password: ""
   token: ""
 
 # Add seccomp to pod security context

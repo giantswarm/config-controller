@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/config-controller/internal/generator/github"
+	"github.com/giantswarm/config-controller/internal/ssh"
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/xstrings"
@@ -19,11 +20,12 @@ type Config struct {
 	Log         micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubToken    string
-	RepositoryName string
-	RepositoryRef  string
-	Installation   string
-	Verbose        bool
+	GitHubSSHCredential ssh.Credential
+	GitHubToken         string
+	RepositoryName      string
+	RepositoryRef       string
+	Installation        string
+	Verbose             bool
 }
 
 type Service struct {
@@ -42,8 +44,8 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}
 
-	if config.GitHubToken == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken must not be empty", config)
+	if config.GitHubToken == "" || config.GitHubSSHCredential.IsEmpty() {
+		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.GitHubSSHCredential must not be empty", config, config)
 	}
 	if config.RepositoryName == "" {
 		// If repository name is not specified, fall back to original behaviour of using `giantswarm/config`
@@ -87,7 +89,8 @@ func New(config Config) (*Service, error) {
 	var gitHub *github.GitHub
 	{
 		c := github.Config{
-			Token: config.GitHubToken,
+			SSHCredential: config.GitHubSSHCredential,
+			Token:         config.GitHubToken,
 		}
 
 		gitHub, err = github.New(c)

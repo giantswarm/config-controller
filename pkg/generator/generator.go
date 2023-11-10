@@ -43,6 +43,8 @@ import (
 						secret-values.yaml.patch
 */
 
+const installationsPath = "installations/"
+
 type Config struct {
 	Fs               Filesystem
 	DecryptTraverser DecryptTraverser
@@ -102,7 +104,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	configmapContext, err := g.getWithPatchIfExists(
 		ctx,
 		"default/config.yaml",
-		"installations/"+g.installation+"/config.yaml.patch",
+		installationsPath+g.installation+"/config.yaml.patch",
 	)
 	if err != nil {
 		return "", "", microerror.Mask(err)
@@ -125,7 +127,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	var configmapPatch string
 	{
 		g.logMessage(ctx, "rendering configmap-values patch (if it exists)")
-		filepath := "installations/" + g.installation + "/apps/" + app + "/configmap-values.yaml.patch"
+		filepath := installationsPath + g.installation + "/apps/" + app + "/configmap-values.yaml.patch"
 		patch, err := g.getRenderedTemplate(ctx, filepath, configmapContext)
 		if IsNotFound(err) {
 			configmapPatch = ""
@@ -153,7 +155,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	// 5.
 	secretContext, err := g.getWithPatchIfExists(
 		ctx,
-		"installations/"+g.installation+"/secret.yaml",
+		installationsPath+g.installation+"/secret.yaml",
 		"",
 	)
 	if err != nil {
@@ -191,7 +193,7 @@ func (g Generator) generateRawConfig(ctx context.Context, app string) (configmap
 	// 7.
 	var secretPatch string
 	{
-		filepath := "installations/" + g.installation + "/apps/" + app + "/secret-values.yaml.patch"
+		filepath := installationsPath + g.installation + "/apps/" + app + "/secret-values.yaml.patch"
 		patch, err := g.getRenderedTemplate(ctx, filepath, secretContext)
 		if IsNotFound(err) {
 			secretPatch = ""

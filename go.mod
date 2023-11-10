@@ -156,7 +156,6 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/labstack/echo/v4 => github.com/labstack/echo/v4 v4.11.3
-	// Fix vulnerabilties
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49
 	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.5.3

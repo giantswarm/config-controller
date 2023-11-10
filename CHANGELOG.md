@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2023-11-10
+
 ### Changed
 
 - Add a switch for PSP CR installation.
@@ -190,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create CLI/daemon scaffolding.
 - Generate application configuration using `generate` command.
 
-[Unreleased]: https://github.com/giantswarm/config-controller/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/giantswarm/config-controller/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/giantswarm/config-controller/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/giantswarm/config-controller/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/giantswarm/config-controller/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/giantswarm/config-controller/compare/v0.5.1...v0.6.0

@@ -162,7 +162,6 @@ replace (
 	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.5.3
 	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.6
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6
-	github.com/ulikunitz/xz => github.com/ulikunitz/xz v0.5.11
 	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0
 	golang.org/x/net => golang.org/x/net v0.18.0
 )

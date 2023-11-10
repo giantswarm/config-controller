@@ -44,7 +44,7 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}
 
-	if config.GitHubToken == "" || config.GitHubSSHCredential.IsEmpty() {
+	if config.GitHubToken == "" && config.GitHubSSHCredential.IsEmpty() {
 		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.GitHubSSHCredential must not be empty", config, config)
 	}
 	if config.RepositoryName == "" {

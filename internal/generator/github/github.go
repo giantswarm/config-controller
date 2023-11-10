@@ -23,7 +23,8 @@ type GitHub struct {
 
 func New(c Config) (*GitHub, error) {
 	client, err := github.New(github.Config{
-		Token: c.Token,
+		SSHCredential: c.SSHCredential,
+		Token:         c.Token,
 	})
 	if err != nil {
 		return nil, microerror.Mask(err)

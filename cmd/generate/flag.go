@@ -9,35 +9,41 @@ import (
 )
 
 const (
-	flagApp            = "app"
-	flagGithubToken    = "github-token"
-	flagInstallation   = "installation"
-	flagName           = "name"
-	flagNamespace      = "namespace"
-	flagRaw            = "raw"
-	flagRepositoryName = "repository-name"
-	flagRepositoryRef  = "repository-ref"
-	flagSSHUser        = "ssh-user"
-	flagVerbose        = "verbose"
+	flagApp                  = "app"
+	flagGithubSSHPemPath     = "github-ssh-pem-path"
+	flagGithubSSHPemPassword = "github-ssh-pem-password"
+	flagGithubToken          = "github-token"
+	flagInstallation         = "installation"
+	flagName                 = "name"
+	flagNamespace            = "namespace"
+	flagRaw                  = "raw"
+	flagRepositoryName       = "repository-name"
+	flagRepositoryRef        = "repository-ref"
+	flagSSHUser              = "ssh-user"
+	flagVerbose              = "verbose"
 
 	envConfigControllerGithubToken = "CONFIG_CONTROLLER_GITHUB_TOKEN" //nolint:gosec
 )
 
 type flag struct {
-	App            string
-	GitHubToken    string
-	RepositoryName string
-	RepositoryRef  string
-	Installation   string
-	Name           string
-	Namespace      string
-	Raw            bool
-	SSHUser        string
-	Verbose        bool
+	App                  string
+	GithubSSHPemPath     string
+	GithubSSHPemPassword string
+	GitHubToken          string
+	RepositoryName       string
+	RepositoryRef        string
+	Installation         string
+	Name                 string
+	Namespace            string
+	Raw                  bool
+	SSHUser              string
+	Verbose              bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.App, flagApp, "", `Name of an application to generate the config for (e.g. "kvm-operator").`)
+	cmd.Flags().StringVar(&f.GithubSSHPemPath, flagGithubSSHPemPath, "", `Path to the SSH private key file to use for downloading the configuration repository.`)
+	cmd.Flags().StringVar(&f.GithubSSHPemPassword, flagGithubSSHPemPassword, "", `Passphrase to the SSH private key.`)
 	cmd.Flags().StringVar(&f.GitHubToken, flagGithubToken, "", fmt.Sprintf(`GitHub token to use for "opsctl create vaultconfig" calls. Defaults to the value of %s env var.`, envConfigControllerGithubToken))
 	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "config", `Repository name where configs are stored under the giantswarm organization, defaults to "config".`)
 	cmd.Flags().StringVar(&f.RepositoryRef, flagRepositoryRef, "main", `Repository branch to use, defaults to "main"`)

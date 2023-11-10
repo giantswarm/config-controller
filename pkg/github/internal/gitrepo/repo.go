@@ -27,7 +27,8 @@ type Repo struct {
 
 func New(config Config) (*Repo, error) {
 	r := &Repo{
-		gitHubToken: config.GitHubToken,
+		gitHubSSHCredential: config.GitHubSSHCredential,
+		gitHubToken:         config.GitHubToken,
 	}
 
 	return r, nil
@@ -65,12 +66,30 @@ func (r *Repo) ShallowClone(ctx context.Context, repository string, ref plumbing
 	}
 
 	fs := memfs.New()
-	_, err = git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
-		Auth:              auth,
-		URL:               url,
-		ReferenceName:     ref,
-		SingleBranch:      true,
-		Depth:             1,
+	gitRepo, err := git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
+		Auth:          auth,
+		URL:           url,
+		ReferenceName: ref,
+		SingleBranch:  true,
+		Depth:         1,
+	})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	wt, err := gitRepo.Worktree()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	submodules, err := wt.Submodules()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	err = submodules.Update(&git.SubmoduleUpdateOptions{
+		Init:              true,
+		Depth:             0,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
 	if err != nil {

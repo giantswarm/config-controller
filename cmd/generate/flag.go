@@ -11,7 +11,7 @@ import (
 const (
 	flagApp                  = "app"
 	flagGithubSSHPemPath     = "github-ssh-pem-path"
-	flagGithubSSHPemPassword = "github-ssh-pem-password"
+	flagGithubSSHPemPassword = "github-ssh-pem-password" // #nosec G101
 	flagGithubToken          = "github-token"
 	flagInstallation         = "installation"
 	flagName                 = "name"

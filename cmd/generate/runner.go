@@ -51,14 +51,28 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	key := ""
-	if r.flag.GithubSSHPemPath != "" {
-		keyByte, err := os.ReadFile(r.flag.GithubSSHPemPath)
+	configRepoSshKey := ""
+	if r.flag.ConfigRepoSSHPemPath != "" {
+		configRepoSshKey, err = r.readSSHPem(r.flag.ConfigRepoSSHPemPath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
 
-		key = string(keyByte)
+	defaultConfigRepoSshKey := ""
+	if r.flag.ConfigRepoSSHPemPath != "" {
+		configRepoSshKey, err = r.readSSHPem(r.flag.DefaultConfigRepoSSHPemPath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	includeConfigRepoSshKey := ""
+	if r.flag.ConfigRepoSSHPemPath != "" {
+		configRepoSshKey, err = r.readSSHPem(r.flag.IncludeConfigRepoSSHPemPath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	var gen *generator.Service
@@ -66,9 +80,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		c := generator.Config{
 			VaultClient: vaultClient,
 
-			GitHubSSHCredential: ssh.Credential{
-				Key:      key,
-				Password: r.flag.GithubSSHPemPassword,
+			DefaultConfigRepoSSHCredential: ssh.Credential{
+				Key:      defaultConfigRepoSshKey,
+				Password: r.flag.DefaultConfigRepoSSHPemPassword,
+			},
+			IncludeConfigRepoSSHCredential: ssh.Credential{
+				Key:      includeConfigRepoSshKey,
+				Password: r.flag.IncludeConfigRepoSSHPemPassword,
+			},
+			ConfigRepoSSHCredential: ssh.Credential{
+				Key:      configRepoSshKey,
+				Password: r.flag.ConfigRepoSSHPemPassword,
 			},
 			GitHubToken:    r.flag.GitHubToken,
 			RepositoryName: r.flag.RepositoryName,
@@ -126,4 +148,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	fmt.Printf(string(out) + "\n")
 
 	return nil
+}
+
+func (r *runner) readSSHPem(path string) (string, error) {
+	keyByte, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return string(keyByte), nil
 }

@@ -11,8 +11,10 @@ import (
 )
 
 type Config struct {
-	SSHCredential ssh.Credential
-	Token         string
+	DefaultConfigRepoSSHCredential ssh.Credential
+	IncludeConfigRepoSSHCredential ssh.Credential
+	ConfigRepoSSHCredential        ssh.Credential
+	Token                          string
 }
 
 type GitHub struct {
@@ -23,7 +25,7 @@ type GitHub struct {
 
 func New(c Config) (*GitHub, error) {
 	client, err := github.New(github.Config{
-		SSHCredential: c.SSHCredential,
+		SSHCredential: c.ConfigRepoSSHCredential,
 		Token:         c.Token,
 	})
 	if err != nil {

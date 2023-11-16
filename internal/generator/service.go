@@ -20,12 +20,14 @@ type Config struct {
 	Log         micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubSSHCredential ssh.Credential
-	GitHubToken         string
-	RepositoryName      string
-	RepositoryRef       string
-	Installation        string
-	Verbose             bool
+	DefaultConfigRepoSSHCredential ssh.Credential
+	IncludeConfigRepoSSHCredential ssh.Credential
+	ConfigRepoSSHCredential        ssh.Credential
+	GitHubToken                    string
+	RepositoryName                 string
+	RepositoryRef                  string
+	Installation                   string
+	Verbose                        bool
 }
 
 type Service struct {
@@ -44,8 +46,8 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}
 
-	if config.GitHubToken == "" && config.GitHubSSHCredential.IsEmpty() {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.GitHubSSHCredential must not be empty", config, config)
+	if config.GitHubToken == "" && config.ConfigRepoSSHCredential.IsEmpty() {
+		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.ConfigRepoSSHCredential must not be empty", config, config)
 	}
 	if config.RepositoryName == "" {
 		// If repository name is not specified, fall back to original behaviour of using `giantswarm/config`
@@ -89,8 +91,10 @@ func New(config Config) (*Service, error) {
 	var gitHub *github.GitHub
 	{
 		c := github.Config{
-			SSHCredential: config.GitHubSSHCredential,
-			Token:         config.GitHubToken,
+			DefaultConfigRepoSSHCredential: config.DefaultConfigRepoSSHCredential,
+			IncludeConfigRepoSSHCredential: config.IncludeConfigRepoSSHCredential,
+			ConfigRepoSSHCredential:        config.ConfigRepoSSHCredential,
+			Token:                          config.GitHubToken,
 		}
 
 		gitHub, err = github.New(c)

@@ -63,7 +63,7 @@ func New(config Config) (*Handler, error) {
 	}
 
 	if config.GitHubToken == "" && config.GitHubSSHCredential.IsEmpty() {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.GitHubSSHCredential must not be empty", config, config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.ConfigRepoSSHCredential must not be empty", config, config)
 	}
 	if config.Installation == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Installation must not be empty", config)
@@ -79,11 +79,11 @@ func New(config Config) (*Handler, error) {
 		c := generator.Config{
 			VaultClient: config.VaultClient,
 
-			GitHubSSHCredential: config.GitHubSSHCredential,
-			GitHubToken:         config.GitHubToken,
-			RepositoryName:      config.RepositoryName,
-			RepositoryRef:       config.RepositoryRef,
-			Installation:        config.Installation,
+			ConfigRepoSSHCredential: config.GitHubSSHCredential,
+			GitHubToken:             config.GitHubToken,
+			RepositoryName:          config.RepositoryName,
+			RepositoryRef:           config.RepositoryRef,
+			Installation:            config.Installation,
 		}
 
 		gen, err = generator.New(c)

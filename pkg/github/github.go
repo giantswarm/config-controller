@@ -20,7 +20,7 @@ type GitHub struct {
 
 func New(config Config) (*GitHub, error) {
 	if config.Token == "" && config.SSHCredential.IsEmpty() {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Token or %T.SSHCredential must not be empty", config, config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.Token or %T.ConfigRepoSSHCredential must not be empty", config, config)
 	}
 
 	var err error

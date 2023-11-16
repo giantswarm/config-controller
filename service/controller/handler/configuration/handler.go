@@ -12,9 +12,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/config-controller/api/v1alpha1"
-	"github.com/giantswarm/config-controller/internal/configversion"
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
+	"github.com/giantswarm/config-controller/internal/ssh"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
 )
 
@@ -28,20 +28,23 @@ type Config struct {
 	K8sClient   k8sclient.Interface
 	VaultClient *vaultapi.Client
 
-	GitHubToken    string
-	RepositoryName string
-	RepositoryRef  string
-	Installation   string
-	UniqueApp      bool
+	GitHubSSHCredential ssh.Credential
+	GitHubToken         string
+	RepositoryName      string
+	RepositoryRef       string
+	Installation        string
+	UniqueApp           bool
 }
 
 type Handler struct {
 	logger micrologger.Logger
 
-	configVersion *configversion.Service
-	generator     *generator.Service
-	k8sClient     k8sclient.Interface
-	resource      *k8sresource.Service
+	generator *generator.Service
+	k8sClient k8sclient.Interface
+	resource  *k8sresource.Service
+
+	repositoryName string
+	repositoryRef  string
 
 	installation string
 	uniqueApp    bool
@@ -59,36 +62,28 @@ func New(config Config) (*Handler, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}
 
-	if config.GitHubToken == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken must not be empty", config)
+	if config.GitHubToken == "" && config.GitHubSSHCredential.IsEmpty() {
+		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.GitHubSSHCredential must not be empty", config, config)
 	}
 	if config.Installation == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Installation must not be empty", config)
 	}
+	if config.RepositoryName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.RepositoryName must not be empty", config)
+	}
 
 	var err error
-
-	var configVersion *configversion.Service
-	{
-		c := configversion.Config{
-			K8sClient: config.K8sClient,
-		}
-
-		configVersion, err = configversion.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
 
 	var gen *generator.Service
 	{
 		c := generator.Config{
 			VaultClient: config.VaultClient,
 
-			GitHubToken:    config.GitHubToken,
-			RepositoryName: config.RepositoryName,
-			RepositoryRef:  config.RepositoryRef,
-			Installation:   config.Installation,
+			GitHubSSHCredential: config.GitHubSSHCredential,
+			GitHubToken:         config.GitHubToken,
+			RepositoryName:      config.RepositoryName,
+			RepositoryRef:       config.RepositoryRef,
+			Installation:        config.Installation,
 		}
 
 		gen, err = generator.New(c)
@@ -114,10 +109,12 @@ func New(config Config) (*Handler, error) {
 	h := &Handler{
 		logger: config.Logger,
 
-		configVersion: configVersion,
-		generator:     gen,
-		k8sClient:     config.K8sClient,
-		resource:      resource,
+		generator: gen,
+		k8sClient: config.K8sClient,
+		resource:  resource,
+
+		repositoryName: config.RepositoryName,
+		repositoryRef:  config.RepositoryRef,
 
 		installation: config.Installation,
 		uniqueApp:    config.UniqueApp,

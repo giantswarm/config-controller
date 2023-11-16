@@ -14,6 +14,8 @@ import (
 	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/controller/handler/configuration"
+
+	"github.com/giantswarm/config-controller/internal/ssh"
 )
 
 type ConfigConfig struct {
@@ -21,11 +23,12 @@ type ConfigConfig struct {
 	Logger      micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubToken    string
-	RepositoryName string
-	RepositoryRef  string
-	Installation   string
-	UniqueApp      bool
+	GitHubSSHCredential ssh.Credential
+	GitHubToken         string
+	RepositoryName      string
+	RepositoryRef       string
+	Installation        string
+	UniqueApp           bool
 }
 
 type Config struct {
@@ -85,11 +88,12 @@ func newConfigHandlers(config ConfigConfig) ([]resource.Interface, error) {
 			K8sClient:   config.K8sClient,
 			VaultClient: config.VaultClient,
 
-			GitHubToken:    config.GitHubToken,
-			RepositoryName: config.RepositoryName,
-			RepositoryRef:  config.RepositoryRef,
-			Installation:   config.Installation,
-			UniqueApp:      config.UniqueApp,
+			GitHubSSHCredential: config.GitHubSSHCredential,
+			GitHubToken:         config.GitHubToken,
+			RepositoryName:      config.RepositoryName,
+			RepositoryRef:       config.RepositoryRef,
+			Installation:        config.Installation,
+			UniqueApp:           config.UniqueApp,
 		}
 
 		configurationHandler, err = configuration.New(c)

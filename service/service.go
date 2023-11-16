@@ -21,6 +21,8 @@ import (
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/collector"
 	"github.com/giantswarm/config-controller/service/controller"
+
+	"github.com/giantswarm/config-controller/internal/ssh"
 )
 
 // Config represents the configuration used to create a new service.
@@ -111,20 +113,14 @@ func New(config Config) (*Service, error) {
 		vaultClient.SetToken(config.Viper.GetString(config.Flag.Service.Vault.Token))
 	}
 
-	repositoryNameConfig := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryName)
-	var repositoryName string
-	if repositoryNameConfig == "" {
+	repositoryName := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryName)
+	if repositoryName == "" {
 		repositoryName = "config"
-	} else {
-		repositoryName = repositoryNameConfig
 	}
 
-	repositoryRefConfig := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryRef)
-	var repositoryRef string
-	if repositoryRefConfig == "" {
+	repositoryRef := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryRef)
+	if repositoryRef == "" {
 		repositoryRef = "main"
-	} else {
-		repositoryRef = repositoryRefConfig
 	}
 
 	var configController *controller.Config
@@ -134,6 +130,10 @@ func New(config Config) (*Service, error) {
 			Logger:      config.Logger,
 			VaultClient: vaultClient,
 
+			GitHubSSHCredential: ssh.Credential{
+				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SSH.Key),
+				Password: config.Viper.GetString(config.Flag.Service.GitHub.SSH.Password),
+			},
 			GitHubToken:    config.Viper.GetString(config.Flag.Service.GitHub.Token),
 			RepositoryName: repositoryName,
 			RepositoryRef:  repositoryRef,

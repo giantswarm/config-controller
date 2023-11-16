@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
+	"github.com/giantswarm/config-controller/internal/ssh"
 )
 
 type runner struct {
@@ -49,11 +51,25 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	key := ""
+	if r.flag.GithubSSHPemPath != "" {
+		keyByte, err := os.ReadFile(r.flag.GithubSSHPemPath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		key = string(keyByte)
+	}
+
 	var gen *generator.Service
 	{
 		c := generator.Config{
 			VaultClient: vaultClient,
 
+			GitHubSSHCredential: ssh.Credential{
+				Key:      key,
+				Password: r.flag.GithubSSHPemPassword,
+			},
 			GitHubToken:    r.flag.GitHubToken,
 			RepositoryName: r.flag.RepositoryName,
 			RepositoryRef:  r.flag.RepositoryRef,
@@ -68,14 +84,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	in := generator.GenerateInput{
-		App:           r.flag.App,
-		ConfigVersion: r.flag.ConfigVersion,
+		App: r.flag.App,
 
 		Name:      r.flag.Name,
 		Namespace: r.flag.Namespace,
 
 		ExtraAnnotations: map[string]string{
-			meta.Annotation.ConfigVersion.Key():   r.flag.ConfigVersion,
 			meta.Annotation.XAppInfo.Key():        meta.Annotation.XAppInfo.Val("<unknown>", r.flag.App, "<unknown>"),
 			meta.Annotation.XCreator.Key():        meta.Annotation.XCreator.Default(),
 			meta.Annotation.XInstallation.Key():   r.flag.Installation,

@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/config-controller/internal/generator/github"
-	"github.com/giantswarm/config-controller/internal/meta"
+	"github.com/giantswarm/config-controller/internal/ssh"
 	"github.com/giantswarm/config-controller/pkg/decrypt"
 	"github.com/giantswarm/config-controller/pkg/generator"
 	"github.com/giantswarm/config-controller/pkg/xstrings"
@@ -20,11 +20,12 @@ type Config struct {
 	Log         micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubToken    string
-	RepositoryName string
-	RepositoryRef  string
-	Installation   string
-	Verbose        bool
+	GitHubSSHCredential ssh.Credential
+	GitHubToken         string
+	RepositoryName      string
+	RepositoryRef       string
+	Installation        string
+	Verbose             bool
 }
 
 type Service struct {
@@ -43,8 +44,8 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}
 
-	if config.GitHubToken == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken must not be empty", config)
+	if config.GitHubToken == "" && config.GitHubSSHCredential.IsEmpty() {
+		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.GitHubSSHCredential must not be empty", config, config)
 	}
 	if config.RepositoryName == "" {
 		// If repository name is not specified, fall back to original behaviour of using `giantswarm/config`
@@ -88,7 +89,8 @@ func New(config Config) (*Service, error) {
 	var gitHub *github.GitHub
 	{
 		c := github.Config{
-			Token: config.GitHubToken,
+			SSHCredential: config.GitHubSSHCredential,
+			Token:         config.GitHubToken,
 		}
 
 		gitHub, err = github.New(c)
@@ -114,10 +116,6 @@ func New(config Config) (*Service, error) {
 type GenerateInput struct {
 	// App for which the configuration is generated.
 	App string
-	// ConfigVersion used to generate the configuration which is either a major
-	// version range in format "2.x.x" or a branch name. Exact version
-	// names (e.g. "1.2.3" are not supported.
-	ConfigVersion string
 
 	// Name of the generated ConfigMap and Secret.
 	Name string
@@ -134,11 +132,6 @@ type GenerateInput struct {
 }
 
 func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *corev1.ConfigMap, secret *corev1.Secret, err error) {
-	//tagPrefix, isTagRange, err := toTagPrefix(in.ConfigVersion)
-	//if err != nil {
-	//	return nil, nil, microerror.Mask(err)
-	//}
-
 	const (
 		owner = "giantswarm"
 	)
@@ -167,7 +160,6 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 	}
 
 	annotations := xstrings.CopyMap(in.ExtraAnnotations)
-	annotations[meta.Annotation.ConfigVersion.Key()] = in.ConfigVersion
 
 	meta := metav1.ObjectMeta{
 		Name:      in.Name,

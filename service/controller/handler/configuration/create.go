@@ -9,15 +9,11 @@ import (
 
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/config-controller/api/v1alpha1"
-	"github.com/giantswarm/config-controller/internal/configversion"
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
 	"github.com/giantswarm/config-controller/pkg/k8sresource"
-	"github.com/giantswarm/config-controller/pkg/xstrings"
 	"github.com/giantswarm/config-controller/service/controller/key"
 )
 
@@ -25,23 +21,6 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	config, err := key.ToConfigCR(obj)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	var configVersion string
-	{
-		cav := config.Spec.App.Catalog + "/" + config.Spec.App.Name + "@" + config.Spec.App.Version
-
-		h.logger.Debugf(ctx, "resolving config version for App %#q", cav)
-
-		configVersion, err = h.configVersion.Get(ctx, config.Spec.App)
-		if configversion.IsNotFound(err) {
-			h.logger.Debugf(ctx, "configuration version not found for App %#q, falling back to draughtsman", cav)
-			configVersion = ""
-		} else if err != nil {
-			return microerror.Mask(err)
-		} else {
-			h.logger.Debugf(ctx, "resolved config version %#q for App %#q", configVersion, cav)
-		}
 	}
 
 	var configmap *corev1.ConfigMap
@@ -55,8 +34,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		namespace := config.Namespace
 
 		generateIn := generator.GenerateInput{
-			App:           config.Spec.App.Name,
-			ConfigVersion: configVersion,
+			App: config.Spec.App.Name,
 
 			Name:      name,
 			Namespace: namespace,
@@ -72,28 +50,16 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		nn := namespace + "/" + name
+		rr := h.repositoryName + "@" + h.repositoryRef
 
-		if configVersion == "" {
-			h.logger.Debugf(ctx, "copying %#q ConfigMap and Secret from draughtsman", nn)
+		h.logger.Debugf(ctx, "generating %#q ConfigMap and Secret from the %#q configuration", nn, rr)
 
-			generateIn.ConfigVersion = "draughtsman" // So it appears in the annotation.
-
-			configmap, secret, err = h.newConfigurationFromDraughtsman(ctx, generateIn)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			h.logger.Debugf(ctx, "copied %#q ConfigMap and Secret from draughtsman", nn)
-		} else {
-			h.logger.Debugf(ctx, "generating %#q ConfigMap and Secret for config version %#q", nn, configVersion)
-
-			configmap, secret, err = h.generator.Generate(ctx, generateIn)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			h.logger.Debugf(ctx, "generated %#q ConfigMap and Secret for config version %#q", nn, configVersion)
+		configmap, secret, err = h.generator.Generate(ctx, generateIn)
+		if err != nil {
+			return microerror.Mask(err)
 		}
+
+		h.logger.Debugf(ctx, "generated %#q ConfigMap and Secret from the %#q configuration", nn, rr)
 	}
 
 	// Ensure ConfigMap and Secret.
@@ -118,6 +84,9 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	// Update Config CR status.
+	// Setting the version to the branch ref is purely informational, unless someone
+	// reconfigures the Config Controller to use a different branch than one configured
+	// so far.
 	{
 		h.logger.Debugf(ctx, "updating Config status")
 
@@ -127,7 +96,7 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 		desiredStatus.Config.ConfigMapRef.Namespace = configmap.Namespace
 		desiredStatus.Config.SecretRef.Name = secret.Name
 		desiredStatus.Config.SecretRef.Namespace = secret.Namespace
-		desiredStatus.Version = configVersion
+		desiredStatus.Version = h.repositoryRef
 
 		if reflect.DeepEqual(config.Status, desiredStatus) {
 			h.logger.Debugf(ctx, "Config status already up to date")
@@ -217,57 +186,6 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 	}
 
 	return c, nil
-}
-
-func (h *Handler) newConfigurationFromDraughtsman(ctx context.Context, in generator.GenerateInput) (*corev1.ConfigMap, *corev1.Secret, error) {
-	draughtsmanConfigmap := new(corev1.ConfigMap)
-	{
-		k := client.ObjectKey{
-			Name:      "draughtsman-values-configmap",
-			Namespace: "draughtsman",
-		}
-
-		err := h.k8sClient.CtrlClient().Get(ctx, k, draughtsmanConfigmap)
-		if err != nil {
-			return nil, nil, microerror.Mask(err)
-		}
-	}
-
-	draughtsmanSecret := new(corev1.Secret)
-	{
-		k := client.ObjectKey{
-			Name:      "draughtsman-values-secret",
-			Namespace: "draughtsman",
-		}
-
-		err := h.k8sClient.CtrlClient().Get(ctx, k, draughtsmanSecret)
-		if err != nil {
-			return nil, nil, microerror.Mask(err)
-		}
-	}
-
-	annotations := xstrings.CopyMap(in.ExtraAnnotations)
-	annotations[meta.Annotation.ConfigVersion.Key()] = in.ConfigVersion
-
-	meta := metav1.ObjectMeta{
-		Name:      in.Name,
-		Namespace: in.Namespace,
-
-		Annotations: annotations,
-		Labels:      in.ExtraLabels,
-	}
-
-	configmap := &corev1.ConfigMap{
-		ObjectMeta: meta,
-		Data:       draughtsmanConfigmap.Data,
-	}
-
-	secret := &corev1.Secret{
-		ObjectMeta: meta,
-		Data:       draughtsmanSecret.Data,
-	}
-
-	return configmap, secret, nil
 }
 
 func genStableObjectName(config *v1alpha1.Config) (string, error) {

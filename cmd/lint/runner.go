@@ -53,22 +53,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		if r.flag.ConfigVersion != "" {
-			tag, err := gh.GetLatestTag(ctx, owner, repo, r.flag.ConfigVersion)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			store, err = gh.GetFilesByTag(ctx, owner, repo, tag)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-		} else if r.flag.Branch != "" {
-			store, err = gh.GetFilesByBranch(ctx, owner, repo, r.flag.Branch)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+		store, err = gh.GetFilesByBranch(ctx, owner, r.flag.RepositoryName, r.flag.RepositoryRef)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 

@@ -32,6 +32,6 @@ func (r *Repository) Set(ctx context.Context, key string, value github.Store) {
 	r.underlying.SetDefault(key, value)
 }
 
-func (r *Repository) Key(owner, name, reference string) string {
-	return fmt.Sprintf("%s/%s@%s", owner, name, reference)
+func (r *Repository) Key(owner, name, reference, sharedName, sharedRef string) string {
+	return fmt.Sprintf("%s/%s@%s+%s/%s@%s", owner, name, reference, owner, sharedName, sharedRef)
 }

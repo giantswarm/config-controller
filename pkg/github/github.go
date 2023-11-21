@@ -47,8 +47,8 @@ func New(config Config) (*GitHub, error) {
 	return g, nil
 }
 
-func (g *GitHub) GetFilesByBranch(ctx context.Context, owner, name, branch string) (Store, error) {
-	store, err := g.repo.ShallowCloneBranch(ctx, owner+"/"+name+".git", branch)
+func (g *GitHub) AssembleConfigRepository(ctx context.Context, owner, name, branch string) (Store, error) {
+	store, err := g.repo.AssembleConfigRepository(ctx, owner, name, branch)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

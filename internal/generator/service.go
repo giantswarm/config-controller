@@ -141,7 +141,7 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (configmap *co
 
 	var store github.Store
 
-	store, err = s.gitHub.GetFilesByBranch(ctx, owner, s.repositoryName, s.repositoryRef)
+	store, err = s.gitHub.AssembleConfigRepository(ctx, owner, s.repositoryName, s.repositoryRef)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}

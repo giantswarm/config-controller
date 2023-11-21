@@ -6,3 +6,7 @@ type ConfigRepository struct {
 	Key      string
 	Password string
 }
+
+func (c *ConfigRepository) IsEmpty() bool {
+	return c.Key == "" && c.Password == ""
+}

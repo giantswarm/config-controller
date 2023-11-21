@@ -18,9 +18,10 @@ type Config struct {
 }
 
 type GitHub struct {
-	client    *github.GitHub
-	repoCache *cache.Repository
-	tagCache  *cache.Tag
+	SharedConfigRepository shared.ConfigRepository
+	client                 *github.GitHub
+	repoCache              *cache.Repository
+	tagCache               *cache.Tag
 }
 
 func New(c Config) (*GitHub, error) {
@@ -34,21 +35,22 @@ func New(c Config) (*GitHub, error) {
 	}
 
 	gh := &GitHub{
-		client:    client,
-		repoCache: cache.NewRepository(),
-		tagCache:  cache.NewTag(),
+		SharedConfigRepository: c.SharedConfigRepository,
+		client:                 client,
+		repoCache:              cache.NewRepository(),
+		tagCache:               cache.NewTag(),
 	}
 	return gh, nil
 }
 
-func (gh *GitHub) GetFilesByBranch(ctx context.Context, owner, name, branch string) (github.Store, error) {
-	key := gh.repoCache.Key(owner, name, branch)
+func (gh *GitHub) AssembleConfigRepository(ctx context.Context, owner, name, branch string) (github.Store, error) {
+	key := gh.repoCache.Key(owner, name, branch, gh.SharedConfigRepository.Name, gh.SharedConfigRepository.Ref)
 	store, cached := gh.repoCache.Get(ctx, key)
 	if cached {
 		return store, nil
 	}
 
-	store, err := gh.client.GetFilesByBranch(ctx, owner, name, branch)
+	store, err := gh.client.AssembleConfigRepository(ctx, owner, name, branch)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

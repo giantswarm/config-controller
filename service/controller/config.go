@@ -23,12 +23,14 @@ type ConfigConfig struct {
 	Logger      micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	GitHubSSHCredential ssh.Credential
-	GitHubToken         string
-	RepositoryName      string
-	RepositoryRef       string
-	Installation        string
-	UniqueApp           bool
+	DefaultConfigRepoSSHCredential ssh.Credential
+	IncludeConfigRepoSSHCredential ssh.Credential
+	ConfigRepoSSHCredential        ssh.Credential
+	GitHubToken                    string
+	RepositoryName                 string
+	RepositoryRef                  string
+	Installation                   string
+	UniqueApp                      bool
 }
 
 type Config struct {
@@ -88,12 +90,14 @@ func newConfigHandlers(config ConfigConfig) ([]resource.Interface, error) {
 			K8sClient:   config.K8sClient,
 			VaultClient: config.VaultClient,
 
-			GitHubSSHCredential: config.GitHubSSHCredential,
-			GitHubToken:         config.GitHubToken,
-			RepositoryName:      config.RepositoryName,
-			RepositoryRef:       config.RepositoryRef,
-			Installation:        config.Installation,
-			UniqueApp:           config.UniqueApp,
+			DefaultConfigRepoSSHCredential: config.DefaultConfigRepoSSHCredential,
+			IncludeConfigRepoSSHCredential: config.IncludeConfigRepoSSHCredential,
+			ConfigRepoSSHCredential:        config.ConfigRepoSSHCredential,
+			GitHubToken:                    config.GitHubToken,
+			RepositoryName:                 config.RepositoryName,
+			RepositoryRef:                  config.RepositoryRef,
+			Installation:                   config.Installation,
+			UniqueApp:                      config.UniqueApp,
 		}
 
 		configurationHandler, err = configuration.New(c)

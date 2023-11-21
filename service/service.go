@@ -130,7 +130,15 @@ func New(config Config) (*Service, error) {
 			Logger:      config.Logger,
 			VaultClient: vaultClient,
 
-			GitHubSSHCredential: ssh.Credential{
+			DefaultConfigRepoSSHCredential: ssh.Credential{
+				Key:      config.Viper.GetString(config.Flag.Service.GitHub.Submodules.DefaultConfig.Key),
+				Password: config.Viper.GetString(config.Flag.Service.GitHub.Submodules.DefaultConfig.Password),
+			},
+			IncludeConfigRepoSSHCredential: ssh.Credential{
+				Key:      config.Viper.GetString(config.Flag.Service.GitHub.Submodules.IncludeConfig.Key),
+				Password: config.Viper.GetString(config.Flag.Service.GitHub.Submodules.IncludeConfig.Password),
+			},
+			ConfigRepoSSHCredential: ssh.Credential{
 				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SSH.Key),
 				Password: config.Viper.GetString(config.Flag.Service.GitHub.SSH.Password),
 			},

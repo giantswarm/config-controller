@@ -7,4 +7,10 @@ type GitHub struct {
 	RepositoryRef  string
 	SSH            ssh.SSH
 	Token          string
+	Submodules     Submodules
+}
+
+type Submodules struct {
+	DefaultConfig ssh.SSH
+	IncludeConfig ssh.SSH
 }

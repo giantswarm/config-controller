@@ -28,12 +28,14 @@ type Config struct {
 	K8sClient   k8sclient.Interface
 	VaultClient *vaultapi.Client
 
-	GitHubSSHCredential ssh.Credential
-	GitHubToken         string
-	RepositoryName      string
-	RepositoryRef       string
-	Installation        string
-	UniqueApp           bool
+	DefaultConfigRepoSSHCredential ssh.Credential
+	IncludeConfigRepoSSHCredential ssh.Credential
+	ConfigRepoSSHCredential        ssh.Credential
+	GitHubToken                    string
+	RepositoryName                 string
+	RepositoryRef                  string
+	Installation                   string
+	UniqueApp                      bool
 }
 
 type Handler struct {
@@ -62,7 +64,7 @@ func New(config Config) (*Handler, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultClient must not be empty", config)
 	}
 
-	if config.GitHubToken == "" && config.GitHubSSHCredential.IsEmpty() {
+	if config.GitHubToken == "" && config.ConfigRepoSSHCredential.IsEmpty() {
 		return nil, microerror.Maskf(invalidConfigError, "%T.GitHubToken or %T.ConfigRepoSSHCredential must not be empty", config, config)
 	}
 	if config.Installation == "" {
@@ -79,11 +81,13 @@ func New(config Config) (*Handler, error) {
 		c := generator.Config{
 			VaultClient: config.VaultClient,
 
-			ConfigRepoSSHCredential: config.GitHubSSHCredential,
-			GitHubToken:             config.GitHubToken,
-			RepositoryName:          config.RepositoryName,
-			RepositoryRef:           config.RepositoryRef,
-			Installation:            config.Installation,
+			DefaultConfigRepoSSHCredential: config.DefaultConfigRepoSSHCredential,
+			IncludeConfigRepoSSHCredential: config.IncludeConfigRepoSSHCredential,
+			ConfigRepoSSHCredential:        config.ConfigRepoSSHCredential,
+			GitHubToken:                    config.GitHubToken,
+			RepositoryName:                 config.RepositoryName,
+			RepositoryRef:                  config.RepositoryRef,
+			Installation:                   config.Installation,
 		}
 
 		gen, err = generator.New(c)

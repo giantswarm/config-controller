@@ -3,6 +3,7 @@ package generate
 import (
 	"context"
 	"fmt"
+	"github.com/giantswarm/config-controller/internal/shared"
 	"io"
 	"os"
 
@@ -59,17 +60,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	defaultConfigRepoSshKey := ""
+	sharedConfigRepositorySSHKey := ""
 	if r.flag.ConfigRepoSSHPemPath != "" {
-		configRepoSshKey, err = r.readSSHPem(r.flag.DefaultConfigRepoSSHPemPath)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	includeConfigRepoSshKey := ""
-	if r.flag.ConfigRepoSSHPemPath != "" {
-		configRepoSshKey, err = r.readSSHPem(r.flag.IncludeConfigRepoSSHPemPath)
+		sharedConfigRepositorySSHKey, err = r.readSSHPem(r.flag.SharedConfigRepoSSHPemPath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -80,13 +73,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		c := generator.Config{
 			VaultClient: vaultClient,
 
-			DefaultConfigRepoSSHCredential: ssh.Credential{
-				Key:      defaultConfigRepoSshKey,
-				Password: r.flag.DefaultConfigRepoSSHPemPassword,
-			},
-			IncludeConfigRepoSSHCredential: ssh.Credential{
-				Key:      includeConfigRepoSshKey,
-				Password: r.flag.IncludeConfigRepoSSHPemPassword,
+			SharedConfigRepository: shared.ConfigRepository{
+				Name:     r.flag.SharedConfigRepoName,
+				Ref:      r.flag.SharedConfigRepoRef,
+				Key:      sharedConfigRepositorySSHKey,
+				Password: r.flag.SharedConfigRepoSSHPemPassword,
 			},
 			ConfigRepoSSHCredential: ssh.Credential{
 				Key:      configRepoSshKey,

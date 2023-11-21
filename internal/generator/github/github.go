@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/microerror"
 
@@ -11,10 +12,9 @@ import (
 )
 
 type Config struct {
-	DefaultConfigRepoSSHCredential ssh.Credential
-	IncludeConfigRepoSSHCredential ssh.Credential
-	ConfigRepoSSHCredential        ssh.Credential
-	Token                          string
+	SharedConfigRepository  shared.ConfigRepository
+	ConfigRepoSSHCredential ssh.Credential
+	Token                   string
 }
 
 type GitHub struct {

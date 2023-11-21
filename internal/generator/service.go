@@ -2,6 +2,7 @@ package generator
 
 import (
 	"context"
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -20,14 +21,13 @@ type Config struct {
 	Log         micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	DefaultConfigRepoSSHCredential ssh.Credential
-	IncludeConfigRepoSSHCredential ssh.Credential
-	ConfigRepoSSHCredential        ssh.Credential
-	GitHubToken                    string
-	RepositoryName                 string
-	RepositoryRef                  string
-	Installation                   string
-	Verbose                        bool
+	SharedConfigRepository  shared.ConfigRepository
+	ConfigRepoSSHCredential ssh.Credential
+	GitHubToken             string
+	RepositoryName          string
+	RepositoryRef           string
+	Installation            string
+	Verbose                 bool
 }
 
 type Service struct {
@@ -91,10 +91,9 @@ func New(config Config) (*Service, error) {
 	var gitHub *github.GitHub
 	{
 		c := github.Config{
-			DefaultConfigRepoSSHCredential: config.DefaultConfigRepoSSHCredential,
-			IncludeConfigRepoSSHCredential: config.IncludeConfigRepoSSHCredential,
-			ConfigRepoSSHCredential:        config.ConfigRepoSSHCredential,
-			Token:                          config.GitHubToken,
+			SharedConfigRepository:  config.SharedConfigRepository,
+			ConfigRepoSSHCredential: config.ConfigRepoSSHCredential,
+			Token:                   config.GitHubToken,
 		}
 
 		gitHub, err = github.New(c)

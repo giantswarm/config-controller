@@ -3,14 +3,16 @@ package github
 import "github.com/giantswarm/config-controller/flag/service/github/ssh"
 
 type GitHub struct {
-	RepositoryName string
-	RepositoryRef  string
-	SSH            ssh.SSH
-	Token          string
-	Submodules     Submodules
+	RepositoryName         string
+	RepositoryRef          string
+	SSH                    ssh.SSH
+	Token                  string
+	SharedConfigRepository SharedConfigRepository
 }
 
-type Submodules struct {
-	DefaultConfig ssh.SSH
-	IncludeConfig ssh.SSH
+type SharedConfigRepository struct {
+	Name     string
+	Ref      string
+	Key      string
+	Password string
 }

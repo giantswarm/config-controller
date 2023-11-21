@@ -9,51 +9,51 @@ import (
 )
 
 const (
-	flagApp                             = "app"
-	flagDefaultConfigRepoSSHPemPath     = "default-config-repo-ssh-pem-path"
-	flagDefaultConfigRepoSSHPemPassword = "default-config-repo-ssh-pem-password" // #nosec G101
-	flagIncludeConfigRepoSSHPemPath     = "include-config-repo-ssh-pem-path"
-	flagIncludeConfigRepoSSHPemPassword = "include-config-repo-ssh-pem-password" // #nosec G101
-	flagConfigRepoSSHPemPath            = "config-repo-ssh-pem-path"
-	flagConfigRepoSSHPemPassword        = "config-repo-ssh-pem-password" // #nosec G101
-	flagGithubToken                     = "github-token"
-	flagInstallation                    = "installation"
-	flagName                            = "name"
-	flagNamespace                       = "namespace"
-	flagRaw                             = "raw"
-	flagRepositoryName                  = "repository-name"
-	flagRepositoryRef                   = "repository-ref"
-	flagSSHUser                         = "ssh-user"
-	flagVerbose                         = "verbose"
+	flagApp                            = "app"
+	flagSharedConfigRepoName           = "shared-config-repo-name"
+	flagSharedConfigRepoRef            = "shared-config-repo-ref"
+	flagSharedConfigRepoSSHPemPath     = "shared-config-repo-ssh-pem-path"
+	flagSharedConfigRepoSSHPemPassword = "shared-config-repo-ssh-pem-password" // #nosec G101
+	flagConfigRepoSSHPemPath           = "config-repo-ssh-pem-path"
+	flagConfigRepoSSHPemPassword       = "config-repo-ssh-pem-password" // #nosec G101
+	flagGithubToken                    = "github-token"
+	flagInstallation                   = "installation"
+	flagName                           = "name"
+	flagNamespace                      = "namespace"
+	flagRaw                            = "raw"
+	flagRepositoryName                 = "repository-name"
+	flagRepositoryRef                  = "repository-ref"
+	flagSSHUser                        = "ssh-user"
+	flagVerbose                        = "verbose"
 
 	envConfigControllerGithubToken = "CONFIG_CONTROLLER_GITHUB_TOKEN" //nolint:gosec
 )
 
 type flag struct {
-	App                             string
-	DefaultConfigRepoSSHPemPath     string
-	DefaultConfigRepoSSHPemPassword string
-	IncludeConfigRepoSSHPemPath     string
-	IncludeConfigRepoSSHPemPassword string
-	ConfigRepoSSHPemPath            string
-	ConfigRepoSSHPemPassword        string
-	GitHubToken                     string
-	RepositoryName                  string
-	RepositoryRef                   string
-	Installation                    string
-	Name                            string
-	Namespace                       string
-	Raw                             bool
-	SSHUser                         string
-	Verbose                         bool
+	App                            string
+	SharedConfigRepoName           string
+	SharedConfigRepoRef            string
+	SharedConfigRepoSSHPemPath     string
+	SharedConfigRepoSSHPemPassword string
+	ConfigRepoSSHPemPath           string
+	ConfigRepoSSHPemPassword       string
+	GitHubToken                    string
+	RepositoryName                 string
+	RepositoryRef                  string
+	Installation                   string
+	Name                           string
+	Namespace                      string
+	Raw                            bool
+	SSHUser                        string
+	Verbose                        bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.App, flagApp, "", `Name of an application to generate the config for (e.g. "kvm-operator").`)
-	cmd.Flags().StringVar(&f.DefaultConfigRepoSSHPemPath, flagDefaultConfigRepoSSHPemPath, "", `Path to the SSH private key file to use for downloading the default configuration submodule.`)
-	cmd.Flags().StringVar(&f.DefaultConfigRepoSSHPemPassword, flagDefaultConfigRepoSSHPemPassword, "", `Passphrase to the default config submodule SSH private key.`)
-	cmd.Flags().StringVar(&f.IncludeConfigRepoSSHPemPath, flagIncludeConfigRepoSSHPemPath, "", `Path to the SSH private key file to use for downloading the include configuration submodule.`)
-	cmd.Flags().StringVar(&f.IncludeConfigRepoSSHPemPassword, flagIncludeConfigRepoSSHPemPassword, "", `Passphrase to the include config submodule SSH private key.`)
+	cmd.Flags().StringVar(&f.SharedConfigRepoName, flagSharedConfigRepoName, "shared-configs", `Name of the shared configuration repository, defaults to "shared-configs".`)
+	cmd.Flags().StringVar(&f.SharedConfigRepoRef, flagSharedConfigRepoRef, "main", `Branch of the shared configuration repository, defaults to "main".`)
+	cmd.Flags().StringVar(&f.SharedConfigRepoSSHPemPath, flagSharedConfigRepoSSHPemPath, "", `Path to the SSH private key file to use for downloading the shared configuration repository.`)
+	cmd.Flags().StringVar(&f.SharedConfigRepoSSHPemPassword, flagSharedConfigRepoSSHPemPassword, "", `Passphrase to the shared configuration repository SSH private key.`)
 	cmd.Flags().StringVar(&f.ConfigRepoSSHPemPath, flagConfigRepoSSHPemPath, "", `Path to the SSH private key file to use for downloading the configuration repository.`)
 	cmd.Flags().StringVar(&f.ConfigRepoSSHPemPassword, flagConfigRepoSSHPemPassword, "", `Passphrase to the config repo SSH private key.`)
 	cmd.Flags().StringVar(&f.GitHubToken, flagGithubToken, "", fmt.Sprintf(`GitHub token to use for "opsctl create vaultconfig" calls. Defaults to the value of %s env var.`, envConfigControllerGithubToken))

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/giantswarm/config-controller/internal/shared"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -23,14 +24,13 @@ type ConfigConfig struct {
 	Logger      micrologger.Logger
 	VaultClient *vaultapi.Client
 
-	DefaultConfigRepoSSHCredential ssh.Credential
-	IncludeConfigRepoSSHCredential ssh.Credential
-	ConfigRepoSSHCredential        ssh.Credential
-	GitHubToken                    string
-	RepositoryName                 string
-	RepositoryRef                  string
-	Installation                   string
-	UniqueApp                      bool
+	SharedConfigRepository  shared.ConfigRepository
+	ConfigRepoSSHCredential ssh.Credential
+	GitHubToken             string
+	RepositoryName          string
+	RepositoryRef           string
+	Installation            string
+	UniqueApp               bool
 }
 
 type Config struct {
@@ -90,14 +90,13 @@ func newConfigHandlers(config ConfigConfig) ([]resource.Interface, error) {
 			K8sClient:   config.K8sClient,
 			VaultClient: config.VaultClient,
 
-			DefaultConfigRepoSSHCredential: config.DefaultConfigRepoSSHCredential,
-			IncludeConfigRepoSSHCredential: config.IncludeConfigRepoSSHCredential,
-			ConfigRepoSSHCredential:        config.ConfigRepoSSHCredential,
-			GitHubToken:                    config.GitHubToken,
-			RepositoryName:                 config.RepositoryName,
-			RepositoryRef:                  config.RepositoryRef,
-			Installation:                   config.Installation,
-			UniqueApp:                      config.UniqueApp,
+			SharedConfigRepository:  config.SharedConfigRepository,
+			ConfigRepoSSHCredential: config.ConfigRepoSSHCredential,
+			GitHubToken:             config.GitHubToken,
+			RepositoryName:          config.RepositoryName,
+			RepositoryRef:           config.RepositoryRef,
+			Installation:            config.Installation,
+			UniqueApp:               config.UniqueApp,
 		}
 
 		configurationHandler, err = configuration.New(c)

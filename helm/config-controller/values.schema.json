@@ -11,6 +11,20 @@
                 "repositoryRef": {
                     "type": "string"
                 },
+                "sharedConfigs": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "password": {
+                            "type": "string"
+                        },
+                        "ref": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "ssh": {
                     "type": "object",
                     "properties": {
@@ -19,33 +33,6 @@
                         },
                         "password": {
                             "type": "string"
-                        }
-                    }
-                },
-                "submodules": {
-                    "type": "object",
-                    "properties": {
-                        "defaultConfig": {
-                            "type": "object",
-                            "properties": {
-                                "key": {
-                                    "type": "string"
-                                },
-                                "password": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "includeConfig": {
-                            "type": "object",
-                            "properties": {
-                                "key": {
-                                    "type": "string"
-                                },
-                                "password": {
-                                    "type": "string"
-                                }
-                            }
                         }
                     }
                 },

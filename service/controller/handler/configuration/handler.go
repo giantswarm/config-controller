@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"github.com/giantswarm/config-controller/internal/shared"
 	"reflect"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -28,14 +29,13 @@ type Config struct {
 	K8sClient   k8sclient.Interface
 	VaultClient *vaultapi.Client
 
-	DefaultConfigRepoSSHCredential ssh.Credential
-	IncludeConfigRepoSSHCredential ssh.Credential
-	ConfigRepoSSHCredential        ssh.Credential
-	GitHubToken                    string
-	RepositoryName                 string
-	RepositoryRef                  string
-	Installation                   string
-	UniqueApp                      bool
+	SharedConfigRepository  shared.ConfigRepository
+	ConfigRepoSSHCredential ssh.Credential
+	GitHubToken             string
+	RepositoryName          string
+	RepositoryRef           string
+	Installation            string
+	UniqueApp               bool
 }
 
 type Handler struct {
@@ -81,13 +81,12 @@ func New(config Config) (*Handler, error) {
 		c := generator.Config{
 			VaultClient: config.VaultClient,
 
-			DefaultConfigRepoSSHCredential: config.DefaultConfigRepoSSHCredential,
-			IncludeConfigRepoSSHCredential: config.IncludeConfigRepoSSHCredential,
-			ConfigRepoSSHCredential:        config.ConfigRepoSSHCredential,
-			GitHubToken:                    config.GitHubToken,
-			RepositoryName:                 config.RepositoryName,
-			RepositoryRef:                  config.RepositoryRef,
-			Installation:                   config.Installation,
+			SharedConfigRepository:  config.SharedConfigRepository,
+			ConfigRepoSSHCredential: config.ConfigRepoSSHCredential,
+			GitHubToken:             config.GitHubToken,
+			RepositoryName:          config.RepositoryName,
+			RepositoryRef:           config.RepositoryRef,
+			Installation:            config.Installation,
 		}
 
 		gen, err = generator.New(c)

@@ -31,13 +31,11 @@ github:
     key: ""
     password: ""
   token: ""
-  submodules:
-    defaultConfig:
-      key: ""
-      password: ""
-    includeConfig:
-      key: ""
-      password: ""
+  sharedConfigRepository:
+    name: "shared-configs"
+    ref: "main"
+    key: ""
+    password: ""
 
 # Add seccomp to pod security context
 podSecurityContext:

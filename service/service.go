@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"github.com/giantswarm/config-controller/internal/shared"
 	"sync"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -130,13 +131,11 @@ func New(config Config) (*Service, error) {
 			Logger:      config.Logger,
 			VaultClient: vaultClient,
 
-			DefaultConfigRepoSSHCredential: ssh.Credential{
-				Key:      config.Viper.GetString(config.Flag.Service.GitHub.Submodules.DefaultConfig.Key),
-				Password: config.Viper.GetString(config.Flag.Service.GitHub.Submodules.DefaultConfig.Password),
-			},
-			IncludeConfigRepoSSHCredential: ssh.Credential{
-				Key:      config.Viper.GetString(config.Flag.Service.GitHub.Submodules.IncludeConfig.Key),
-				Password: config.Viper.GetString(config.Flag.Service.GitHub.Submodules.IncludeConfig.Password),
+			SharedConfigRepository: shared.ConfigRepository{
+				Name:     config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Name),
+				Ref:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Name),
+				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Key),
+				Password: config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Password),
 			},
 			ConfigRepoSSHCredential: ssh.Credential{
 				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SSH.Key),

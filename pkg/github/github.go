@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/microerror"
 
@@ -10,8 +11,9 @@ import (
 )
 
 type Config struct {
-	SSHCredential ssh.Credential
-	Token         string
+	SharedConfigRepository shared.ConfigRepository
+	SSHCredential          ssh.Credential
+	Token                  string
 }
 
 type GitHub struct {
@@ -27,8 +29,9 @@ func New(config Config) (*GitHub, error) {
 	var repo *gitrepo.Repo
 	{
 		c := gitrepo.Config{
-			GitHubSSHCredential: config.SSHCredential,
-			GitHubToken:         config.Token,
+			SharedConfigRepository: config.SharedConfigRepository,
+			GitHubSSHCredential:    config.SSHCredential,
+			GitHubToken:            config.Token,
 		}
 
 		repo, err = gitrepo.New(c)

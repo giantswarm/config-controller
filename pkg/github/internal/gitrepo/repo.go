@@ -2,6 +2,7 @@ package gitrepo
 
 import (
 	"context"
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/microerror"
 	"github.com/go-git/go-billy/v5/memfs"
@@ -16,19 +17,22 @@ import (
 )
 
 type Config struct {
-	GitHubSSHCredential intssh.Credential
-	GitHubToken         string
+	SharedConfigRepository shared.ConfigRepository
+	GitHubSSHCredential    intssh.Credential
+	GitHubToken            string
 }
 
 type Repo struct {
-	gitHubSSHCredential intssh.Credential
-	gitHubToken         string
+	sharedConfigRepository shared.ConfigRepository
+	gitHubSSHCredential    intssh.Credential
+	gitHubToken            string
 }
 
 func New(config Config) (*Repo, error) {
 	r := &Repo{
-		gitHubSSHCredential: config.GitHubSSHCredential,
-		gitHubToken:         config.GitHubToken,
+		sharedConfigRepository: config.SharedConfigRepository,
+		gitHubSSHCredential:    config.GitHubSSHCredential,
+		gitHubToken:            config.GitHubToken,
 	}
 
 	return r, nil

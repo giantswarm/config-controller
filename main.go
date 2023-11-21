@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/giantswarm/config-controller/cmd/generate"
-	"github.com/giantswarm/config-controller/cmd/lint"
 	"github.com/giantswarm/config-controller/flag"
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/server"
@@ -112,16 +111,6 @@ func mainE(ctx context.Context) error {
 			Logger: logger,
 		}
 		cmd, err := generate.New(c)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		subcommands = append(subcommands, cmd)
-	}
-	{
-		c := lint.Config{
-			Logger: logger,
-		}
-		cmd, err := lint.New(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added repository name parameter to be able to point to different config repositories, defaults to `config`
+- Added parameters to to configure shared config repository related settings
+- Added ability to use deploy keys for root and shared config repository instead of using a token to authenticate towards GitHub
 
 ### Changed
 
 - Removed usage of `config.giantswarm.io/version` annotation from AppCatalogEntries in favor of repository ref parameter, defaults to `main`
-- Changed repository clone mechanism to pull and initialize submodules as well
+- Assemble the repository with `giantswarm/shared-configs` when the root repository is not configured as `giantswarm/config`
 
 ### Removed
 

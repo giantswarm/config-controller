@@ -123,6 +123,18 @@ func mainE(ctx context.Context) error {
 
 	daemonCommand.PersistentFlags().Bool(f.Service.App.Unique, false, "Whether the operator is deployed as a unique app.")
 	daemonCommand.PersistentFlags().String(f.Service.GitHub.Token, "", "Token used to pull repositories from GitHub")
+
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.RepositoryName, "config", "Token used to pull repositories from GitHub")
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.RepositoryRef, "main", "Token used to pull repositories from GitHub")
+
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.SSH.Key, "", "Token used to pull repositories from GitHub")
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.SSH.Password, "", "Token used to pull repositories from GitHub")
+
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.SharedConfigRepository.Name, "shared-configs", "Token used to pull repositories from GitHub")
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.SharedConfigRepository.Ref, "main", "Token used to pull repositories from GitHub")
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.SharedConfigRepository.Key, "", "Token used to pull repositories from GitHub")
+	daemonCommand.PersistentFlags().String(f.Service.GitHub.SharedConfigRepository.Password, "", "Token used to pull repositories from GitHub")
+
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Name, "", `Installation codename (e.g. "geckon")`)
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.Address, "http://127.0.0.1:6443", "Address used to connect to Kubernetes. When empty in-cluster config is created.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Kubernetes.InCluster, false, "Whether to use the in-cluster config to authenticate with Kubernetes.")

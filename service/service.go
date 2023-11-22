@@ -126,6 +126,10 @@ func New(config Config) (*Service, error) {
 		repositoryRef = "main"
 	}
 
+	fmt.Println("Path CR Token: " + config.Flag.Service.GitHub.Token)
+	fmt.Println("Path CR SSH Key: " + config.Flag.Service.GitHub.SSH.Key)
+	fmt.Println("Path SCR SSH Key: " + config.Flag.Service.GitHub.SharedConfigRepository.Key)
+
 	var configController *controller.Config
 	{
 		c := controller.ConfigConfig{

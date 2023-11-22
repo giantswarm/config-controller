@@ -4,7 +4,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/giantswarm/config-controller/internal/shared"
@@ -126,10 +125,6 @@ func New(config Config) (*Service, error) {
 		repositoryRef = "main"
 	}
 
-	fmt.Println("Path CR Token: " + config.Flag.Service.GitHub.Token)
-	fmt.Println("Path CR SSH Key: " + config.Flag.Service.GitHub.SSH.Key)
-	fmt.Println("Path SCR SSH Key: " + config.Flag.Service.GitHub.SharedConfigRepository.Key)
-
 	var configController *controller.Config
 	{
 		c := controller.ConfigConfig{
@@ -153,14 +148,6 @@ func New(config Config) (*Service, error) {
 			Installation:   config.Viper.GetString(config.Flag.Service.Installation.Name),
 			UniqueApp:      config.Viper.GetBool(config.Flag.Service.App.Unique),
 		}
-
-		fmt.Println("Lvl1 CR Token: " + c.GitHubToken)
-		fmt.Println("Lvl1 CR SSH Key: " + c.ConfigRepoSSHCredential.Key)
-		fmt.Println("Lvl1 CR SSH Pw: " + c.ConfigRepoSSHCredential.Password)
-		fmt.Println("Lvl1 SCR SSH Name: " + c.SharedConfigRepository.Name)
-		fmt.Println("Lvl1 SCR SSH Ref: " + c.SharedConfigRepository.Ref)
-		fmt.Println("Lvl1 SCR SSH Key: " + c.SharedConfigRepository.Key)
-		fmt.Println("Lvl1 SCR SSH Pw: " + c.SharedConfigRepository.Password)
 
 		configController, err = controller.NewConfig(c)
 		if err != nil {

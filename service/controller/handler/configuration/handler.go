@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/giantswarm/config-controller/internal/shared"
@@ -55,14 +54,6 @@ type Handler struct {
 }
 
 func New(config Config) (*Handler, error) {
-	fmt.Println("Lvl 3 CR Token: " + config.GitHubToken)
-	fmt.Println("Lvl 3 CR SSH Key: " + config.ConfigRepoSSHCredential.Key)
-	fmt.Println("Lvl 3 CR SSH Pw: " + config.ConfigRepoSSHCredential.Password)
-	fmt.Println("Lvl 3 SCR SSH Name: " + config.SharedConfigRepository.Name)
-	fmt.Println("Lvl 3 SCR SSH Ref: " + config.SharedConfigRepository.Ref)
-	fmt.Println("Lvl 3 SCR SSH Key: " + config.SharedConfigRepository.Key)
-	fmt.Println("Lvl 3 SCR SSH Pw: " + config.SharedConfigRepository.Password)
-
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}

@@ -19,6 +19,9 @@ data:
       github:
         repositoryName: {{ .Values.github.repositoryName }}
         repositoryRef: {{ .Values.github.repositoryRef }}
+        sharedConfigRepository:
+          name: {{ .Values.github.sharedConfigRepository.name }}
+          ref: {{ .Values.github.sharedConfigRepository.ref }}
       installation:
         name: {{ .Values.managementCluster.name }}
       kubernetes:

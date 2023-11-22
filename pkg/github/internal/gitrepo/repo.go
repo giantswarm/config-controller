@@ -51,6 +51,9 @@ func (r *Repo) ShallowAssembleConfigRepository(ctx context.Context, owner, name,
 
 	// Clone root config repository
 	url, auth, err := r.createUrlAndAuthMethod(owner, name, r.gitHubToken, r.gitHubSSHCredential.Key, r.gitHubSSHCredential.Password)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	_, err = git.CloneContext(ctx, memory.NewStorage(), fs, &git.CloneOptions{
 		Auth:          auth,
@@ -138,6 +141,9 @@ func (r *Repo) assembleWithSharedConfigs(ctx context.Context, fs billy.Filesyste
 	}
 
 	url, auth, err = r.createUrlAndAuthMethod(owner, r.sharedConfigRepository.Name, r.gitHubToken, r.sharedConfigRepository.Key, r.sharedConfigRepository.Password)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	sharedRepositoryCloneFs, err := fs.Chroot(sharedRepositoryPath)
 	if err != nil {
@@ -177,6 +183,10 @@ func (r *Repo) assembleWithSharedConfigs(ctx context.Context, fs billy.Filesyste
 
 func (r *Repo) removeAll(fs billy.Filesystem, path string) error {
 	fileInfo, err := fs.Lstat(path)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	if fileInfo.IsDir() {
 		fileInfos, err := fs.ReadDir(path)
 		if err != nil {

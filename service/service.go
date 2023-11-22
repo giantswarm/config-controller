@@ -139,7 +139,7 @@ func New(config Config) (*Service, error) {
 
 			SharedConfigRepository: shared.ConfigRepository{
 				Name:     config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Name),
-				Ref:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Name),
+				Ref:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Ref),
 				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Key),
 				Password: config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Password),
 			},

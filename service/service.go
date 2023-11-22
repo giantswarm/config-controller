@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/giantswarm/config-controller/internal/shared"
@@ -148,6 +149,14 @@ func New(config Config) (*Service, error) {
 			Installation:   config.Viper.GetString(config.Flag.Service.Installation.Name),
 			UniqueApp:      config.Viper.GetBool(config.Flag.Service.App.Unique),
 		}
+
+		fmt.Println("Lvl1 CR Token: " + c.GitHubToken)
+		fmt.Println("Lvl1 CR SSH Key: " + c.ConfigRepoSSHCredential.Key)
+		fmt.Println("Lvl1 CR SSH Pw: " + c.ConfigRepoSSHCredential.Password)
+		fmt.Println("Lvl1 SCR SSH Pw: " + c.SharedConfigRepository.Name)
+		fmt.Println("Lvl1 SCR SSH Pw: " + c.SharedConfigRepository.Ref)
+		fmt.Println("Lvl1 SCR SSH Pw: " + c.SharedConfigRepository.Key)
+		fmt.Println("Lvl1 SCR SSH Pw: " + c.SharedConfigRepository.Password)
 
 		configController, err = controller.NewConfig(c)
 		if err != nil {

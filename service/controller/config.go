@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/giantswarm/config-controller/internal/shared"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -10,6 +9,8 @@ import (
 	"github.com/giantswarm/operatorkit/v8/pkg/resource/wrapper/metricsresource"
 	vaultapi "github.com/hashicorp/vault/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/config-controller/api/v1alpha1"
 	"github.com/giantswarm/config-controller/internal/meta"

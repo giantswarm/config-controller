@@ -2,7 +2,8 @@ package gitrepo
 
 import (
 	"context"
-	"github.com/giantswarm/config-controller/internal/shared"
+	"os"
+
 	"github.com/giantswarm/microerror"
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
@@ -12,7 +13,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5/storage/memory"
-	"os"
+
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	intssh "github.com/giantswarm/config-controller/internal/ssh"
 )

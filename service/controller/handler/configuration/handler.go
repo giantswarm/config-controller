@@ -1,8 +1,9 @@
 package configuration
 
 import (
-	"github.com/giantswarm/config-controller/internal/shared"
 	"reflect"
+
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"

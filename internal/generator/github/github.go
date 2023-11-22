@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+
 	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/giantswarm/microerror"

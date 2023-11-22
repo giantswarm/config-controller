@@ -4,8 +4,9 @@ package service
 
 import (
 	"context"
-	"github.com/giantswarm/config-controller/internal/shared"
 	"sync"
+
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"

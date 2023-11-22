@@ -3,9 +3,10 @@ package generate
 import (
 	"context"
 	"fmt"
-	"github.com/giantswarm/config-controller/internal/shared"
 	"io"
 	"os"
+
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"

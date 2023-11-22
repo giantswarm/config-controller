@@ -105,9 +105,9 @@ func newConfigHandlers(config ConfigConfig) ([]resource.Interface, error) {
 		fmt.Println("Lvl 2 CR Token: " + c.GitHubToken)
 		fmt.Println("Lvl 2 CR SSH Key: " + c.ConfigRepoSSHCredential.Key)
 		fmt.Println("Lvl 2 CR SSH Pw: " + c.ConfigRepoSSHCredential.Password)
-		fmt.Println("Lvl 2 SCR SSH Pw: " + c.SharedConfigRepository.Name)
-		fmt.Println("Lvl 2 SCR SSH Pw: " + c.SharedConfigRepository.Ref)
-		fmt.Println("Lvl 2 SCR SSH Pw: " + c.SharedConfigRepository.Key)
+		fmt.Println("Lvl 2 SCR SSH Name: " + c.SharedConfigRepository.Name)
+		fmt.Println("Lvl 2 SCR SSH Ref: " + c.SharedConfigRepository.Ref)
+		fmt.Println("Lvl 2 SCR SSH Key: " + c.SharedConfigRepository.Key)
 		fmt.Println("Lvl 2 SCR SSH Pw: " + c.SharedConfigRepository.Password)
 
 		configurationHandler, err = configuration.New(c)

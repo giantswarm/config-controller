@@ -6,6 +6,10 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 data:
+  {{- if .Values.github.ssh.knownHosts }}
+  known_hosts: |
+    {{- .Values.github.ssh.knownHosts | nindent 4 }}
+  {{- end }}
   config.yaml: |
     server:
       enable:

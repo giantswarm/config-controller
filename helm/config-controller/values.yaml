@@ -28,6 +28,7 @@ github:
   repositoryName: "config"
   repositoryRef: "main"
   ssh:
+    knownHosts: ""
     key: ""
     password: ""
   token: ""

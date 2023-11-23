@@ -29,6 +29,14 @@ spec:
               topologyKey: kubernetes.io/hostname
             weight: 100
       volumes:
+      {{- if .Values.github.ssh.knownHosts }}
+      - name: {{ include "name" . }}-ssh
+        configMap:
+          name: {{ include "resource.default.name"  . }}
+          items:
+          - key: known_hosts
+            path: known_hosts
+      {{- end }}
       - name: {{ include "name" . }}-configmap
         configMap:
           name: {{ include "resource.default.name"  . }}
@@ -76,6 +84,10 @@ spec:
         - --config.files=config,secret
         - --service.vault.token=$(VAULT_TOKEN)
         volumeMounts:
+        {{- if .Values.github.ssh.knownHosts }}
+        - name: {{ include "name" . }}-ssh
+          mountPath: /var/run/{{ include "name" . }}/ssh/
+        {{- end }}
         - name: {{ include "name" . }}-configmap
           mountPath: /var/run/{{ include "name" . }}/configmap/
         - name: {{ include "name" . }}-secret
@@ -85,6 +97,10 @@ spec:
         - name: ssl-certs
           mountPath: /etc/ssl/certs/
         env:
+        {{- if .Values.github.ssh.knownHosts }}
+        - name: SSH_KNOWN_HOSTS
+          value: /var/run/{{ include "name" . }}/ssh/known_hosts
+        {{- end }}
         - name: VAULT_TOKEN
           valueFrom:
             secretKeyRef:

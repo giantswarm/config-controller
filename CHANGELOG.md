@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Configure `gsoci.azurecr.io` as the default container image registry.
+
 ## [0.9.0] - 2023-11-10
 
 ### Changed
@@ -32,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated default `securityContext` values to comply with PSS policies.
-
 
 ## [0.6.0] - 2022-07-21
 
@@ -135,7 +138,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deleted
 
 - Delete `App` CR controller.
-
 
 ## [0.2.4] - 2021-02-16
 

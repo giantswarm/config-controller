@@ -16,7 +16,7 @@ project:
   commit: "[[ .SHA ]]"
 
 registry:
-  domain: docker.io
+  domain: gsoci.azurecr.io
 
 managementCluster:
   name: ""

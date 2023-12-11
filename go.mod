@@ -18,7 +18,7 @@ require (
 	github.com/giantswarm/operatorkit/v8 v8.0.0
 	github.com/giantswarm/valuemodifier v0.5.2
 	github.com/go-git/go-billy/v5 v5.5.0
-	github.com/go-git/go-git/v5 v5.10.1
+	github.com/go-git/go-git/v5 v5.11.0
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/vault/api v1.10.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible

@@ -49,5 +49,6 @@ serviceMonitor:
   # -- (duration) Prometheus scrape timeout.
   scrapeTimeout: "45s"
 
-podSecurityStandards:
-  enforced: false
+global:
+  podSecurityStandards:
+    enforced: false

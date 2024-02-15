@@ -157,7 +157,7 @@ replace (
 	github.com/labstack/echo/v4 => github.com/labstack/echo/v4 v4.11.4
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49
-	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.5.3
+	github.com/nats-io/jwt => github.com/nats-io/jwt/v2 v2.5.4
 	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.7
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6
 	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0

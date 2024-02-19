@@ -10,18 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added repository name parameter to be able to point to different config repositories, defaults to `config`
-- Added parameters to to configure shared config repository related settings
+- Added parameters to configure shared config repository related settings
 - Added ability to use deploy keys for root and shared config repository instead of using a token to authenticate towards GitHub
 
 ### Changed
 
 - Removed usage of `config.giantswarm.io/version` annotation from AppCatalogEntries in favor of repository ref parameter, defaults to `main`
 - Assemble the repository with `giantswarm/shared-configs` when the root repository is not configured as `giantswarm/config`
+- Use base image from `gsoci.azurecr.io`.
 
 ### Removed
 
 - Removed the `lint` CLI command.
 
+## [0.9.2] - 2024-01-29
+
+### Fixed
+
+- Move pss values under the global property
+
+## [0.9.1] - 2024-01-09
+
+### Changed
+
+- Configure `gsoci.azurecr.io` as the default container image registry.
+
+>>>>>>> main
 ## [0.9.0] - 2023-11-10
 
 ### Changed
@@ -47,7 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated default `securityContext` values to comply with PSS policies.
-
 
 ## [0.6.0] - 2022-07-21
 
@@ -151,7 +164,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Delete `App` CR controller.
 
-
 ## [0.2.4] - 2021-02-16
 
 ### Added
@@ -207,7 +219,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create CLI/daemon scaffolding.
 - Generate application configuration using `generate` command.
 
-[Unreleased]: https://github.com/giantswarm/config-controller/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/giantswarm/config-controller/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/giantswarm/config-controller/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/giantswarm/config-controller/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/giantswarm/config-controller/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/giantswarm/config-controller/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/giantswarm/config-controller/compare/v0.6.0...v0.7.0

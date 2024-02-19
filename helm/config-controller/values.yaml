@@ -16,7 +16,7 @@ project:
   commit: "[[ .SHA ]]"
 
 registry:
-  domain: docker.io
+  domain: gsoci.azurecr.io
 
 managementCluster:
   name: ""
@@ -60,5 +60,6 @@ serviceMonitor:
   # -- (duration) Prometheus scrape timeout.
   scrapeTimeout: "45s"
 
-podSecurityStandards:
-  enforced: false
+global:
+  podSecurityStandards:
+    enforced: false

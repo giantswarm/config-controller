@@ -11,10 +11,13 @@
                 "repositoryRef": {
                     "type": "string"
                 },
-                "sharedConfigs": {
+                "sharedConfigRepository": {
                     "type": "object",
                     "properties": {
                         "key": {
+                            "type": "string"
+                        },
+                        "name": {
                             "type": "string"
                         },
                         "password": {
@@ -31,6 +34,9 @@
                         "key": {
                             "type": "string"
                         },
+                        "knownHosts": {
+                            "type": "string"
+                        },
                         "password": {
                             "type": "string"
                         }
@@ -38,6 +44,19 @@
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "global": {
+            "type": "object",
+            "properties": {
+                "podSecurityStandards": {
+                    "type": "object",
+                    "properties": {
+                        "enforced": {
+                            "type": "boolean"
+                        }
+                    }
                 }
             }
         },
@@ -102,14 +121,6 @@
                             "type": "string"
                         }
                     }
-                }
-            }
-        },
-        "podSecurityStandards": {
-            "type": "object",
-            "properties": {
-                "enforced": {
-                    "type": "boolean"
                 }
             }
         },

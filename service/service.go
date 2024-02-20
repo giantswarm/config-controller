@@ -6,6 +6,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/giantswarm/config-controller/internal/shared"
+
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8srestconfig"
@@ -21,6 +23,8 @@ import (
 	"github.com/giantswarm/config-controller/pkg/project"
 	"github.com/giantswarm/config-controller/service/collector"
 	"github.com/giantswarm/config-controller/service/controller"
+
+	"github.com/giantswarm/config-controller/internal/ssh"
 )
 
 // Config represents the configuration used to create a new service.
@@ -111,6 +115,16 @@ func New(config Config) (*Service, error) {
 		vaultClient.SetToken(config.Viper.GetString(config.Flag.Service.Vault.Token))
 	}
 
+	repositoryName := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryName)
+	if repositoryName == "" {
+		repositoryName = "config"
+	}
+
+	repositoryRef := config.Viper.GetString(config.Flag.Service.GitHub.RepositoryRef)
+	if repositoryRef == "" {
+		repositoryRef = "main"
+	}
+
 	var configController *controller.Config
 	{
 		c := controller.ConfigConfig{
@@ -118,9 +132,21 @@ func New(config Config) (*Service, error) {
 			Logger:      config.Logger,
 			VaultClient: vaultClient,
 
-			GitHubToken:  config.Viper.GetString(config.Flag.Service.GitHub.Token),
-			Installation: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			UniqueApp:    config.Viper.GetBool(config.Flag.Service.App.Unique),
+			SharedConfigRepository: shared.ConfigRepository{
+				Name:     config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Name),
+				Ref:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Ref),
+				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Key),
+				Password: config.Viper.GetString(config.Flag.Service.GitHub.SharedConfigRepository.Password),
+			},
+			ConfigRepoSSHCredential: ssh.Credential{
+				Key:      config.Viper.GetString(config.Flag.Service.GitHub.SSH.Key),
+				Password: config.Viper.GetString(config.Flag.Service.GitHub.SSH.Password),
+			},
+			GitHubToken:    config.Viper.GetString(config.Flag.Service.GitHub.Token),
+			RepositoryName: repositoryName,
+			RepositoryRef:  repositoryRef,
+			Installation:   config.Viper.GetString(config.Flag.Service.Installation.Name),
+			UniqueApp:      config.Viper.GetBool(config.Flag.Service.App.Unique),
 		}
 
 		configController, err = controller.NewConfig(c)

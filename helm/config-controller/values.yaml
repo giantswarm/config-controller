@@ -25,7 +25,18 @@ vault:
   address: ""
 
 github:
+  repositoryName: "config"
+  repositoryRef: "main"
+  ssh:
+    knownHosts: ""
+    key: ""
+    password: ""
   token: ""
+  sharedConfigRepository:
+    name: "shared-configs"
+    ref: "main"
+    key: ""
+    password: ""
 
 # Add seccomp to pod security context
 podSecurityContext:

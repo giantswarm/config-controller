@@ -5,6 +5,43 @@
         "github": {
             "type": "object",
             "properties": {
+                "repositoryName": {
+                    "type": "string"
+                },
+                "repositoryRef": {
+                    "type": "string"
+                },
+                "sharedConfigRepository": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "password": {
+                            "type": "string"
+                        },
+                        "ref": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "ssh": {
+                    "type": "object",
+                    "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "knownHosts": {
+                            "type": "string"
+                        },
+                        "password": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "token": {
                     "type": "string"
                 }

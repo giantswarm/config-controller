@@ -6,6 +6,10 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 data:
+  {{- if .Values.github.ssh.knownHosts }}
+  known_hosts: |
+    {{- .Values.github.ssh.knownHosts | nindent 4 }}
+  {{- end }}
   config.yaml: |
     server:
       enable:
@@ -16,6 +20,12 @@ data:
     service:
       app:
         unique: true
+      github:
+        repositoryName: {{ .Values.github.repositoryName }}
+        repositoryRef: {{ .Values.github.repositoryRef }}
+        sharedConfigRepository:
+          name: {{ .Values.github.sharedConfigRepository.name }}
+          ref: {{ .Values.github.sharedConfigRepository.ref }}
       installation:
         name: {{ .Values.managementCluster.name }}
       kubernetes:

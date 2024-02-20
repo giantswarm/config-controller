@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+
+	"github.com/giantswarm/config-controller/internal/shared"
 
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
@@ -13,6 +16,7 @@ import (
 
 	"github.com/giantswarm/config-controller/internal/generator"
 	"github.com/giantswarm/config-controller/internal/meta"
+	"github.com/giantswarm/config-controller/internal/ssh"
 )
 
 type runner struct {
@@ -49,14 +53,42 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	configRepoSshKey := ""
+	if r.flag.ConfigRepoSSHPemPath != "" {
+		configRepoSshKey, err = r.readSSHPem(r.flag.ConfigRepoSSHPemPath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	sharedConfigRepositorySSHKey := ""
+	if r.flag.ConfigRepoSSHPemPath != "" {
+		sharedConfigRepositorySSHKey, err = r.readSSHPem(r.flag.SharedConfigRepoSSHPemPath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var gen *generator.Service
 	{
 		c := generator.Config{
 			VaultClient: vaultClient,
 
-			GitHubToken:  r.flag.GitHubToken,
-			Installation: r.flag.Installation,
-			Verbose:      r.flag.Verbose,
+			SharedConfigRepository: shared.ConfigRepository{
+				Name:     r.flag.SharedConfigRepoName,
+				Ref:      r.flag.SharedConfigRepoRef,
+				Key:      sharedConfigRepositorySSHKey,
+				Password: r.flag.SharedConfigRepoSSHPemPassword,
+			},
+			ConfigRepoSSHCredential: ssh.Credential{
+				Key:      configRepoSshKey,
+				Password: r.flag.ConfigRepoSSHPemPassword,
+			},
+			GitHubToken:    r.flag.GitHubToken,
+			RepositoryName: r.flag.RepositoryName,
+			RepositoryRef:  r.flag.RepositoryRef,
+			Installation:   r.flag.Installation,
+			Verbose:        r.flag.Verbose,
 		}
 
 		gen, err = generator.New(c)
@@ -66,14 +98,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	in := generator.GenerateInput{
-		App:           r.flag.App,
-		ConfigVersion: r.flag.ConfigVersion,
+		App: r.flag.App,
 
 		Name:      r.flag.Name,
 		Namespace: r.flag.Namespace,
 
 		ExtraAnnotations: map[string]string{
-			meta.Annotation.ConfigVersion.Key():   r.flag.ConfigVersion,
 			meta.Annotation.XAppInfo.Key():        meta.Annotation.XAppInfo.Val("<unknown>", r.flag.App, "<unknown>"),
 			meta.Annotation.XCreator.Key():        meta.Annotation.XCreator.Default(),
 			meta.Annotation.XInstallation.Key():   r.flag.Installation,
@@ -110,4 +140,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	fmt.Printf(string(out) + "\n")
 
 	return nil
+}
+
+func (r *runner) readSSHPem(path string) (string, error) {
+	keyByte, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return string(keyByte), nil
 }

@@ -47,7 +47,13 @@ func createVaultClientUsingOpsctl(ctx context.Context, gitHubToken, sshUser, ins
 
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...) //nolint:gosec
 	cmd.Stderr = os.Stderr
-	cmd.Env = append(os.Environ(), "OPSCTL_GITHUB_TOKEN="+gitHubToken)
+
+	var opsctlToken = ""
+	if gitHubToken == "" {
+		opsctlToken = os.Getenv("OPSCTL_GITHUB_TOKEN")
+	}
+
+	cmd.Env = append(os.Environ(), "OPSCTL_GITHUB_TOKEN="+opsctlToken)
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, microerror.Maskf(

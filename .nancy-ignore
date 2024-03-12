@@ -1,34 +1,5 @@
-# pkg:golang/github.com/hashicorp/consul/api@v1.15.3
-CVE-2022-29153 until=2023-11-30
-CVE-2021-41803 until=2023-11-30
+# pkg:golang/github.com/hashicorp/vault/api@v1.12.0
+CVE-2024-2048 until=2024-03-31
 
-# pkg:golang/github.com/hashicorp/consul/sdk@v0.3.0
-CVE-2022-29153 until=2023-11-30
-
-# pkg:golang/github.com/hashicorp/vault/sdk
-CVE-2022-36129 until=2023-11-30
-
-# pkg:golang/github.com/kataras/iris/v12@v12.1.8
-CVE-2021-23772 until=2023-11-30
-
-# pkg:golang/github.com/nats-io/nats-server/v2@v2.9.0
-CVE-2022-42709 until=2023-11-30
-CVE-2022-42708 until=2023-11-30
-
-# pkg:golang/golang.org/x/net@v0.4.0
-CVE-2022-41723 until=2023-11-30
-CVE-2023-39325 until=2023-12-01
-
-# pkg:golang/k8s.io/apiserver@v0.24.3
-sonatype-2022-6522 until=2023-11-30
-CVE-2020-8561 until=2023-11-30
-
-# pkg:golang/github.com/cloudflare/circl@v1.1.0
-CVE-2023-1732
-
-# pkg:golang/github.com/gin-gonic/gin@v1.8.2
-CVE-2023-26125
-CVE-2023-29401
-
-# pkg:golang/google.golang.org/grpc@v1.50.1
-CVE-2023-32731
+# pkg:golang/google.golang.org/protobuf@v1.32.0
+CVE-2024-24786 until=2024-03-31

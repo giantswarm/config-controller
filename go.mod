@@ -157,7 +157,7 @@ replace (
 	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.7
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6
 	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0
-	golang.org/x/net => golang.org/x/net v0.22.0
+	golang.org/x/net => golang.org/x/net v0.23.0
 )
 
 replace google.golang.org/protobuf v1.32.0 => google.golang.org/protobuf v1.33.0

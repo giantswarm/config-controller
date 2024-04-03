@@ -159,3 +159,5 @@ replace (
 	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0
 	golang.org/x/net => golang.org/x/net v0.22.0
 )
+
+replace google.golang.org/protobuf v1.32.0 => google.golang.org/protobuf v1.33.0

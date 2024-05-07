@@ -1,6 +1,8 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@6.20.0
+#    devctl
+#
+#    https://github.com/giantswarm/devctl/blob/d1e2552bd9e4ea8a8a87f8122b7dcfd1d82c707f/pkg/gen/input/makefile/internal/file/Makefile.gen.go.mk.template
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -137,6 +139,11 @@ clean: ## Cleans the binary.
 imports: ## Runs goimports.
 	@echo "====> $@"
 	goimports -local $(MODULE) -w .
+
+.PHONY: lint
+lint: ## Runs golangci-lint.
+	@echo "====> $@"
+	golangci-lint run -E gosec -E goconst --timeout=15m ./...
 
 .PHONY: nancy
 nancy: ## Runs nancy (requires v1.0.37 or newer).

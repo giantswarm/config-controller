@@ -23,7 +23,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/vault/api v1.13.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	k8s.io/api v0.24.3

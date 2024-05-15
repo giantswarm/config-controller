@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Add missing team label on the service monitor and all helm resources.
+
 ## [0.10.0] - 2024-02-20
 
 ### Added

@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/microkit v1.0.1
 	github.com/giantswarm/micrologger v1.1.1
-	github.com/giantswarm/operatorkit/v7 v7.2.0
+	github.com/giantswarm/operatorkit/v8 v8.0.0
 	github.com/giantswarm/valuemodifier v0.5.2
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0

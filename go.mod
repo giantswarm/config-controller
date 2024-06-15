@@ -24,7 +24,7 @@ require (
 	github.com/hashicorp/vault/api v1.14.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.19.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	k8s.io/api v0.30.1
 	k8s.io/apimachinery v0.30.1

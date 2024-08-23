@@ -119,9 +119,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if r.flag.Raw {
 		fmt.Println("---")
-		fmt.Printf(string(configmap.Data["configmap-values.yaml"]) + "\n")
+		fmt.Println(configmap.Data["configmap-values.yaml"])
 		fmt.Println("---")
-		fmt.Printf(string(secret.Data["secret-values.yaml"]) + "\n")
+		fmt.Println(secret.Data["secret-values.yaml"])
 		return nil
 	}
 
@@ -130,14 +130,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Printf(string(out) + "\n")
+	fmt.Println(string(out))
 
 	fmt.Println("---")
 	out, err = yaml.Marshal(secret)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Printf(string(out) + "\n")
+	fmt.Println(string(out))
 
 	return nil
 }

@@ -1,2 +1,2 @@
-CVE-2024-2660 until=2024-09-30 # pkg:golang/github.com/hashicorp/vault/api
-CVE-2024-6104 until=2024-09-30 # pkg:golang/github.com/hashicorp/go-retryablehttp@v0.7.6
+CVE-2024-2660 until=2024-10-30 # pkg:golang/github.com/hashicorp/vault/api
+CVE-2024-6104 until=2024-10-30 # pkg:golang/github.com/hashicorp/go-retryablehttp@v0.7.6

@@ -144,16 +144,7 @@ require (
 )
 
 replace (
-	github.com/coreos/etcd => github.com/coreos/etcd v3.3.27+incompatible
-	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.10.0
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.8
-	github.com/labstack/echo/v4 => github.com/labstack/echo/v4 v4.12.0
-	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18
-	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49
-	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.7
-	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0
 	golang.org/x/net => golang.org/x/net v0.30.0
+	google.golang.org/protobuf v1.32.0 => google.golang.org/protobuf v1.33.0
 )
-
-replace google.golang.org/protobuf v1.32.0 => google.golang.org/protobuf v1.33.0

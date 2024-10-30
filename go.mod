@@ -152,7 +152,6 @@ replace (
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/miekg/dns v1.0.14 => github.com/miekg/dns v1.1.49
 	github.com/nats-io/nkeys => github.com/nats-io/nkeys v0.4.7
-	github.com/pkg/sftp => github.com/pkg/sftp v1.13.7
 	github.com/valyala/fasthttp v1.6.0 => github.com/valyala/fasthttp v1.37.0
 	golang.org/x/net => golang.org/x/net v0.30.0
 )

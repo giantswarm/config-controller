@@ -15,7 +15,7 @@ require (
 	github.com/giantswarm/microendpoint v1.1.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/microkit v1.0.2
-	github.com/giantswarm/micrologger v1.1.1
+	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/operatorkit/v7 v7.2.0
 	github.com/giantswarm/valuemodifier v0.5.2
 	github.com/go-git/go-billy/v5 v5.6.1
@@ -57,7 +57,7 @@ require (
 	github.com/go-kit/kit v0.13.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/go-logr/logr v1.4.1 // indirect
+	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect

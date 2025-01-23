@@ -1,6 +1,7 @@
 image:
   name: "giantswarm/config-controller"
   tag: "[[ .Version ]]"
+serviceType: managed
 
 k8sJwtToVaultTokenImage:
   name: giantswarm/k8s-jwt-to-vault-token

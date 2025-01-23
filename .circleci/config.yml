@@ -29,6 +29,7 @@ workflows:
     - architect/push-to-app-catalog:
         context: architect
         name: push-config-controller-to-app-catalog
+        executor: app-build-suite
         app_catalog: control-plane-catalog
         app_catalog_test: control-plane-test-catalog
         chart: config-controller
@@ -37,11 +38,8 @@ workflows:
         filters:
           tags:
             only: /^v.*/
-
           branches:
-            ignore:
-            - main
-            - master
+            only: /.*/
     - architect/push-to-app-collection:
         name: push-config-controller-to-aws-app-collection
         context: architect

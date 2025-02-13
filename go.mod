@@ -2,7 +2,7 @@ module github.com/giantswarm/config-controller
 
 go 1.22.0
 
-toolchain go1.23.6
+toolchain go1.24.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0

@@ -133,7 +133,7 @@ func (h *Handler) Name() string {
 
 func getConfigObjectsMeta(config *v1alpha1.Config) (current, orphaned []client.Object, err error) {
 	currConfig := config.Status.Config
-	prevConfig, err := meta.Annotation.XPreviousConfig.Get(config)
+	prevConfig, err := meta.Annotation.Get(config)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}

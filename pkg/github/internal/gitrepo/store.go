@@ -49,7 +49,7 @@ func (s *Store) ReadFile(path string) ([]byte, error) {
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	bs, err := io.ReadAll(f)
 	if err != nil {

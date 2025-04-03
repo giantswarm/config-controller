@@ -90,7 +90,7 @@ func (r *Repo) ShallowAssembleConfigRepository(ctx context.Context, owner, name,
 // that we can use both methods and can be possibly cleaned up when everything uses
 // the split setup to enforce the usage of deploy keys and deprecate the usage of a token.
 func (r *Repo) isSplitSetup(owner, configRepositoryName string) bool {
-	return !(owner == "giantswarm" && configRepositoryName == "config")
+	return owner != "giantswarm" || configRepositoryName != "config"
 }
 
 func (r *Repo) createUrlAndAuthMethod(owner, repositoryName, token, key, password string) (string, transport.AuthMethod, error) {
@@ -102,7 +102,7 @@ func (r *Repo) createUrlAndAuthMethod(owner, repositoryName, token, key, passwor
 		url  string
 	)
 
-	if !(key == "" && password == "") {
+	if key != "" || password != "" {
 		auth, err = ssh.NewPublicKeys(
 			"git",
 			[]byte(key),

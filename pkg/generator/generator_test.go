@@ -5,6 +5,7 @@ import (
 	"io/ioutil" //nolint
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -130,7 +131,7 @@ func TestGenerator_generateRawConfig(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fs := newMockFilesystem(tmpDir, tc.caseFile)
 
@@ -187,11 +188,13 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 		tempDirPath: temporaryDirectory,
 	}
 	for _, p := range []string{"default", "installations", "include"} {
-		if err := os.MkdirAll(path.Join(temporaryDirectory, p), 0755); err != nil {
+		dirPath := path.Join(temporaryDirectory, p)
+		if err := os.MkdirAll(dirPath, 0750); err != nil {
 			panic(err)
 		}
 	}
 
+	caseFile = filepath.Clean(caseFile)
 	rawData, err := os.ReadFile(caseFile)
 	if err != nil {
 		panic(err)
@@ -217,7 +220,7 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 			continue
 		}
 
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0750); err != nil {
 			panic(err)
 		}
 
@@ -230,10 +233,12 @@ func newMockFilesystem(temporaryDirectory, caseFile string) *mockFilesystem {
 	return &fs
 }
 
-func (fs *mockFilesystem) ReadFile(filepath string) ([]byte, error) {
-	data, err := os.ReadFile(path.Join(fs.tempDirPath, filepath))
+func (fs *mockFilesystem) ReadFile(filePath string) ([]byte, error) {
+	fullFilePath := path.Join(fs.tempDirPath, filePath)
+	fullFilePath = filepath.Clean(fullFilePath)
+	data, err := os.ReadFile(fullFilePath)
 	if err != nil {
-		return []byte{}, microerror.Maskf(notFoundError, "%q not found", filepath)
+		return []byte{}, microerror.Maskf(notFoundError, "%q not found", filePath)
 	}
 	return data, nil
 }

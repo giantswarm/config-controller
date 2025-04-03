@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/giantswarm/config-controller/internal/shared"
 
@@ -105,7 +106,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		ExtraAnnotations: map[string]string{
 			meta.Annotation.XAppInfo.Key():        meta.Annotation.XAppInfo.Val("<unknown>", r.flag.App, "<unknown>"),
-			meta.Annotation.XCreator.Key():        meta.Annotation.XCreator.Default(),
+			meta.Annotation.XCreator.Key():        meta.Annotation.Default(),
 			meta.Annotation.XInstallation.Key():   r.flag.Installation,
 			meta.Annotation.XProjectVersion.Key(): meta.Annotation.XProjectVersion.Val(false),
 		},
@@ -121,7 +122,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		fmt.Println("---")
 		fmt.Println(configmap.Data["configmap-values.yaml"])
 		fmt.Println("---")
-		fmt.Println(secret.Data["secret-values.yaml"])
+		fmt.Println(string(secret.Data["secret-values.yaml"]))
 		return nil
 	}
 
@@ -143,6 +144,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) readSSHPem(path string) (string, error) {
+	path = filepath.Clean(path)
 	keyByte, err := os.ReadFile(path)
 	if err != nil {
 		return "", err

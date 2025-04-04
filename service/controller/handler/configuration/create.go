@@ -40,12 +40,12 @@ func (h *Handler) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Namespace: namespace,
 
 			ExtraAnnotations: map[string]string{
-				meta.Annotation.XAppInfo.Key():        meta.Annotation.XAppInfo.ValFromConfig(config),
+				meta.Annotation.XAppInfo.Key():        meta.Annotation.ValFromConfig(config),
 				meta.Annotation.XInstallation.Key():   h.installation,
 				meta.Annotation.XProjectVersion.Key(): meta.Annotation.XProjectVersion.Val(h.uniqueApp),
 			},
 			ExtraLabels: map[string]string{
-				meta.Label.ManagedBy.Key(): meta.Label.ManagedBy.Default(),
+				meta.Label.ManagedBy.Key(): meta.Label.Default(),
 			},
 		}
 
@@ -129,7 +129,7 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 		return nil, microerror.Mask(err)
 	}
 
-	previousConfig, err := meta.Annotation.XPreviousConfig.Get(config)
+	previousConfig, err := meta.Annotation.Get(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -165,7 +165,7 @@ func (h *Handler) cleanupOrphanedConfig(ctx context.Context, config *v1alpha1.Co
 	{
 		h.logger.Debugf(ctx, "updating %#q annotation", meta.Annotation.XPreviousConfig.Key())
 
-		err = meta.Annotation.XPreviousConfig.Set(config, config.Status.Config)
+		err = meta.Annotation.Set(config, config.Status.Config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

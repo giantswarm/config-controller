@@ -48,7 +48,7 @@ func NewConfig(config ConfigConfig) (*Config, error) {
 
 	var operatorkitController *controller.Controller
 	{
-		selector, err := meta.Label.Version.Selector(config.UniqueApp)
+		selector, err := meta.Label.Selector(config.UniqueApp)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -141,7 +141,7 @@ require (
 )
 
 replace (
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.10
+	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.11
 	golang.org/x/net => golang.org/x/net v0.39.0
 	google.golang.org/protobuf v1.32.0 => google.golang.org/protobuf v1.33.0
 )
